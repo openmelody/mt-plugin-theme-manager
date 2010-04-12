@@ -25,10 +25,10 @@ information about the current theme and links to work with the theme, all of
 which can be specified by the theme designer.
 
 Apply a new theme by visiting the Theme Dashboard and clicking the "Apply a 
-New Theme" link to get started. A dialog will popup with a paginated view of 
-the installed themes. Here the user can see more detail about the theme 
-(click the thumbnail) or select a theme to apply. After selecting a theme the 
-user will be required to fill-in any fields marked "required" by the theme 
+New Theme" link to get started. A paginated view of the installed themes 
+appears. Here the user can see more detail about the theme (click the 
+thumbnail) and select a theme to apply. After selecting a theme the user 
+will be required to fill-in any fields marked "required" by the theme 
 designer to finish the process.
 
 (Need to apply a theme to many blogs? Visit System Overview > Blogs and use 
