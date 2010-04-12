@@ -699,6 +699,7 @@ sub _make_mini {
         );
         use MT::Image;
         my $img = MT::Image->new( Filename => $source_path );
+            or return 0;
         my $resized_img = $img->scale( Width => 138 );
         my $fmgr = MT::FileMgr->new('Local')
             or return MT::FileMgr->errstr;
@@ -937,10 +938,14 @@ sub xfrm_add_thumb {
     my $result = index $$tmpl, '<__trans phrase="Theme Options"> &gt; ';
     if ( $result ne '-1' ) {
         my $dest_url = _make_mini();
-        # Now finally update the Theme Options template
-        my $old = '<mt:setvarblock name="content_nav">';
-        my $new = $old . '<div style="margin-bottom: 8px; border: 1px solid #ddd;"><a href="<mt:Var name="script_uri">?__mode=theme_dashboard&blog_id=<mt:Var name="blog_id">" title="Visit the Theme Dashboard"><img src="'.$dest_url.'" width="138" height="112" /></a></div>';
-        $$tmpl =~ s/$old/$new/mgi;
+        # $dest_url will be emtpy if no image handler is installed/enabled,
+        # so we want to just fail silently.
+        if ($dest_url) {
+            # Now finally update the Theme Options template
+            my $old = '<mt:setvarblock name="content_nav">';
+            my $new = $old . '<div style="margin-bottom: 8px; border: 1px solid #ddd;"><a href="<mt:Var name="script_uri">?__mode=theme_dashboard&blog_id=<mt:Var name="blog_id">" title="Visit the Theme Dashboard"><img src="'.$dest_url.'" width="138" height="112" /></a></div>';
+            $$tmpl =~ s/$old/$new/mgi;
+        }
     }
 }
 
