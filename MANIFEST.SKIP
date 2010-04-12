@@ -1,0 +1,17 @@
+# version control
+\bCVS
+(^|/)\.
+
+# CPAN chain files
+^MANIFEST
+^Makefile
+^META.yml$
+^blib/
+\#$
+~$
+.bak$
+
+# packages
+\.zip$
+\.tar\.gz$
+

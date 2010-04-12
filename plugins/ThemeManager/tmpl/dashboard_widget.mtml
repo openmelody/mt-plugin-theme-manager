@@ -1,0 +1,54 @@
+<mtapp:widget class="widget tm-widget"
+    label="Theme Dashboard Widget"
+    can_close="1">
+    <h4>
+        Theme: <mt:Var name="theme_label">
+        <div style="color: #999; font-weight: normal;">version <mt:Var name="theme_version"></div>
+    </h4>
+
+    <div style="border: 1px solid #ddd; float: right;">
+        <a href="<mt:Var name="script_uri">?__mode=theme_dashboard&blog_id=<mt:BlogID>"
+            title="Visit the Theme Dashboard">
+            <img src="<mt:Var name="theme_mini">" width="138" height="112" />
+        </a>
+    </div>
+
+    <ul id="theme-links">
+        <li>
+            <a href="<mt:Var name="script_uri">?__mode=theme_dashboard&amp;blog_id=<mt:BlogID>"
+                title="A closer look at <mt:Var name="theme_label">"
+                class="icon-mini-left icon-mini-view-site">
+                Theme Dashboard</a>
+        </li>
+    <mt:If name="theme_doc_link">
+        <li>
+            <a href="<mt:Var name="theme_doc_link">" 
+                title="Documentation for <mt:Var name="theme_label">" 
+                class="icon-mini-left icon-mini-docs">
+                Documentation</a>
+        </li>
+    </mt:if>
+    <mt:If name="theme_link">
+        <li>
+            <a href="<mt:Var name="theme_link">" 
+                title="More about <mt:Var name="theme_label">" 
+                class="icon-mini-left icon-mini-view-site">
+                Theme Home</a>
+        </li>
+    </mt:If>
+    <mt:If name="theme_author_link">
+        <li>
+            <a href="<mt:Var name="theme_author_link">" 
+                title="Designer of <mt:Var name="theme_label">" 
+                class="icon-mini-left icon-mini-view-site">
+                <mt:Var name="theme_author_name"></a>
+        </li>
+    <mt:Else>
+        <li>
+            <mt:Var name="theme_author_name">
+        </li>
+    </mt:If>
+    </ul>
+    
+    <p><a href="<mt:Var name="script_uri">?__mode=theme_dashboard&amp;offset=0&amp;blog_id=<mt:BlogID>" class="icon-mini-left icon-mini-settings">Apply a new Theme</a></p>
+</mtapp:widget>

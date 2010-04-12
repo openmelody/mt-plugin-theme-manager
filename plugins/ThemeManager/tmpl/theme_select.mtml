@@ -1,0 +1,177 @@
+<mt:Unless name="json">
+<mt:SetVarBlock name="page_title">Select a Theme</mt:SetVarBlock>
+
+<mt:SetVarBlock name="html_head" append="1">
+    <link rel="stylesheet" href="<mt:ThemeManagerStaticWebPath>css/app.css" type="text/css" />
+
+    <script type="text/javascript" src="<mt:var name="static_uri">js/tc/client.js"></script>
+    <script type="text/javascript" src="<mt:var name="static_uri">js/tc/json.js"></script>
+    <script type="text/javascript" src="<mt:var name="static_uri">js/dialog.js"></script>
+
+    <script type="text/javascript">
+    /* <![CDATA[ */
+    function dialogClose(data) {
+        if (!data) {
+            closeDialog();
+            return;
+        }
+        
+        // user made a selection and clicked insert...
+        // Grab the theme ID.
+        for (i=0;i<document.theme_gallery.selected_theme_id.length;i++) {
+            if (document.theme_gallery.selected_theme_id[i].checked) {
+                var sel_theme_id = document.theme_gallery.selected_theme_id[i].value;
+            }
+        }
+        if (!sel_theme_id) {
+            alert('Select a theme to proceed.');
+            return false;
+        }
+        // Now get the plugin ID. We want both because, it's possible that
+        // two themes could have the same name, and we need to select the
+        // correct one on the "Setup" screen next.
+        var sel_plugin_sig = document.getElementById(sel_theme_id+'_plugin_sig').value;
+
+        var f = document.forms['select_theme'];
+        f.theme_id.value = sel_theme_id;
+        f.plugin_sig.value = sel_plugin_sig;
+        
+
+        // Disable the buttons so the user can't quit mid-application.
+        var buttons = document.getElementsByTagName('button');
+        for(var i=0;i<buttons.length;i++){
+            buttons[i].disabled = 'disabled';
+        }
+        document.getElementById('status').style.display = "block";
+
+        f.submit();
+    }
+    
+    function selectTheme(sel_theme_id) {
+        document.getElementById(sel_theme_id + '-ts-details').style.display = 'block';
+        document.getElementById('selected-theme_id-' + sel_theme_id).checked = 'checked';
+    }
+
+    function viewChange(ds, fn) {
+        if (fn) fn(ds);
+    }
+
+    var tableSelect;
+    var dlg;
+    function init() {
+        // setup
+        dlg = new Dialog.Simple("list-themes");
+        var panel = new ListingPanel("theme");
+        dlg.panel = panel;
+
+        // hook into view updates so we can close any opened detail panel
+        var old_update = panel.datasource.onUpdate;
+        panel.datasource.onUpdate = function(ds) { viewChange(ds, old_update) };
+
+        panel.pager.setState(<mt:if name="pager_json"><mt:var name="pager_json"><mt:else>{}</mt:if>);
+        panel.parent = dlg;
+        dlg.open({}, dialogClose);
+    }
+    TC.attachLoadEvent( init );
+    /* ]]> */
+    </script>
+</mt:SetVarBlock>
+
+<mt:include name="dialog/header.tmpl">
+
+<div id="list-themes-dialog">
+    <div class="panel-header">
+    </div>
+    <div class="listing-filter">
+        <div class="listing-filter-inner inner pkg">
+            <form action="<mt:Var name="script_url">" method="get" id="modal-search">
+                <input type="hidden" name="__mode" value="select_theme" />
+                <input type="hidden" name="blog_id" value="<mt:var name="blog_id">" />
+                <input name="search" type="text" value="<__trans phrase="Search">" class="search-query" onblur="if(this.value==''){this.style.color=''; this.form.reset()}" onfocus="if (this.value == '<__trans phrase="Search">') this.value = ''; this.style.color = '#000';" value="<mt:var name="search">" />
+                <input type="image" class="search-command search-submit" src="<$mt:var name="static_uri"$>images/search-submit<mt:unless name="blog_id">-system</mt:unless>.gif" title="<__trans phrase="Search">" />
+            <mt:If name="search">
+                <a href="javascript:void(0)" class="" style="position:absolute;left:180px;white-space:nowrap;color:#fff;"
+                    onclick="window.parent.location.href='<mt:Var name="script_url">?__mode=select_theme&amp;blog_id=<mt:Var name="blog_id">';"><__trans phrase="Reset"></a>
+            </mt:If>
+            </form>
+        </div>
+    </div>
+
+    <form method="post" action="<mt:Var name="script_url">" name="select_theme">
+        <input type="hidden" name="__mode" value="setup_theme" />
+        <input type="hidden" name="_type" value="theme" />
+    <mt:If name="blog_ids">
+        <input type="hidden" name="blog_ids" value="<mt:Var name="blog_ids">" />
+    <mt:Else>
+        <input type="hidden" name="blog_id" value="<mt:Var name="blog_id">" />
+    </mt:If>
+        <input type="hidden" name="theme_id" value="" />
+        <input type="hidden" name="plugin_sig" value="" />
+    </form>
+    <div class="theme-gallery-container">
+        <div class="theme-gallery-container-inner list-data-wrapper-modal list-data">
+</mt:Unless>
+
+<mt:If name="object_loop">
+        <form action="" method="get" onsubmit="return false" name="theme_gallery">
+    <mt:Loop name="object_loop">
+            <div id="<mt:Var name="id">-container" class="ts-container<mt:Unless name="__counter__" op="%" value="3"> last</mt:Unless>">
+                <div class="ts-container-inner">
+                    <input type="radio" class="radio-button" name="selected_theme_id" 
+                        id="selected-theme_id-<mt:Var name="id">" value="<mt:Var name="id">">
+                    <input type="hidden" id="<mt:Var name="id">_plugin_sig" value="<mt:Var name="plugin_sig">" />
+                    <h3><label for="selected-theme_id-<mt:Var name="id">"><mt:Var name="label" default="Untitled"></label></h3>
+                    <a href="javascript:void(0);" onclick="selectTheme('<mt:Var name="id">');">
+                        <img src="<mt:Var name="thumbnail_url">" width="175" height="140" border="1" />
+                    </a>
+                </div>
+                <div id="<mt:Var name="id">-ts-details" class="ts-details">
+                    <a href="javascript:void(0)" onclick="document.getElementById('<mt:Var name="id">-ts-details').style.display='none';">
+                        <img src="<mt:Var name="static_uri">images/status_icons/close.gif" width="9" height="9" class="close" />
+                    </a>
+                    <mt:Var name="theme_details">
+                </div>
+            </div>
+    </mt:Loop>
+        </form>
+<mt:Else>
+    <p>No results found.</p>
+</mt:If>
+<mt:Unless name="json">
+        </div>
+    </div>
+
+    <div class="pagination"></div>
+
+    <div class="insert_button_spacing">&nbsp;</div>
+
+    <div id="status">
+        <div id="status-inner">
+            <p>Applying the selected theme...</p>
+            <img src="<mt:Var name="static_uri">images/indicator.gif" width="66" height="66" border="0" />
+        </div>
+    </div>
+
+    <div class="actions-bar">
+        <div class="actions-bar-inner pkg actions">
+            <form action="" method="get" onsubmit="return false">
+                <button
+                    type="submit"
+                    accesskey="s"
+                    title="<__trans phrase="Select (s)">"
+                    class="primary-button close disabled-button"
+                    ><__trans phrase="Select"></button>
+                <button
+                    onclick="closeDialog(); return false"
+                    type="submit"
+                    accesskey="x"
+                    class="cancel"
+                    title="<__trans phrase="Cancel (x)">"
+                    ><__trans phrase="Cancel"></button>
+            </form>
+        </div>
+    </div>
+
+    </div>
+    <mt:include name="dialog/footer.tmpl">
+</mt:Unless>

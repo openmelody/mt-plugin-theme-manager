@@ -1,0 +1,119 @@
+<mt:SetVarBlock name="page_title"><mt:If name="fields_loop">Setup </mt:If><mt:Var name="ts_label"><mt:Unless name="fields_loop"> Applied</mt:Unless></mt:SetVarBlock>
+<mt:SetVarBlock name="html_head" append="1">
+    <link rel="stylesheet" href="<mt:ThemeManagerStaticWebPath>css/app.css" type="text/css" />
+    <link rel="stylesheet" href="<mt:ConfigAssistantStaticWebPath>css/app.css" type="text/css" />
+    <link rel="stylesheet" href="<mt:ConfigAssistantStaticWebPath>colorpicker/css/colorpicker.css" type="text/css" />
+    <script src="<mt:StaticWebPath>jquery/jquery.js" type="text/javascript"></script>
+    <script src="<mt:ConfigAssistantStaticWebPath>js/app.js" type="text/javascript"></script>
+    <script src="<mt:ConfigAssistantStaticWebPath>colorpicker/js/colorpicker.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        /* <![CDATA[ */
+        CMSScriptURI = '<mt:var name="script_url">';
+        /* ]]> */
+    </script>
+    <script type="text/javascript">
+    function save() {
+        // Disable the buttons so the user can't quit mid-application.
+        var buttons = document.getElementsByTagName('button');
+        for(var i=0;i<buttons.length;i++){
+            buttons[i].disabled = 'disabled';
+        }
+        document.getElementById('status').style.display='block';
+        var f = document.forms['save_theme'];
+        f.submit();
+    }
+    </script>
+</mt:SetVarBlock>
+
+<mt:SetVarBlock name="system_msg">
+    <mt:if name="saved">
+        <mtapp:statusmsg
+            id="options-saved"
+            class="success">
+            <__trans phrase="You have saved your theme options.">
+        </mtapp:statusmsg>
+    </mt:if>
+    <mt:if name="missing_required">
+        <mt:loop name="missing_required">
+            <mtapp:statusmsg
+                id="missing-required-field"
+                class="error">
+                The field <mt:Var name="label"> is a required field but has no value. Enter a value and save changes before publishing.
+            </mtapp:statusmsg>
+        </mt:loop>
+    </mt:if>
+</mt:SetVarBlock>
+
+<mt:Include name="dialog/header.tmpl">
+
+<form method="post" action="<mt:Var name="script_url">" name="save_theme">
+    <input type="hidden" name="__mode" value="ca_save_config" />
+<mt:If name="blog_ids">
+    <input type="hidden" name="blog_ids" value="<mt:Var name="blog_ids">" />
+<mt:Else>
+    <input type="hidden" name="blog_id" value="<mt:Var name="blog_id">" />
+</mt:If>
+    <input type="hidden" name="return_args" value="__mode=setup_theme&amp;blog_ids=<mt:Var name="blog_ids">&amp;plugin_sig=<mt:Var name="plugin_sig">&amp;theme_id=<mt:Var name="ts_id">&amp;saved=1" />
+    <input type="hidden" name="plugin_sig" value="<mt:Var name="plugin_sig">" />
+    <input type="hidden" name="magic_token" value="<mt:Var name="magic_token">" />
+    <input type="hidden" name="ts_id" value="<mt:Var name="ts_id">" />
+    <input type="hidden" name="save_widgetsets_beacon" value="<mt:Var name="save_widgetsets_beacon">" />
+
+
+<mt:If name="fields_loop">
+    <p>The <mt:Var name="ts_label"> theme has fields that are marked <em>required</em>. Required fields must be filled-in to make the theme work as intended or publish correctly. All of the below fields are required; after setup is complete be sure to visit Theme Options to set any other fields.</p>
+    <div id="setup-required-fields">
+        <mt:Var name="system_msg">
+        <mt:Loop name="fields_loop">
+          <div id="<mt:Var name="id">-tab-content" class="fieldset-options">
+            <h3><mt:Var name="label"></h3>
+            <mt:Var name="content">
+          </div>
+        </mt:Loop>
+    </div>
+<mt:Else>
+    <p>The theme <mt:Var name="ts_label"> has been applied to this blog. You will need to <a href="javascript:void(0);" title="Publish Site" onclick="doRebuild('<mt:Var name="blog_id">');return false;">republish</a> the blog to see the new theme on your site<mt:If name="options">, though you may want to verify all <mt:Var name="options"> are configured properly first</mt:If>.</p>
+</mt:If>
+    
+    <mt:Loop name="leftovers">
+    <input type="hidden" name="<mt:Var name="name">" value="<mt:Var name="value" encode_html="1">" />
+    </mt:Loop>
+
+    <div id="status">
+        <div id="status-inner">
+            <p>Saving theme options...</p>
+            <img src="<mt:Var name="static_uri">images/indicator.gif" width="66" height="66" border="0" />
+        </div>
+    </div>
+
+    <div class="actions-bar">
+        <div class="actions-bar-inner pkg actions">
+            <mt:If name="fields_loop">
+                <button
+                    onclick="save();"
+                    type="submit"
+                    accesskey="s"
+                    title="<__trans phrase="Save (s)">"
+                    class="primary-button"
+                    ><__trans phrase="Save"></button>
+                <button
+                    onclick="closeDialog(); return false"
+                    type="submit"
+                    accesskey="x"
+                    class="cancel"
+                    title="<__trans phrase="Cancel (x)">"
+                    ><__trans phrase="Cancel"></button>
+            <mt:Else>
+                <button
+                    onclick="window.parent.location.href='<mt:Var name="app_uri"><mt:If name="blog_ids" like=",">?__mode=list_blogs<mt:Else>?__mode=theme_dashboard&blog_id=<mt:Var name="blog_id">&saved=1</mt:If>'; closeDialog(); return false"
+                    type="submit"
+                    class="cancel"
+                    accesskey="x"
+                    title="Close (x)">Close</button>
+            </mt:If>
+        </div>
+    </div>
+
+</form>
+
+<mt:Include name="dialog/footer.tmpl">

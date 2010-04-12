@@ -1,0 +1,28 @@
+<mt:Ignore>
+We need a separate PayPal Donate window because trying to fit the button directly on the "About this Theme" tab causes the theme options to be saved and doesn't actually submit to PayPal.
+
+If all goes well, the user should never see this screen.
+</mt:Ignore>
+
+<mt:SetVarBlock name="page_title">Donate through PayPal</mt:SetVarBlock>
+<mt:Include name="dialog/header.tmpl">
+
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post" name="paypal_donate" target="_blank">
+    <input type="hidden" name="cmd" value="_donations">
+    <input type="hidden" name="business" value="<mt:Var name="paypal_email">">
+    <input type="hidden" name="lc" value="US">
+    <input type="hidden" name="item_name" value="<mt:Var name="theme_label"> theme donation">
+    <input type="hidden" name="cn" value="Add special instructions to the seller">
+    <input type="hidden" name="no_shipping" value="1">
+    <input type="hidden" name="currency_code" value="USD">
+    <input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_SM.gif:NonHosted">
+    <input type="image" src="https://www.paypal.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+    <img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1">
+</form>
+
+<script type="text/javascript">
+    document.forms['paypal_donate'].submit();
+    closeDialog();
+</script>
+
+<mt:Include name="dialog/footer.tmpl">
