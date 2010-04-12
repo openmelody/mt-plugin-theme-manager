@@ -420,7 +420,7 @@ sub setup_theme {
                     my $field_id = $ts_id . '_' . $optname;
                     if ( $types->{ $field->{'type'} } ) {
                         my $value;
-                        my $value = delete $cfg_obj->{$field_id};
+                        $value = delete $cfg_obj->{$field_id};
                         my $out;
                         $field->{fieldset} = '__global' unless defined $field->{fieldset};
                         my $show_label =
@@ -698,7 +698,7 @@ sub _make_mini {
                 'theme_thumbs', $app->blog->id.'.jpg' 
         );
         use MT::Image;
-        my $img = MT::Image->new( Filename => $source_path );
+        my $img = MT::Image->new( Filename => $source_path )
             or return 0;
         my $resized_img = $img->scale( Width => 138 );
         my $fmgr = MT::FileMgr->new('Local')
