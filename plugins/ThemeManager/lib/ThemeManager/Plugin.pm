@@ -47,6 +47,22 @@ sub update_page_actions {
                              },
                 order => 1000,
             },
+            refresh_fields => {
+                label => "Refresh Custom Fields",
+                order => 1010,
+                permission => 'edit_templates',
+                condition => sub {
+                    MT->component('Commercial') && MT->app->blog; 
+                },
+                code => sub {
+                    my ($app) = @_;
+                    $app->validate_magic or return;
+                    my $blog = $app->blog;
+                    _refresh_system_custom_fields($blog);
+                    $app->add_return_arg( fields_refreshed => 1 );
+                    $app->call_return;
+                },
+            },
         },
         theme_dashboard => {
             theme_options => {
@@ -75,17 +91,6 @@ sub update_page_actions {
                     my $app = MT::App->instance;
                     return 1 if eval {$app->registry('template_sets')->{$ts_id}->{templates}->{widgetset}};
                     return 0;
-                },
-            },
-            custom_css => {
-                label => 'Customize Stylesheet',
-                order => 102,
-                mode => 'custom_css_edit',
-                condition => sub {
-                    my $plugin = MT->component('CustomCSS');
-                    return 0 if !$plugin;
-                    require CustomCSS::Plugin;
-                    return CustomCSS::Plugin::uses_custom_css();
                 },
             },
         },
@@ -550,7 +555,7 @@ sub setup_theme {
     $app->load_tmpl('theme_setup.mtml', $param);
 }
 
-sub template_set_change {
+sub _link_templates {
     # Link the templates to the theme.
     my ($cb, $param) = @_;
     my $blog_id = $param->{blog}->id;
@@ -580,6 +585,209 @@ sub template_set_change {
         }
         $tmpl->save;
     }
+}
+
+sub _override_publishing_settings(@_) {
+    my ( $cb, $param ) = @_;
+    my $blog = $param->{blog} or return;
+    $blog->include_cache(1);
+    $blog->save;
+}
+
+sub _set_module_caching_prefs(@_) {
+    my ( $cb, $param ) = @_;
+    my $blog = $param->{blog} or return;
+    
+    my $set_name = $blog->template_set or return;
+    my $set = MT->app->registry( 'template_sets', $set_name )
+        or return;
+    foreach my $m ( keys %{ $set->{templates}->{module} } ) {
+        if ($set->{templates}->{module}->{$m}->{cache}) {
+            my $tmpl = MT->model('template')->load(
+                {
+                    blog_id    => $blog->id,
+                    identifier => $m,
+                }
+                );
+            foreach (qw( expire_type expire_interval expire_event )) {
+                my $var = 'cache_' . $_;
+                my $val = $set->{templates}->{module}->{$m}->{cache}->{$_};
+                $val = ($val * 60) if ($_ eq 'expire_interval');
+                $tmpl->$var($val);
+            }
+            foreach (qw( include_with_ssi )) {
+                $tmpl->$_($set->{templates}->{module}->{$m}->{cache}->{$_});
+            }
+            $tmpl->save;
+        }
+    }
+}
+
+sub _set_archive_map_publish_types {
+    my ( $cb, $param ) = @_;
+    my $blog = $param->{blog} or return;
+    
+    my $set_name = $blog->template_set or return;
+    my $set = MT->app->registry( 'template_sets', $set_name )
+        or return;
+    foreach my $a (qw( archive individual )) {
+        foreach my $t ( keys %{ $set->{templates}->{$a} } ) {
+            foreach
+                my $m ( keys %{ $set->{templates}->{$a}->{$t}->{mappings} } )
+            {
+                my $map = $set->{templates}->{$a}->{$t}->{mappings}->{$m};
+                if ( $map->{build_type} ) {
+                    my $tmpl = MT->model('template')->load(
+                        {
+                            blog_id    => $blog->id,
+                            identifier => $t,
+                        }
+                        );
+                    return unless $tmpl;
+                    my $tm = MT->model('templatemap')->load(
+                        {
+                            blog_id      => $blog->id,
+                            archive_type => $map->{archive_type},
+                            template_id  => $tmpl->id,
+                        }
+                        );
+                    return unless $tm;
+                    $tm->build_type( $map->{build_type} );
+                    $tm->save()
+                        or MT->log(
+                            { message => 'Could not update template map.' } );
+                }
+            }
+        }
+    }
+}
+
+sub _install_template_set_fields {
+    my ($cb, $param ) = @_;
+    my $blog = $param->{blog} or return;
+    return _refresh_system_custom_fields($blog);
+}
+
+sub _refresh_system_custom_fields {
+    my ( $blog ) = @_;
+    return unless MT->component('Commercial');
+    
+    my $set_name = $blog->template_set or return;
+    my $set = MT->app->registry( 'template_sets', $set_name )
+        or return;
+    my $fields = $set->{sys_fields} or return;
+    
+  FIELD: while ( my ( $field_id, $field_data ) = each %$fields ) {
+      next if UNIVERSAL::isa( $field_data, 'MT::Component' );    # plugin                                    
+      
+      my %field = %$field_data;
+      delete @field{qw( blog_id basename )};
+      my $field_name = delete $field{label};
+      my $field_scope = ( delete $field{scope} eq 'system' ? 0 : $blog->id );
+      $field_name = $field_name->() if 'CODE' eq ref $field_name;
+    REQUIRED: for my $required (qw( obj_type tag )) {
+        next REQUIRED if $field{$required};
+        
+        MT->log(
+            {
+                level   => MT->model('log')->ERROR(),
+                blog_id => $field_scope,
+                message => MT->translate(
+                    'Could not install custom field [_1]: field attribute [_2] is required',
+                    $field_id,
+                    $required,
+                    ),
+            }
+            );
+        next FIELD;
+    }
+      # Does the blog have a field with this basename?                                                       
+      my $field_obj = MT->model('field')->load(
+          {
+              blog_id  => $field_scope,
+              basename => $field_id,
+              obj_type => $field_data->{obj_type} || q{},
+          }
+          );
+      
+      if ($field_obj) {
+          
+          # Warn if the type is different.                                                                   
+          MT->log(
+              {
+                  level   => MT->model('log')->WARNING(),
+                  blog_id => $field_scope,
+                  message => MT->translate(
+                      'Could not install custom field [_1] on blog [_2]: the blog already has a field [_1] with a conflicting type',
+                      $field_id,
+                      ),
+              }
+              ) if $field_obj->type ne $field_data->{type};
+          next FIELD;
+      }
+      
+      $field_obj = MT->model('field')->new;
+      $field_obj->set_values(
+          {
+              blog_id  => $field_scope,
+              name     => $field_name,
+              basename => $field_id,
+              %field,
+          }
+          );
+      $field_obj->save() or die $field_obj->errstr();
+  }
+}
+
+sub _install_folders {
+    my ($blog, $struct, $parent) = @_;
+    my $pid = $parent ? $parent->id : 0;
+    foreach my $folder_basename (keys %$struct) {
+        my $f = $struct->{$folder_basename};
+        my $obj = MT->model('folder')->load({ basename => $folder_basename });
+        unless ($obj) {
+            $obj = MT->model('folder')->new;
+            $obj->blog_id( $blog->id );
+            $obj->basename( $folder_basename );
+            $obj->label( &{$f->{label}} );
+            $obj->parent( $pid );
+            $obj->save;
+        }
+        if ($f->{'folders'}) {
+            _install_folders( $blog, $f->{'folders'}, $obj );
+        }
+    }
+}
+
+sub _install_default_content {
+    my ($cb, $param ) = @_;
+    my $blog = $param->{blog} or return;
+    my $set_name = $blog->template_set or return;
+    my $set = MT->app->registry( 'template_sets', $set_name )
+        or return;
+    my $content = $set->{content} or return;
+    foreach my $key (keys %$content) {
+        if ($key eq 'folders') {
+            my $parent = 0;
+            my $folders = $content->{'folders'};
+            _install_folders( $blog, $folders );
+        }
+    }
+}
+
+sub template_set_change {
+    # Install Default Content
+    _install_default_content(@_);
+    # Install Template Set Custom Fields
+    _install_template_set_fields(@_);
+    # Set the publishing preferences for archive mappings
+    _set_archive_map_publish_types(@_);
+    # Set the caching preferences for template modules
+    _set_module_caching_prefs(@_);
+    # Forcibly turn-on module caching for the blog
+    _override_publishing_settings(@_);
+    # Link installed templates to theme files
+    _link_templates(@_);
 }
 
 sub template_filter {
