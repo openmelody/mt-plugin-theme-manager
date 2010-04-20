@@ -601,24 +601,26 @@ sub _set_module_caching_prefs(@_) {
     my $set_name = $blog->template_set or return;
     my $set = MT->app->registry( 'template_sets', $set_name )
         or return;
-    foreach my $m ( keys %{ $set->{templates}->{module} } ) {
-        if ($set->{templates}->{module}->{$m}->{cache}) {
-            my $tmpl = MT->model('template')->load(
-                {
-                    blog_id    => $blog->id,
-                    identifier => $m,
+    foreach my $t (qw( module widget )) {
+        foreach my $m ( keys %{ $set->{templates}->{$t} } ) {
+            if ($set->{templates}->{$t}->{$m}->{cache}) {
+                my $tmpl = MT->model('template')->load(
+                    {
+                        blog_id    => $blog->id,
+                        identifier => $m,
+                    }
+                    );
+                foreach (qw( expire_type expire_interval expire_event )) {
+                    my $var = 'cache_' . $_;
+                    my $val = $set->{templates}->{$t}->{$m}->{cache}->{$_};
+                    $val = ($val * 60) if ($_ eq 'expire_interval');
+                    $tmpl->$var($val);
                 }
-                );
-            foreach (qw( expire_type expire_interval expire_event )) {
-                my $var = 'cache_' . $_;
-                my $val = $set->{templates}->{module}->{$m}->{cache}->{$_};
-                $val = ($val * 60) if ($_ eq 'expire_interval');
-                $tmpl->$var($val);
+                foreach (qw( include_with_ssi )) {
+                    $tmpl->$_($set->{templates}->{$t}->{$m}->{cache}->{$_});
+                }
+                $tmpl->save;
             }
-            foreach (qw( include_with_ssi )) {
-                $tmpl->$_($set->{templates}->{module}->{$m}->{cache}->{$_});
-            }
-            $tmpl->save;
         }
     }
 }
@@ -655,9 +657,34 @@ sub _set_archive_map_publish_types {
                     $tm->build_type( $map->{build_type} );
                     $tm->save()
                         or MT->log(
-                            { message => 'Could not update template map.' } );
+                            { message => "Could not update template map for template $t." } );
                 }
             }
+        }
+    }
+}
+
+sub _set_index_publish_type {
+    my ($cb, $param) = @_;
+    my $blog = $param->{blog} or return;
+    
+    my $set_name = $blog->template_set or return;
+    my $set = MT->app->registry( 'template_sets', $set_name )
+        or return;
+    
+    foreach my $t ( keys %{ $set->{templates}->{index} } ) {
+        if ( $set->{templates}->{index}->{$t}->{build_type} ) {
+            my $tmpl = MT->model('template')->load(
+                {
+                    blog_id    => $blog->id,
+                    identifier => $t,
+                }
+                );
+            return unless $tmpl;
+            $tmpl->build_type( $set->{templates}->{index}->{$t}->{build_type} );
+            $tmpl->save()
+                or MT->log(
+                    { message => "Could not update template map for template $t." } );
         }
     }
 }
@@ -794,7 +821,9 @@ sub template_set_change {
     _install_template_set_fields(@_);
     # Set the publishing preferences for archive mappings
     _set_archive_map_publish_types(@_);
-    # Set the caching preferences for template modules
+    # Set the publishing preferences for index templates
+    _set_index_publish_type(@_);
+    # Set the caching preferences for template modules and widgets
     _set_module_caching_prefs(@_);
     # Forcibly turn-on module caching for the blog
     _override_publishing_settings(@_);

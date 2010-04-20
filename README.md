@@ -158,6 +158,94 @@ Dashboard, too, by specifying the additions as Page Actions targeted to the
 Of course, the code, mode or dialog being added needs to be created, but 
 that's beyond the scope of this document.
 
+## Designers: Additional Template Settings
+
+Theme Manager allows you to specify some additional keys for templates: 
+providing the ability to specify the publishing type, caching preferences for 
+modules, and better handling of custom fields. Refer to the example YAML below 
+to use these keys.
+
+* `build_type` - the build type (or publishing method) can be specified 
+  for both index and archive templates. Specifying the `build_type` of 
+  templates is a great way to control what is republished when; look at the 
+  Publishing Profiles (in Design > Templates) for inspiration about the 
+  benefits of specifying this option for each template. Numerals 0-4 are valid 
+  `build_type` values, corresponding to the options listed below:
+    * 0: Do Not Publish
+    * 1: Static (the default method)
+    * 2: Manually
+    * 3: Dynamically
+    * 4: Publish Queue
+
+Caching options can also be specified for Template Modules and Widgets with 
+the following keys (if you've used the UI to set caching, these options should 
+all be familiar). Module Caching must be enabled at the blog level (check this 
+in Preferences > Publishing).
+
+* `cache` - the parent key to the below options
+* `expire_type` - 
+    * 0: No caching (the default method)
+    * 1: time-based expiration ("Expire after *x* minutes")
+    * 2: event-based expiration ("Expire upon creation or modification of 
+      object")
+* `expire_interval` - This key is used only if `expire_type: 1` is used. 
+  Specify a time to expire in minutes.
+* `expire_event` - This key is used only if `expire_type: 2` is used. Specify
+  a valid object to cause expiration. Valid objects are as follows:
+    * asset
+    * author
+    * category
+    * comment
+    * entry
+    * folder
+    * page
+    * tbping
+
+Another import aspect to caching is using "includes." The key 
+`include_with_ssi` allows the specified module or widget to be included as an 
+external file, saving server resources and making it easy to keep content 
+updated site-wide. Possible values are `1` and `0` (the default). Within the 
+UI, this option corresponds to the "Process as [SSI method] include." Server 
+Side Includes must be enabled at the blog level (check this in Preferences > 
+Publishing).
+
+    name: Awesomeness
+    version: 1.0
+    template_sets:
+        my_awesome_theme:
+            base_path: 'templates'
+            label: 'My Awesome Theme'
+        templates:
+            index:
+                main_index:
+                    main_index:
+                        label: 'Main Index'
+                        outfile: index.html
+                        rebuild_me: 1
+                        build_type: 1
+            archive:
+                category_archive:
+                    label: 'Category Archive'
+                    mappings:
+                        category:
+                            archive_type: Category
+                            file_template: %c/%f
+                            preferred: 1
+                            build_type: 4
+            module:
+                recent_entries:
+                    label: 'Recent Entries'
+                    cache:
+                        expire_type: 2
+                        expire_event: entry
+            widget:
+                awesomeness_factor:
+                    label: 'My Awesomeness Factor'
+                    cache:
+                        expire_type: 1
+                        expire_interval: 30
+                        include_with_ssi: 1
+
 # Acknowledgements
 
 This plugin was commissioned by Endevver to Dan Wolfgang of uiNNOVATIONS. Endevver is proud to be partners with uiNNOVATIONS.
