@@ -739,24 +739,32 @@ sub _refresh_system_custom_fields {
   }
 }
 
-sub _install_folders {
-    my ($blog, $struct, $parent) = @_;
+sub _install_containers {
+    my ($model, $key, $blog, $struct, $parent) = @_;
     my $pid = $parent ? $parent->id : 0;
-    foreach my $folder_basename (keys %$struct) {
-        my $f = $struct->{$folder_basename};
-        my $obj = MT->model('folder')->load({ basename => $folder_basename });
+    foreach my $basename (keys %$struct) {
+        my $c = $struct->{$basename};
+        my $obj = MT->model($model)->load({ basename => $basename });
         unless ($obj) {
-            $obj = MT->model('folder')->new;
+            $obj = MT->model($model)->new;
             $obj->blog_id( $blog->id );
-            $obj->basename( $folder_basename );
-            $obj->label( &{$f->{label}} );
+            $obj->basename( $basename );
+            $obj->label( &{$c->{label}} );
             $obj->parent( $pid );
             $obj->save;
         }
-        if ($f->{'folders'}) {
-            _install_folders( $blog, $f->{'folders'}, $obj );
+        if ($c->{'folders'}) {
+            _install_containers( $model, $blog, $c->{$key}, $obj );
         }
     }
+}
+
+sub _install_categories {
+    return _install_containers('category','categories',@_);
+}
+
+sub _install_folders {
+    return _install_containers('folder','folders',@_);
 }
 
 sub _install_default_content {
@@ -771,6 +779,10 @@ sub _install_default_content {
             my $parent = 0;
             my $folders = $content->{'folders'};
             _install_folders( $blog, $folders );
+        } elsif ($key eq 'categories') {
+            my $parent = 0;
+            my $cats = $content->{'categories'};
+            _install_categories( $blog, $cats );
         }
     }
 }
