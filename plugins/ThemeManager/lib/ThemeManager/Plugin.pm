@@ -899,9 +899,9 @@ sub _make_thumbnail {
         );
         if (!-d $dir) {
             my $fmgr = MT::FileMgr->new('Local')
-                or return MT::FileMgr->errstr;
+                or return $app->error( MT::FileMgr->errstr );
             $fmgr->mkpath($dir)
-                or return MT::FileMgr->errstr;
+                or return $app->error( MT::FileMgr->errstr );
         }
         # Now build and cache the thumbnail URL
         # This is done with thumbalizr.com, a free online screenshot service.
