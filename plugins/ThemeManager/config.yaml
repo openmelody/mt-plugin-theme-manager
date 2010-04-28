@@ -13,6 +13,8 @@ applications:
         menus: $ThemeManager::ThemeManager::Plugin::update_menus
         methods:
             paypal_donate:    $ThemeManager::ThemeManager::Plugin::paypal_donate
+            list_template:    $ThemeManager::ThemeManager::Plugin::list_templates
+            tm.rebuild_tmpl:  $ThemeManager::ThemeManager::Plugin::rebuild_tmpl
             edit_templates:   $ThemeManager::ThemeManager::Plugin::edit_templates
             unlink_templates: $ThemeManager::ThemeManager::Plugin::unlink_templates
             select_theme:     $ThemeManager::ThemeManager::Plugin::select_theme
