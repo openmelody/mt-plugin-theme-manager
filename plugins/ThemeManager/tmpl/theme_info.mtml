@@ -2,6 +2,12 @@
 
 <mt:SetVarBlock name="html_head" append="1">
     <link rel="stylesheet" href="<mt:ThemeManagerStaticWebPath>css/app.css" type="text/css" />
+    <script type="text/javascript">
+    function applyTheme() {
+        document.getElementById('status').style.display='block';
+    }
+    </script>
+    
 </mt:SetVarBlock>
 
 <mt:include name="dialog/header.tmpl">
@@ -27,7 +33,7 @@
         <div class="actions-bar-inner pkg actions">
                 <button
                     type="submit"
-                    onclick="document.getElementById('status').style.display='block';this.submit();"
+                    onclick="applyTheme();"
                     accesskey="s"
                     title="<__trans phrase="Apply (s)">"
                     class="primary-button"
