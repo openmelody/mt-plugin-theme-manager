@@ -11,8 +11,7 @@ sub update_menus {
     my $blog_id = $app->param('blog_id');
     if ($blog_id) {
         # Any linked templates?
-        use MT::Template;
-        my $linked_tmpl = MT::Template->load(
+        my $linked_tmpl = MT->model('template')->load(
                             { blog_id     => $blog_id,
                               linked_file => '*', });
         # If there are linked templates, then remove the Templates menu.
@@ -123,8 +122,7 @@ sub theme_dashboard {
 
     # Are the templates linked? We use this to show/hide the Edit/View
     # Templates links.
-    use MT::Template;
-    my $linked = MT::Template->load(
+    my $linked = MT->model('template')->load(
                         { blog_id     => $app->blog->id,
                           linked_file => '*', });
     if ($linked) {
@@ -138,7 +136,7 @@ sub theme_dashboard {
         # the created_on and modified_on dates.
         # So, first grab templates in the current blog that are not 
         # backups and that have had modifications made (modified_on col).
-        my $iter = MT::Template->load_iter(
+        my $iter = MT->model('template')->load_iter(
                         { blog_id    => $app->blog->id,
                           type => {not_like => 'backup'},
                           modified_on => {not_null => 1}, });
@@ -161,7 +159,8 @@ sub theme_dashboard {
     # Set the number of items to appear on the theme grid. 6 fit, so that's
     # what it's set to here. However, if unset, it defaults to 25!
     my $list_pref = $app->list_pref('theme') if $app->can('list_pref');
-    $list_pref->{rows} = 12;
+    # Hack by Byrne to turn off pagination
+    $list_pref->{rows} = 999;
 
     my $tm_plugin = MT->component('ThemeManager');
     my $tmpl = $tm_plugin->load_tmpl('theme_dashboard.mtml');
@@ -327,8 +326,7 @@ sub setup_theme {
             my $cur_ts_widgetsets = 
                 $cur_ts_plugin->{registry}->{'template_sets'}->{$cur_ts_id}->{'templates'}->{'widgetset'};
 
-            use MT::Template;
-            my @widgetsets = MT::Template->load({ type    => 'widgetset', 
+            my @widgetsets = MT->model('template')->load({ type    => 'widgetset', 
                                                   blog_id => $blog_id, });
             foreach my $widgetset (@widgetsets) {
                 # Widget Sets from the currently-used template set need to be built.
@@ -349,7 +347,7 @@ sub setup_theme {
             # Now we need to check the Widgets. Here we can just look for
             # unlinked templates. *Any* unlinked template will definitely
             # be replaced, and the user may want to save them.
-            my @widgets = MT::Template->load(
+            my @widgets = MT->model('template')->load(
                                      { type        => 'widget',
                                        blog_id     => $blog_id, }
                                     );
@@ -568,8 +566,7 @@ sub _link_templates {
     
     # Grab all of the templates except the Widget Sets, because the user
     # should be able to edit (drag-drop) those all the time.
-    use MT::Template;
-    my $iter = MT::Template->load_iter({ blog_id => $blog_id,
+    my $iter = MT->model('template')->load_iter({ blog_id => $blog_id,
                                          type    => {not => 'backup'}, });
     while ( my $tmpl = $iter->() ) {
         if (
@@ -706,7 +703,6 @@ sub _refresh_system_custom_fields {
     
   FIELD: while ( my ( $field_id, $field_data ) = each %$fields ) {
       next if UNIVERSAL::isa( $field_data, 'MT::Component' );    # plugin                                    
-      
       my %field = %$field_data;
       delete @field{qw( blog_id basename )};
       my $field_name = delete $field{label};
@@ -754,6 +750,8 @@ sub _refresh_system_custom_fields {
       }
       
       $field_obj = MT->model('field')->new;
+      use Data::Dumper;
+      MT->log("Setting fields: " . Dumper(%field));
       $field_obj->set_values(
           {
               blog_id  => $field_scope,
@@ -780,8 +778,8 @@ sub _install_containers {
             $obj->parent( $pid );
             $obj->save;
         }
-        if ($c->{'folders'}) {
-            _install_containers( $model, $blog, $c->{$key}, $obj );
+        if ($c->{$key}) {
+            _install_containers( $model, $key, $blog, $c->{$key}, $obj );
         }
     }
 }
@@ -851,8 +849,7 @@ sub template_filter {
         if ( $tmpl->{'type'} eq 'widgetset' ) {
             if ( $app->param('save_widgetsets') ) {
                 # Try to count a Widget Set in this blog with the same identifier.
-                use MT::Template;
-                my $installed = MT::Template->load( { blog_id    => $blog_id,
+                my $installed = MT->model('template')->load( { blog_id    => $blog_id,
                                                        type       => 'widgetset',
                                                        identifier => $tmpl->{'identifier'}, } );
                 # If a Widget Set by this name was found, remove the template from the
@@ -866,8 +863,7 @@ sub template_filter {
         }
         elsif ( $app->param('save_widgets') && $tmpl->{'type'} eq 'widget' ) {
             # Try to count a Widget in this blog with the same identifier.
-            use MT::Template;
-            my $installed = MT::Template->count( { blog_id    => $blog_id,
+            my $installed = MT->model('template')->count( { blog_id    => $blog_id,
                                                    type       => 'widget',
                                                    identifier => $tmpl->{'identifier'}, } );
             # If a Widget by this name was found, remove the template from the
@@ -1249,6 +1245,251 @@ sub _theme_check {
             }
         }
     }
+}
+
+sub rebuild_tmpl {
+    my $app = shift;
+    my $blog = $app->blog;
+    my $result = 0;
+    my $templates = MT->model('template')->lookup_multi([ $app->param('id') ]);
+  TEMPLATE: for my $tmpl (@$templates) {
+      next TEMPLATE if !defined $tmpl;
+      next TEMPLATE if $tmpl->blog_id != $blog->id;
+      next TEMPLATE unless $tmpl->build_type;
+      
+      $result = $app->rebuild_indexes(
+          Blog     => $blog,
+          Template => $tmpl,
+          Force    => 1,
+      );
+    }
+    return _send_json_response( $app, { success => $result } );
+}
+
+
+sub _send_json_response {
+    my ( $app, $result ) = @_;
+    require JSON;
+    my $json = JSON::objToJson($result);
+    $app->send_http_header("");
+    $app->print($json);
+    return $app->{no_print_body} = 1;
+    return undef;
+}
+
+# Copied from MT::CMS::Template::list
+sub list_templates {
+    my $app = shift;
+
+    my $perms = $app->blog ? $app->permissions : $app->user->permissions;
+    return $app->return_to_dashboard( redirect => 1 )
+      unless $perms || $app->user->is_superuser;
+    if ( $perms && !$perms->can_edit_templates ) {
+        return $app->return_to_dashboard( permission => 1 );
+    }
+    my $blog = $app->blog;
+
+    require MT::Template;
+    my $blog_id = $app->param('blog_id') || 0;
+    my $terms = { blog_id => $blog_id };
+    my $args  = { sort    => 'name' };
+
+    my $hasher = sub {
+        my ( $obj, $row ) = @_;
+        my $template_type;
+        my $type = $row->{type} || '';
+        if ( $type =~ m/^(individual|page|category|archive)$/ ) {
+            $template_type = 'archive';
+            # populate context with templatemap loop
+            my $tblog = $obj->blog_id == $blog->id ? $blog : MT::Blog->load( $obj->blog_id );
+            if ($tblog) {
+                require MT::CMS::Template;
+                $row->{archive_types} = MT::CMS::Template::_populate_archive_loop( $app, $tblog, $obj );
+            }
+        }
+        elsif ( $type eq 'widget' ) {
+            $template_type = 'widget';
+        }
+        elsif ( $type eq 'index' ) {
+            $template_type = 'index';
+        }
+        elsif ( $type eq 'custom' ) {
+            $template_type = 'module';
+        }
+        elsif ( $type eq 'email' ) {
+            $template_type = 'email';
+        }
+        elsif ( $type eq 'backup' ) {
+            $template_type = 'backup';
+        }
+        else {
+            $template_type = 'system';
+        }
+        $row->{use_cache} = ( ($obj->cache_expire_type || 0) != 0 ) ? 1 : 0;
+        $row->{template_type} = $template_type;
+        $row->{type} = 'entry' if $type eq 'individual';
+        $row->{status} = 'Foo';
+
+        if (my $lfile = $obj->linked_file) { 
+            # TODO - Change use to require
+            use String::CRC::Cksum qw(cksum);
+            my ($cksum1, $size1) = cksum( $obj->MT::Object::text() ); 
+            my ($cksum2, $size2) = cksum( $obj->_sync_from_disk() );
+            $row->{has_changed} = ($cksum1 ne $cksum2);
+#            $row->{has_changed} = ($obj->text eq $obj->MT::Object::text());
+        }
+        
+        my $published_url = $obj->published_url;
+        $row->{published_url} = $published_url if $published_url;
+    };
+
+    my $params        = {};
+    my $filter = $app->param('filter_key');
+    my $template_type = $filter || '';
+    $template_type =~ s/_templates//;
+
+    $params->{screen_class} = "list-template";
+    $params->{listing_screen} = 1;
+
+    $app->load_list_actions( 'template', $params );
+    $params->{page_actions} = $app->page_actions('list_templates');
+    $params->{search_label} = $app->translate("Templates");
+    $params->{object_type} = 'template';
+    $params->{blog_view} = 1;
+    $params->{refreshed} = $app->param('refreshed');
+    $params->{published} = $app->param('published');
+    $params->{saved_copied} = $app->param('saved_copied');
+    $params->{saved_deleted} = $app->param('saved_deleted');
+    $params->{saved} = $app->param('saved');
+
+    # determine list of system template types:
+    my $scope;
+    my $set;
+    if ( $blog ) {
+        $set   = $blog->template_set;
+        $scope = 'system';
+    }
+    else {
+        $scope = 'global:system';
+    }
+    my @tmpl_path = ( $set && ($set ne 'mt_blog')) ? ("template_sets", $set, 'templates', $scope) : ("default_templates", $scope);
+    my $sys_tmpl = MT->registry(@tmpl_path) || {};
+
+    my @tmpl_loop;
+    my %types;
+    if ($template_type ne 'backup') {
+        if ($blog) {
+            # blog template listings
+            %types = ( 
+                'index' => {
+                    label => $app->translate("Index Templates"),
+                    type => 'index',
+                    order => 100,
+                },
+                'archive' => {
+                    label => $app->translate("Archive Templates"),
+                    type => ['archive', 'individual', 'page', 'category'],
+                    order => 200,
+                },
+                'module' => {
+                    label => $app->translate("Template Modules"),
+                    type => 'custom',
+                    order => 300,
+                },
+                'system' => {
+                    label => $app->translate("System Templates"),
+                    type => [ keys %$sys_tmpl ],
+                    order => 400,
+                },
+            );
+        } else {
+            # global template listings
+            %types = ( 
+                'module' => {
+                    label => $app->translate("Template Modules"),
+                    type => 'custom',
+                    order => 100,
+                },
+                'email' => {
+                    label => $app->translate("Email Templates"),
+                    type => 'email',
+                    order => 200,
+                },
+                'system' => {
+                    label => $app->translate("System Templates"),
+                    type => [ keys %$sys_tmpl ],
+                    order => 300,
+                },
+            );
+        }
+    } else {
+        # global template listings
+        %types = ( 
+            'backup' => {
+                label => $app->translate("Template Backups"),
+                type => 'backup',
+                order => 100,
+            },
+        );
+    }
+    my @types = sort { $types{$a}->{order} <=> $types{$b}->{order} } keys %types;
+    if ($template_type) {
+        @types = ( $template_type );
+    }
+    $app->delete_param('filter_key') if $filter;
+    foreach my $tmpl_type (@types) {
+        if ( $tmpl_type eq 'index' ) {
+            $app->param( 'filter_key', 'index_templates' );
+        }
+        elsif ( $tmpl_type eq 'archive' ) {
+            $app->param( 'filter_key', 'archive_templates' );
+        }
+        elsif ( $tmpl_type eq 'system' ) {
+            $app->param( 'filter_key', 'system_templates' );
+        }
+        elsif ( $tmpl_type eq 'email' ) {
+            $app->param( 'filter_key', 'email_templates' );
+        }
+        elsif ( $tmpl_type eq 'module' ) {
+            $app->param( 'filter_key', 'module_templates' );
+        }
+        my $tmpl_param = {};
+        unless ( exists($types{$tmpl_type}->{type})
+          && 'ARRAY' eq ref($types{$tmpl_type}->{type})
+          && 0 == scalar(@{$types{$tmpl_type}->{type}}) )
+        {
+            $terms->{type} = $types{$tmpl_type}->{type};
+            $tmpl_param = $app->listing(
+                {
+                    type     => 'template',
+                    terms    => $terms,
+                    args     => $args,
+                    no_limit => 1,
+                    no_html  => 1,
+                    code     => $hasher,
+                }
+            );
+        }
+        my $template_type_label = $types{$tmpl_type}->{label};
+        $tmpl_param->{template_type} = $tmpl_type;
+        $tmpl_param->{template_type_label} = $template_type_label;
+        push @tmpl_loop, $tmpl_param;
+    }
+    if ($filter) {
+        $params->{filter_key} = $filter;
+        $params->{filter_label} = $types{$template_type}{label}
+            if exists $types{$template_type};
+        $app->param('filter_key', $filter);
+    } else {
+        # restore filter_key param (we modified it for the
+        # sake of the individual table listings)
+        $app->delete_param('filter_key');
+    }
+
+    $params->{template_type_loop} = \@tmpl_loop;
+    $params->{screen_id} = "list-template";
+
+    return $app->load_tmpl('list_template.tmpl', $params);
 }
 
 1;
