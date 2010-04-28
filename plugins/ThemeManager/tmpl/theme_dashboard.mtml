@@ -21,6 +21,13 @@
                 <__trans phrase="You have applied a new theme.">
             </mtapp:statusmsg>
         </mt:If>
+        <mt:If name="theme_thumbs_path">
+            <mtapp:statusmsg
+                id="theme_thumbs_path"
+                class="error">
+                <__trans phrase="The directory for storing theme thumbnails is not writable. In order to display a preview of the current theme on your site, please make the following directory writable by your web server: [_1]" params="<mt:Var name="theme_thumbs_path">">
+            </mtapp:statusmsg>
+        </mt:If>
     </mt:SetVarBlock>
 
     <mt:SetVarBlock name="content_nav">
