@@ -117,7 +117,17 @@ sub theme_dashboard {
     $param->{theme_version}     = ThemeManager::Util::theme_version($ts, $plugin);
     $param->{paypal_email}      = ThemeManager::Util::theme_paypal_email($ts, $plugin);
     $param->{about_designer}    = ThemeManager::Util::about_designer($ts, $plugin);
-    $param->{theme_thumb_url}   = _make_thumbnail();
+    
+    my $dest_path = File::Spec->catfile( 
+        $app->config('StaticFilePath'), 'support', 'plugins', 'ThemeManager', 
+            'theme_thumbs'
+    );
+    if ( -w $dest_path ) {
+        $param->{theme_thumb_url}   = _make_thumbnail();
+    }
+    else {
+        $param->{theme_thumbs_path} = $dest_path;
+    }
     $param->{theme_mini}        = _make_mini();
     
 
