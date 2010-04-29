@@ -1,202 +1,205 @@
-<mt:Unless name="json">
-    <mt:SetVarBlock name="page_title">Theme: <mt:Var name="theme_label"></mt:SetVarBlock>
-    <mt:SetVarBlock name="html_title">Theme Dashboard: <mt:Var name="theme_label"></mt:SetVarBlock>
-    <mt:SetVarBlock name="system_msg">
-    </mt:SetVarBlock>
+<mt:SetVarBlock name="page_title"><mt:Var name="theme_label">: About this Theme</mt:SetVarBlock>
+<mt:SetVarBlock name="html_title">Theme Dashboard: <mt:Var name="theme_label"></mt:SetVarBlock>
+<mt:SetVarBlock name="system_msg">
+</mt:SetVarBlock>
 
-    <mt:SetVarBlock name="html_head" append="1">
-        <link rel="stylesheet" href="<mt:StaticWebPath>support/plugins/ThemeManager/css/app.css" type="text/css" />
-        <script src="<mt:StaticWebPath>jquery/jquery.js" type="text/javascript"></script>
-        <script src="<mt:StaticWebPath>support/plugins/ThemeManager/js/app.js" type="text/javascript"></script>
+<mt:SetVarBlock name="html_head" append="1">
+    <link rel="stylesheet" href="<mt:StaticWebPath>support/plugins/ThemeManager/css/app.css" type="text/css" />
+    <script src="<mt:StaticWebPath>jquery/jquery.js" type="text/javascript"></script>
+    <script src="<mt:StaticWebPath>support/plugins/ThemeManager/js/app.js" type="text/javascript"></script>
 
-        <script type="text/javascript">
-        </script>
-    </mt:SetVarBlock>
+    <script type="text/javascript">
+    </script>
+</mt:SetVarBlock>
 
-    <mt:SetVarBlock name="system_msg">
-        <mt:If name="new_theme">
-            <mtapp:statusmsg
-                id="new-theme"
-                class="success">
-                <__trans phrase="You have applied a new theme.">
-            </mtapp:statusmsg>
-        </mt:If>
-        <mt:If name="theme_thumbs_path">
-            <mtapp:statusmsg
-                id="theme_thumbs_path"
-                class="error">
-                <__trans phrase="The directory for storing theme thumbnails is not writable. In order to display a preview of the current theme on your site, please make the following directory writable by your web server: [_1]" params="<mt:Var name="theme_thumbs_path">">
-            </mtapp:statusmsg>
-        </mt:If>
-    </mt:SetVarBlock>
+<mt:SetVarBlock name="system_msg">
+    <mt:If name="new_theme">
+        <mtapp:statusmsg
+            id="new-theme"
+            class="success">
+            <__trans phrase="You have applied a new theme.">
+        </mtapp:statusmsg>
+    </mt:If>
+    <mt:If name="theme_thumbs_path">
+        <mtapp:statusmsg
+            id="theme_thumbs_path"
+            class="error">
+            <__trans phrase="The directory for storing theme thumbnails is not writable. In order to display a preview of the current theme on your site, please make the following directory writable by your web server: [_1]" params="<mt:Var name="theme_thumbs_path">">
+        </mtapp:statusmsg>
+    </mt:If>
+</mt:SetVarBlock>
 
-    <mt:SetVarBlock name="content_nav">
-        <mt:Ignore> Is it necessary to display the mini? Looks like of redundant 
-                    with the big preview right there next to it.
-        <div id="mini">
-            <a href="<mt:Var name="script_uri">?__mode=theme_dashboard&blog_id=<mt:Var name="blog_id">" title="Visit the Theme Dashboard"><img src="<mt:Var name="theme_mini">" width="138" height="112" /></a>
+<mt:SetVarBlock name="content_nav">
+    <mt:Ignore> Is it necessary to display the mini? Looks kind of redundant 
+                with the big preview right there next to it.
+    <div id="mini">
+        <a href="<mt:Var name="script_uri">?__mode=theme_dashboard&blog_id=<mt:Var name="blog_id">" title="Visit the Theme Dashboard"><img src="<mt:Var name="theme_mini">" width="138" height="112" /></a>
+    </div>
+    </mt:Ignore>
+    <ul>
+        <li class="about-tab active"><a href="javascript:void(0);" id="about-tab"><b>About this Theme</b></a></li>
+        <li class="customize-tab"><a href="javascript:void(0);" id="customize-tab"><b>Customize this Theme</b></a></li>
+        <li class="apply-theme-tab"><a href="javascript:void(0);" id="apply-theme-tab"><b>Apply a new Theme</b></a></li>
+    </ul>
+</mt:SetVarBlock>
+
+
+<mt:include name="include/header.tmpl">
+
+<mt:Ignore> The #theme-label is used with the page JS to create h2#page-title </mt:Ignore>
+<div id="theme-label"><mt:Var name="theme_label"></div>
+
+
+<div id="about-tab-content">
+    <mt:If name="theme_thumb_url">
+        <div id="theme-thumb">
+            <mt:Ignore> theme_thumb_url is a complete img tag. </mt:Ignore>
+            <mt:Var name="theme_thumb_url">
         </div>
-        </mt:Ignore>
-        <ul>
-            <li class="about-tab active"><a href="javascript:void(0);" id="about-tab"><b>About this Theme</b></a></li>
-            <li class="customize-tab"><a href="javascript:void(0);" id="customize-tab"><b>Customize this Theme</b></a></li>
-            <li class="apply-theme-tab"><a href="javascript:void(0);" id="apply-theme-tab"><b>Apply a new Theme</b></a></li>
+    </mt:If>
+
+    <h3>About this Theme</h3>
+
+        <p id="theme-label">
+            <mt:Var name="theme_label"><mt:If name="theme_version">,
+                <span class="theme_version">version <mt:Var name="theme_version"></span>
+            </mt:If>
+        </p>
+    <mt:If name="theme_description">
+        <div id="theme-description"><mt:Var name="theme_description"></div>
+    </mt:If>
+        <ul id="theme-links">
+        <mt:If name="theme_doc_link">
+            <li>
+                <a href="<mt:Var name="theme_doc_link">" 
+                    title="Documentation for <mt:Var name="theme_label">" 
+                    class="icon-mini-left icon-mini-docs">
+                    Documentation</a>
+            </li>
+        </mt:if>
+        <mt:If name="theme_link">
+            <li>
+                <a href="<mt:Var name="theme_link">" 
+                    title="More about <mt:Var name="theme_label">" 
+                    class="icon-mini-left icon-mini-view-site">
+                    Theme Home</a>
+            </li>
+        </mt:If>
+        <mt:If name="theme_author_link">
+            <li>
+                <a href="<mt:Var name="theme_author_link">" 
+                    title="Designer of <mt:Var name="theme_label">" 
+                    class="icon-mini-left icon-mini-view-site">
+                    <mt:Var name="theme_author_name"></a>
+            </li>
+        <mt:Else>
+            <li>
+                <mt:Var name="theme_author_name">
+            </li>
+        </mt:If>
         </ul>
-    </mt:SetVarBlock>
 
+    <mt:If name="about_designer">
+        <div id="about-designer-container">
+            <mt:Var name="about_designer">
+        </div>
+    </mt:If>
 
-    <mt:include name="include/header.tmpl">
+    <mt:If name="paypal_email">
+        <div id="paypal-donate-container">
+            <a href="javascript:void(0);" onclick="return openDialog(null, 'paypal_donate', 
+                'theme_label=<mt:Var name="theme_label" escape_js="1">&paypal_email=<mt:Var name="paypal_email" 
+                escape_js="1">')">
+                <img src="https://www.paypal.com/en_US/i/btn/btn_donate_SM.gif" />
+            </a>
+        </div>
+        <p>Support <mt:Var name="theme_author_name"> and the <mt:Var name="theme_label"> theme by making a donation to them through PayPal:
+        </p>
+    </mt:If>
+</div>
 
-    <div id="about-tab-content">
-        <mt:If name="theme_thumb_url">
-            <div id="theme-thumb">
-                <mt:Ignore> theme_thumb_url is a complete img tag. </mt:Ignore>
-                <mt:Var name="theme_thumb_url">
-            </div>
-        </mt:If>
+<div id="customize-tab-content">
+    <mt:If name="theme_thumb_url">
+        <div id="theme-thumb">
+            <mt:Ignore> theme_thumb_url is a complete img tag. </mt:Ignore>
+            <mt:Var name="theme_thumb_url">
+        </div>
+    </mt:If>
 
-        <h3>About this Theme</h3>
-
-            <p id="theme-label">
-                <mt:Var name="theme_label"><mt:If name="theme_version">,
-                    <span class="theme_version">version <mt:Var name="theme_version"></span>
+    <mt:If name="page_actions">
+        <h3>Customize this Theme</h3>
+        <ul>
+        <mt:Loop name="page_actions">
+            <li class="icon-mini-left icon-mini-settings">
+                <a href="<mt:Var name="link" escape="html">&amp;blog_id=<mt:Var name="blog_id">"
+                    <mt:If name="continue_prompt"> onclick="return confirm('<mt:var name="continue_prompt" escape="js">');"</mt:If>>
+                        <mt:Var name="label">
+                </a>
+            </li>
+        </mt:Loop>
+        </ul>
+    </mt:If>
+    <div id="advanced-options">
+        <h3>Advanced Options</h3>
+        <ul>
+        <mt:If name="linked_theme">
+            <li>
+                <a href="<mt:Var name="script_uri">?__mode=list&_type=template&blog_id=<mt:Var name="blog_id">" 
+                    title="View this theme's templates" 
+                    class="icon-mini-left icon-mini-templates">View Templates</a>
+            </li>
+            <li>
+                <a href="javascript:void(0);" onclick="return openDialog(null, 'edit_templates', 
+                    '&blog_id=<mt:Var name="blog_id">')" title="Edit this theme's templates"
+                    class="icon-mini-left icon-mini-templates">Edit Templates</a>
+            </li>
+        <mt:Else>
+            <li>
+                <a href="<mt:Var name="script_uri">?__mode=list&_type=template&blog_id=<mt:Var name="blog_id">" 
+                    title="Edit this theme's templates" 
+                    class="icon-mini-left icon-mini-templates">Edit Templates</a>
+                <mt:If name="templates_modified">
+                <span class="templates-modified">The templates for this theme have been modified.</span>
                 </mt:If>
-            </p>
-        <mt:If name="theme_description">
-            <div id="theme-description"><mt:Var name="theme_description"></div>
+            </li>
         </mt:If>
-            <ul id="theme-links">
-            <mt:If name="theme_doc_link">
-                <li>
-                    <a href="<mt:Var name="theme_doc_link">" 
-                        title="Documentation for <mt:Var name="theme_label">" 
-                        class="icon-mini-left icon-mini-docs">
-                        Documentation</a>
-                </li>
-            </mt:if>
-            <mt:If name="theme_link">
-                <li>
-                    <a href="<mt:Var name="theme_link">" 
-                        title="More about <mt:Var name="theme_label">" 
-                        class="icon-mini-left icon-mini-view-site">
-                        Theme Home</a>
-                </li>
-            </mt:If>
-            <mt:If name="theme_author_link">
-                <li>
-                    <a href="<mt:Var name="theme_author_link">" 
-                        title="Designer of <mt:Var name="theme_label">" 
-                        class="icon-mini-left icon-mini-view-site">
-                        <mt:Var name="theme_author_name"></a>
-                </li>
-            <mt:Else>
-                <li>
-                    <mt:Var name="theme_author_name">
-                </li>
-            </mt:If>
-            </ul>
-
-        <mt:If name="about_designer">
-            <div id="about-designer-container">
-                <mt:Var name="about_designer">
-            </div>
-        </mt:If>
-
-        <mt:If name="paypal_email">
-            <div id="paypal-donate-container">
-                <a href="javascript:void(0);" onclick="return openDialog(null, 'paypal_donate', 
-                    'theme_label=<mt:Var name="theme_label" escape_js="1">&paypal_email=<mt:Var name="paypal_email" 
-                    escape_js="1">')">
-                    <img src="https://www.paypal.com/en_US/i/btn/btn_donate_SM.gif" />
-                </a>
-            </div>
-            <p>Support <mt:Var name="theme_author_name"> and the <mt:Var name="theme_label"> theme by making a donation to them through PayPal:
-            </p>
-        </mt:If>
+        </ul>
     </div>
+</div>
 
-    <div id="customize-tab-content">
-        <mt:If name="theme_thumb_url">
-            <div id="theme-thumb">
-                <mt:Ignore> theme_thumb_url is a complete img tag. </mt:Ignore>
-                <mt:Var name="theme_thumb_url">
-            </div>
-        </mt:If>
-    
-        <mt:If name="page_actions">
-            <h3>Customize this Theme</h3>
-            <ul>
-            <mt:Loop name="page_actions">
-                <li class="icon-mini-left icon-mini-settings">
-                    <a href="<mt:Var name="link" escape="html">&amp;blog_id=<mt:Var name="blog_id">"
-                        <mt:If name="continue_prompt"> onclick="return confirm('<mt:var name="continue_prompt" escape="js">');"</mt:If>>
-                            <mt:Var name="label">
-                    </a>
-                </li>
-            </mt:Loop>
-            </ul>
-        </mt:If>
-        <div id="advanced-options">
-            <h3>Advanced Options</h3>
-            <ul>
-            <mt:If name="linked_theme">
-                <li>
-                    <a href="<mt:Var name="script_uri">?__mode=list&_type=template&blog_id=<mt:Var name="blog_id">" 
-                        title="View this theme's templates" 
-                        class="icon-mini-left icon-mini-templates">View Templates</a>
-                </li>
-                <li>
-                    <a href="javascript:void(0);" onclick="return openDialog(null, 'edit_templates', 
-                        '&blog_id=<mt:Var name="blog_id">')" title="Edit this theme's templates"
-                        class="icon-mini-left icon-mini-templates">Edit Templates</a>
-                </li>
-            <mt:Else>
-                <li>
-                    <a href="<mt:Var name="script_uri">?__mode=list&_type=template&blog_id=<mt:Var name="blog_id">" 
-                        title="Edit this theme's templates" 
-                        class="icon-mini-left icon-mini-templates">Edit Templates</a>
-                    <mt:If name="templates_modified">
-                    <span class="templates-modified">The templates for this theme have been modified.</span>
-                    </mt:If>
-                </li>
-            </mt:If>
-            </ul>
+<div id="apply-theme-tab-content">
+
+    <div id="theme-chooser">
+<mt:Ignore>
+        <h3>Select a Theme</h3>
+        <div class="listing-filter">
+            <div class="listing-filter-inner inner pkg"></div>
         </div>
-    </div>
+</mt:Ignore>
+        <div class="theme-gallery-container">
+            <div class="theme-gallery-container-inner list-data-wrapper-modal list-data">
 
-    <div id="apply-theme-tab-content">
-
-        <div id="theme-chooser">
-            <h3>Select a Theme</h3>
-            <div class="listing-filter">
-                <div class="listing-filter-inner inner pkg"></div>
-            </div>
-
-            <div class="theme-gallery-container">
-                <div class="theme-gallery-container-inner list-data-wrapper-modal list-data">
-</mt:Unless>
-
-    <mtapp:listing type="theme" 
-        default="No themes could be found." 
-        empty_message="No themes could be found.">
-        <div id="<mt:Var name="id">-container" class="ts-container<mt:Unless name="__counter__" op="%" value="4"> last</mt:Unless>">
-            <div class="ts-container-inner">
-                <h3>
-                    <a href="javascript:void(0);" onclick="return openDialog(null, 'theme_info', 'ts_id=<mt:Var name="id">&amp;plugin_sig=<mt:Var name="plugin_sig">&amp;blog_id=<mt:Var name="blog_id">')">
-                        <mt:Var name="label" default="Untitled">
-                    </a>
-                </h3>
+<mtapp:listing type="theme" 
+    default="No themes could be found." 
+    empty_message="No themes could be found."
+    hide_pager="1"
+    show_actions="0">
+    <div id="<mt:Var name="id">-container" class="ts-container<mt:Unless name="__counter__" op="%" value="4"> last</mt:Unless>">
+        <div class="ts-container-inner">
+            <h3>
                 <a href="javascript:void(0);" onclick="return openDialog(null, 'theme_info', 'ts_id=<mt:Var name="id">&amp;plugin_sig=<mt:Var name="plugin_sig">&amp;blog_id=<mt:Var name="blog_id">')">
-                    <img src="<mt:Var name="thumbnail_url">" width="175" height="140" border="1" />
+                    <mt:Var name="label" default="Untitled">
                 </a>
-            </div>
-        </div>
-    </mtapp:listing>
-
-<mt:Unless name="json">
-            </div>
+            </h3>
+            <a href="javascript:void(0);" onclick="return openDialog(null, 'theme_info', 'ts_id=<mt:Var name="id">&amp;plugin_sig=<mt:Var name="plugin_sig">&amp;blog_id=<mt:Var name="blog_id">')">
+                <img src="<mt:Var name="thumbnail_url">" width="175" height="140" border="1" />
+            </a>
         </div>
     </div>
+</mtapp:listing>
 
-    <mt:include name="include/footer.tmpl">
-</mt:Unless>
+        </div>
+    </div>
+</div>
+
+<mt:include name="include/footer.tmpl">

@@ -6,7 +6,7 @@ author_name: Endevver
 description: 'A comprehensive theme management plugin!'
 version: 0.9.4
 schema_version: 1
-static_version: 2
+static_version: 3
 
 applications:
     cms:

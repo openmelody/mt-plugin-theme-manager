@@ -1,13 +1,4 @@
 $(document).ready( function() {
-    var url = document.location.href;
-    if ( url.match('offset') ) {
-        // The user is turning pages on the theme display. We want to display
-        // the Apply a Theme tab by default, so they can pick up where they
-        // left off.
-        $('#content-nav li.active').removeClass('active');
-        $('#content-nav li.apply-theme-tab').addClass('active');
-    }
-
     var active = $('#content-nav ul li.active a').attr('id');
     $('#' + active + '-content').show();
 
@@ -23,7 +14,14 @@ $(document).ready( function() {
         $('#' + active + '-content').hide();
         $('#content-nav li.' + newactive).addClass('active');
         $('#' + newactive + '-content').show();
-        $('h2#page-title span').html( $('#content-nav ul li.'+newactive+' a b').html() );
+        if ( newactive == 'apply-theme-tab' ) {
+            // Display only "Apply a new Theme" if the user clicks for the chooser
+            $('h2#page-title').html( $('#content-nav ul li.'+newactive+' a b').html() );
+        }
+        else {
+            // Display the theme name and the tab name for any other tab.
+            $('h2#page-title').html( $('#theme-label').html() + ': ' + $('#content-nav ul li.'+newactive+' a b').html() );
+        }
         active = newactive;
     });
 

@@ -242,7 +242,7 @@ sub select_theme {
     # Set the number of items to appear on the theme grid. 6 fit, so that's
     # what it's set to here. However, if unset, it defaults to 25!
     my $list_pref = $app->list_pref('theme') if $app->can('list_pref');
-    $list_pref->{rows} = 6;
+    $list_pref->{rows} = 999;
 
     use ThemeManager::Util;
 

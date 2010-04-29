@@ -31,6 +31,8 @@
     height: 25px;
 }
 
+#theme-label { display: none; }
+
 #message-confirmation { font-weight: bold; }
 
 #theme-description {
@@ -65,6 +67,8 @@
 
 #apply-theme-tab-content h3 { margin-left: 15px; }
 
+.theme-gallery-container { margin-left: 3px; }
+
 .listing-screen .content-nav #content-inner {
     background:url('../images/content-inner-tw.gif') no-repeat 175px 0;
 }
@@ -82,7 +86,7 @@
     width: 177px;
     height: 175px;
     overflow: hidden;
-    padding: 3px 0px 0px;
+    padding: 0;
     border-bottom: 1px solid #e8eff5;
 }
 
@@ -105,18 +109,18 @@
 }
 
 #list-themes-dialog .theme-gallery-container-inner  {
-    height:330px;
-/*    overflow:auto; */
+    height: 330px;
+    overflow: auto;
 }
 
 #list-themes-dialog .ts-container {
     float: left;
-    margin: 0 40px 15px 0;
+    margin: 0 30px 15px 0;
 }
 
 #list-themes-dialog .ts-container-inner {
     width: 175px;
-    height: 150px;
+    height: 150px; 
     overflow: hidden;
     padding: 3px 0px 0px;
 }
@@ -174,17 +178,4 @@
 
 .dialog .field-left-label {
     width: 580px;
-}
-
-/* Template Listing */
-tr.has-changed { font-style: italic; }
-td.status { width: 16px; }
-td.status a {
-    width: 16px;
-    height: 14px;
-    display: block;
-    background: url('../../../../images/nav-icon-rebuild.gif') no-repeat center 0px;
-}
-td.status a span {
-    display: none;
 }
