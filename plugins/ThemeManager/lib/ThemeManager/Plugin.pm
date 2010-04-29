@@ -1008,7 +1008,8 @@ sub paypal_donate {
 sub edit_templates {
     # Pop up the warning dialog about what it really means to "edit templates."
     my $app = shift;
-    my $param->{blog_id} = $app->param('blog_id');
+    my $param = {};
+    $param->{blog_id} = $app->param('blog_id');
     return $app->load_tmpl( 'edit_templates.mtml', $param );
 }
 
