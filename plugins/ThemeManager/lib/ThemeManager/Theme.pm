@@ -7,8 +7,8 @@ use base qw( MT::Object );
 __PACKAGE__->install_properties({
     column_defs => {
         'id'         => 'integer not null auto_increment',
-        'plugin_sig' => 'string(999)',
-        'ts_id'      => 'string(999)',
+        'plugin_sig' => 'string(255)',
+        'ts_id'      => 'string(255)',
         'ts_label'   => 'text',
         'ts_desc'    => 'text',
     },
