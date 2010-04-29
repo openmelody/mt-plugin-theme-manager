@@ -179,3 +179,16 @@
 .dialog .field-left-label {
     width: 580px;
 }
+
+/* Template Listing */
+tr.has-changed { font-style: italic; }
+td.status { width: 16px; }
+td.status a {
+    width: 16px;
+    height: 14px;
+    display: block;
+    background: url('../../../../images/nav-icon-rebuild.gif') no-repeat center 0px;
+}
+td.status a span {
+    display: none;
+}
