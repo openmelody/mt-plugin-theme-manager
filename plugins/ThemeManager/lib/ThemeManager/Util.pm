@@ -50,7 +50,7 @@ sub theme_description {
     if ($desc =~ /\s/) {
         return $desc;
     } else { # no spaces in $about_designer; must be a filename...
-        return $obj->load_tmpl($desc);
+        return eval {$obj->load_tmpl($desc)};
     }
 }
 
@@ -120,7 +120,7 @@ sub about_designer {
     if ($about_designer =~ /\s/) {
         return "<h3>About the Designer</h3>".$about_designer;
     } else { # no spaces in $about_designer; must be a filename...
-        return $obj->load_tmpl($about_designer);
+        return eval {$obj->load_tmpl($about_designer)};
     }
 }
 
@@ -136,7 +136,7 @@ sub theme_docs {
     if ($docs =~ /\s/) {
         return $docs;
     } else { # no spaces in $docs; must be a filename...
-        return $obj->load_tmpl($docs);
+        return eval {$obj->load_tmpl($docs)};
     }
 }
 
