@@ -53,8 +53,7 @@
 <div id="about-tab-content">
     <mt:If name="theme_thumb_url">
         <div id="theme-thumb">
-            <mt:Ignore> theme_thumb_url is a complete img tag. </mt:Ignore>
-            <mt:Var name="theme_thumb_url">
+            <img src="<mt:Var name="theme_thumb_url">" width="300" height="240" title="<mt:BlogName remove_html="1"> on <mt:BlogURL>" />
         </div>
     </mt:If>
 

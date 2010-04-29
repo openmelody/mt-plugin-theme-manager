@@ -122,7 +122,7 @@ sub theme_dashboard {
             'theme_thumbs'
     );
     if ( -w $dest_path ) {
-        $param->{theme_thumb_url}   = _make_thumbnail();
+        $param->{theme_thumb_url}   = _make_thumbnail($ts, $plugin);
     }
     else {
         $param->{theme_thumbs_path} = $dest_path;
@@ -890,6 +890,7 @@ sub template_filter {
 
 sub _make_thumbnail {
     # We want a custom thumbnail to display on the Theme Options About tab.
+    my ($ts_id, $plugin) = @_;
     my $app = MT->instance;
     
     # Craft the destination path and URL.
@@ -903,10 +904,8 @@ sub _make_thumbnail {
     # Check if the thumbnail is cached (exists) and is less than 1 day old. 
     # If it's older, we want a new thumb to be created.
     if ( (-e $dest_path) && (-M $dest_path <= 1) ) {
-        # We've found a cached image! No need to grab a new screenshot; just 
-        # use the existing one.
-        return '<img src="'.$dest_url.'" width="300" height="240" title="'
-            .$app->blog->name.' on '.$app->blog->site_url.'" />';
+        # We've found a cached image! Now we need to check that it's usable.
+        return _check_thumbalizr_result($dest_path, $dest_url, $ts_id, $plugin);
     }
     else {
         # No screenshot was found, or it's too old--so create one.
@@ -928,11 +927,39 @@ sub _make_thumbnail {
         my $thumb_url = 'http://api.thumbalizr.com/?url='.$app->blog->site_url.'&width=300';
         use LWP::Simple;
         my $http_response = LWP::Simple::getstore($thumb_url, $dest_path);
-        if ($http_response == 200) {
-            # success!
-            return '<img src="'.$dest_url.'" width="300" height="240" title="'
-                .$app->blog->name.' on '.$app->blog->site_url.'" />';
-        }
+        
+        # Finally, check that the saved image is actually usable.
+        return _check_thumbalizr_result($dest_path, $dest_url, $ts_id, $plugin);
+    }
+}
+
+sub _check_thumbalizr_result {
+    # We need to figure out if the returned image is actually a thumbnail, or
+    # if it's the "queued" or "failed" image from thumbalizr.
+    my ($dest_path, $dest_url, $ts_id, $plugin) = @_;
+
+    my $fmgr = MT::FileMgr->new('Local')
+        or die MT::FileMgr->errstr;
+    my $content = $fmgr->get_data($dest_path);
+
+    # Create an MD5 hash of the content. This provides us with
+    # something unique to compare against.
+    use Digest::MD5;
+    my $md5 = Digest::MD5->new;
+    $md5->add( $content );
+    
+    # The "queued" image has an MD5 hash of:
+    # eb433ad65b8aa50047e6f2de1530d6cf
+    # The "failed" image has an MD5 hash of:
+    # ac47a999e5ce1769d480a66b0554343d
+    if ( ($md5->hexdigest == 'eb433ad65b8aa50047e6f2de1530d6cf')
+            || ($md5->hexdigest == 'ac47a999e5ce1769d480a66b0554343d') ) {
+        # This is the "queued" image being displayed. Instead of this, we
+        # want to show the "preview" image defined by the template set.
+        return ThemeManager::Util::theme_preview_url($ts_id, $plugin);
+    }
+    else {
+        return $dest_url;
     }
 }
 
