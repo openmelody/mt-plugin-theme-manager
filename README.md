@@ -58,6 +58,10 @@ The following keys are available:
   plugin's `plugin_link` value, if specified.
 * `doc_link` - The URL to the documentation of your theme. If unspecified,
   this falls back to the plugin's `doc_link` value, if specified.
+* `documentation` - Yes, the `documentation` key is different from the 
+  `doc_link` key. Use this key to supply documentation right in your theme. A
+  "Documentation" tab will appear on the Theme Dashboard where your 
+  documentation is displayed.
 * `description` - A description of your theme. If unspecified, this falls back
   to the plugin's `description` value, if specified.
 * `version` - The version number of your theme. If unspecified, this falls back
@@ -73,13 +77,14 @@ Each template set may have its own `version` and `description`, but may fall
 back to the plugin-level `doc_link` for both themes, for example. See their use
 in the example below.
 
-Both the `description` and `about_designer` keys are special, in that you can 
-supply text to them in a variety of ways. This gives you the opportunity to 
-include simple or complex HTML along with inline CSS. Examples:
+The `description`, `documentation` and `about_designer` keys are special, in 
+that you can supply text to them in a variety of ways. This gives you the 
+opportunity to include simple or complex HTML along with inline CSS. Examples:
 
 * Inline, formatted as HTML:
 
     `description: "<p>This is my great theme!</p>"
+    documentation: "<p>How to use this theme.</p>"
     about_designer: "<p>I am the bestest designer <em>evar</em>!</p>"`
 
 * As a file reference, which contains HTML. The file you specify should be
@@ -87,6 +92,7 @@ include simple or complex HTML along with inline CSS. Examples:
   plugin's envelope.
 
     `description: description.html
+    documentation: documentation.html
     about_designer: about.html`
 
 Additionally, the Theme Chooser will display images to help the user select a 

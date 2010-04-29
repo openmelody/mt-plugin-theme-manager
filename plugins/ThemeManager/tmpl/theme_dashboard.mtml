@@ -38,6 +38,9 @@
     </mt:Ignore>
     <ul>
         <li class="about-tab active"><a href="javascript:void(0);" id="about-tab"><b>About this Theme</b></a></li>
+    <mt:If name="theme_docs">
+        <li class="docs-tab"><a href="javascript:void(0);" id="docs-tab"><b>Documentation</b></a></li>
+    </mt:If>
         <li class="customize-tab"><a href="javascript:void(0);" id="customize-tab"><b>Customize this Theme</b></a></li>
         <li class="apply-theme-tab"><a href="javascript:void(0);" id="apply-theme-tab"><b>Apply a new Theme</b></a></li>
     </ul>
@@ -117,11 +120,16 @@
     </mt:If>
 </div>
 
+<mt:If name="theme_docs">
+<div id="docs-tab-content">
+    <mt:Var name="theme_docs">
+</div>
+</mt:If>
+
 <div id="customize-tab-content">
     <mt:If name="theme_thumb_url">
         <div id="theme-thumb">
-            <mt:Ignore> theme_thumb_url is a complete img tag. </mt:Ignore>
-            <mt:Var name="theme_thumb_url">
+            <img src="<mt:Var name="theme_thumb_url">" width="300" height="240" title="<mt:BlogName remove_html="1"> on <mt:BlogURL>" />
         </div>
     </mt:If>
 

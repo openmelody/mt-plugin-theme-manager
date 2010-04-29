@@ -1,11 +1,13 @@
 /* Theme Dashboard */
 
 #about-tab-content,
+#docs-tab-content,
 #customize-tab-content,
 #apply-theme-tab-content { 
     display: none;
 }
 #about-tab-content,
+#docs-tab-content,
 #customize-tab-content {
     margin: 0 15px;
 }
@@ -31,7 +33,7 @@
     height: 25px;
 }
 
-#theme-label { display: none; }
+div#theme-label { display: none; }
 
 #message-confirmation { font-weight: bold; }
 

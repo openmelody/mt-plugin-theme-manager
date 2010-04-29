@@ -112,10 +112,11 @@ sub theme_dashboard {
     $param->{theme_author_name} = ThemeManager::Util::theme_author_name($ts, $plugin);
     $param->{theme_author_link} = ThemeManager::Util::theme_author_link($ts, $plugin);
     $param->{theme_link}        = ThemeManager::Util::theme_link($ts, $plugin);
-    $param->{theme_doc_link}    = ThemeManager::Util::theme_docs($ts, $plugin);
+    $param->{theme_doc_link}    = ThemeManager::Util::theme_doc_link($ts, $plugin);
     $param->{theme_version}     = ThemeManager::Util::theme_version($ts, $plugin);
     $param->{paypal_email}      = ThemeManager::Util::theme_paypal_email($ts, $plugin);
     $param->{about_designer}    = ThemeManager::Util::about_designer($ts, $plugin);
+    $param->{theme_docs}        = ThemeManager::Util::theme_docs($ts, $plugin);
     
     my $dest_path = File::Spec->catfile( 
         $app->config('StaticFilePath'), 'support', 'plugins', 'ThemeManager', 
@@ -276,7 +277,7 @@ sub select_theme {
             $row->{author_name}    = ThemeManager::Util::theme_author_name($theme->ts_id, $plugin);
             $row->{version}        = ThemeManager::Util::theme_version($theme->ts_id, $plugin);
             $row->{theme_link}     = ThemeManager::Util::theme_link($theme->ts_id, $plugin);
-            $row->{theme_docs}     = ThemeManager::Util::theme_docs($theme->ts_id, $plugin);
+            $row->{theme_doc_link} = ThemeManager::Util::theme_doc_link($theme->ts_id, $plugin);
             $row->{about_designer} = ThemeManager::Util::about_designer($theme->ts_id, $plugin);
             $row->{plugin_sig}     = $theme->plugin_sig;
             $row->{theme_details}  = $app->load_tmpl('theme_details.mtml', $row);
@@ -1047,7 +1048,7 @@ sub theme_info {
     $param->{author_name}    = ThemeManager::Util::theme_author_name($ts_id, $plugin);
     $param->{version}        = ThemeManager::Util::theme_version($ts_id, $plugin);
     $param->{theme_link}     = ThemeManager::Util::theme_link($ts_id, $plugin);
-    $param->{theme_docs}     = ThemeManager::Util::theme_docs($ts_id, $plugin);
+    $param->{theme_doc_link} = ThemeManager::Util::theme_doc_link($ts_id, $plugin);
     $param->{about_designer} = ThemeManager::Util::about_designer($ts_id, $plugin);
     $param->{plugin_sig}     = $plugin_sig;
     my $ts_count = keys %{ $plugin->{registry}->{'template_sets'} };

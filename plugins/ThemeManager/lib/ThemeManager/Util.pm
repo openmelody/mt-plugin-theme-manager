@@ -99,7 +99,7 @@ sub theme_link {
         : eval {$obj->plugin_link};
 }
 
-sub theme_docs {
+sub theme_doc_link {
     # Grab the theme doc URL. If no template set theme doc, then use
     # the parent plugin's doc_link.
     my ($set, $obj) = @_;
@@ -123,6 +123,23 @@ sub about_designer {
         return $obj->load_tmpl($about_designer);
     }
 }
+
+sub theme_docs {
+    # Theme Docs are inline-presented documentation.
+    my ($set, $obj) = @_;
+    my $docs = $obj->{registry}->{'template_sets'}->{$set}->{documentation};
+    if (ref $docs eq 'HASH') {
+        $docs = MT->handler_to_coderef($docs->{code});
+    }
+    return $docs->($obj, @_) if ref $docs eq 'CODE';
+    
+    if ($docs =~ /\s/) {
+        return $docs;
+    } else { # no spaces in $docs; must be a filename...
+        return $obj->load_tmpl($docs);
+    }
+}
+
 
 1;
 
