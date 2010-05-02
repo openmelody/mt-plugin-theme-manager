@@ -100,6 +100,14 @@ sub update_page_actions {
 
 sub theme_dashboard {
     my $app    = MT->instance;
+    
+    # Since there is no Theme Dashboard at the system level, capture and
+    # redirect to the System Dashboard, if necessary.
+    if ( !eval {$app->blog->id} && ($app->param('__mode') eq 'theme_dashboard') ) {
+        $app->redirect( $app->uri.'?__mode=dashboard&blog_id=0' );
+    }
+    
+    
     my $ts     = $app->blog->template_set;
     use ConfigAssistant::Plugin;
     my $plugin = ConfigAssistant::Plugin::find_theme_plugin($ts);
