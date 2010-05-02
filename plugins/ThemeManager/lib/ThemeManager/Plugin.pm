@@ -323,7 +323,10 @@ sub setup_theme {
     # Check for the widgetsets beacon. It will be set after visiting the 
     # "Save Widgets" screen. Or, we may bypass it because we don't always
     # need to show the "Save Widgets" screen.
-    if ( !$app->param('save_widgetsets_beacon') ) {
+    # Also, bypass the option to save widgets if we are mass-applying themes.
+    # Bulk applying means we probably are just trying to wipe everything back
+    # to a clean slate.
+    if ( (scalar @blog_ids == 1) && !$app->param('save_widgetsets_beacon') ) {
         # Because the beacon hasn't been set, we need to first determine if
         # we should show the Save Widgets screen.
         foreach my $blog_id (@blog_ids) {
