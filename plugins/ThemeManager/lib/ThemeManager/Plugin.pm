@@ -595,14 +595,14 @@ sub _link_templates {
     }
 }
 
-sub _override_publishing_settings(@_) {
+sub _override_publishing_settings {
     my ( $cb, $param ) = @_;
     my $blog = $param->{blog} or return;
     $blog->include_cache(1);
     $blog->save;
 }
 
-sub _set_module_caching_prefs(@_) {
+sub _set_module_caching_prefs {
     my ( $cb, $param ) = @_;
     my $blog = $param->{blog} or return;
     
