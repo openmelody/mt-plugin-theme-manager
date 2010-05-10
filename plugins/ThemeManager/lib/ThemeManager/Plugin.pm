@@ -803,6 +803,30 @@ sub _install_folders {
     return _install_containers('folder','folders',@_);
 }
 
+sub _install_pages {
+    my ($blog, $struct) = @_;
+    my $app = MT::App->instance;
+    foreach my $basename (keys %$struct) {
+        my $p = $struct->{$basename};
+        my $obj = MT->model('page')->load({ basename => $basename, blog_id => $blog->id });
+        unless ($obj) {
+            my $title = &{$p->{label}};
+            $obj = MT->model('page')->new;
+            $obj->basename( $basename );
+            $obj->blog_id( $blog->id );
+            $obj->title( $title );
+            $obj->text( $p->{body} );
+            $obj->author_id( $app->user->id );
+            $obj->status( MT->model('entry')->RELEASE() );
+            foreach (keys %{$p->{meta}}) {
+                $obj->meta( $_, $p->{meta}->{$_} );
+            }
+            $obj->set_tags( @{$p->{tags}} );
+            $obj->save;
+        }
+    }
+}
+
 sub _install_default_content {
     my ($cb, $param ) = @_;
     my $blog = $param->{blog} or return;
@@ -811,14 +835,15 @@ sub _install_default_content {
         or return;
     my $content = $set->{content} or return;
     foreach my $key (keys %$content) {
+        my $struct = $content->{$key};
         if ($key eq 'folders') {
             my $parent = 0;
-            my $folders = $content->{'folders'};
-            _install_folders( $blog, $folders );
+            _install_folders( $blog, $struct );
         } elsif ($key eq 'categories') {
             my $parent = 0;
-            my $cats = $content->{'categories'};
-            _install_categories( $blog, $cats );
+            _install_categories( $blog, $struct );
+        } elsif ($key eq 'pages') {
+            _install_pages( $blog, $struct );
         }
     }
 }
