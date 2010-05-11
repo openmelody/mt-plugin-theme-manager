@@ -1,6 +1,9 @@
 package ThemeManager::Plugin;
 
 use strict;
+use ConfigAssistant::Util qw( find_theme_plugin );
+use ThemeManager::Util;
+use MT::Util qw(caturl dirify offset_time_list);
 use MT;
 
 sub update_menus {
@@ -96,17 +99,28 @@ sub update_page_actions {
     };
 }
 
-
+sub _theme_thumb_path {
+    my $app = MT::App->instance();
+    my $tm = MT->component('ThemeManager');
+    my @path = ($app->config('StaticFilePath'), 'support', 'plugins', $tm->id, 'theme_thumbs');
+    return File::Spec->catfile( @path );
+}
+sub _theme_thumb_url {
+    my $app = MT::App->instance();
+    my $tm = MT->component('ThemeManager');
+    return caturl( $app->static_path , 'support' , 'plugins', $tm->id, 'theme_thumbs', 
+		   $app->blog->id.'.jpg' );
+}
 
 sub theme_dashboard {
-    my $app    = MT->instance;
+    my $app    = MT::App->instance;
     my $ts     = $app->blog->template_set;
-    use ConfigAssistant::Plugin;
-    my $plugin = ConfigAssistant::Plugin::find_theme_plugin($ts);
+    my $tm     = MT->component('ThemeManager');
+    my $plugin = find_theme_plugin($ts);
 
     my $param = {};
     # Build the theme dashboard links
-    use ThemeManager::Util;
+
     $param->{theme_label}       = ThemeManager::Util::theme_label($ts, $plugin);
     $param->{theme_description} = ThemeManager::Util::theme_description($ts, $plugin);
     $param->{theme_author_name} = ThemeManager::Util::theme_author_name($ts, $plugin);
@@ -118,10 +132,7 @@ sub theme_dashboard {
     $param->{about_designer}    = ThemeManager::Util::about_designer($ts, $plugin);
     $param->{theme_docs}        = ThemeManager::Util::theme_docs($ts, $plugin);
     
-    my $dest_path = File::Spec->catfile( 
-        $app->config('StaticFilePath'), 'support', 'plugins', 'ThemeManager', 
-            'theme_thumbs'
-    );
+    my $dest_path = _theme_thumb_path();
     if ( -w $dest_path ) {
         $param->{theme_thumb_url}   = _make_thumbnail($ts, $plugin);
     }
@@ -134,8 +145,8 @@ sub theme_dashboard {
     # Are the templates linked? We use this to show/hide the Edit/View
     # Templates links.
     my $linked = MT->model('template')->load(
-                        { blog_id     => $app->blog->id,
-                          linked_file => '*', });
+					     { blog_id     => $app->blog->id,
+					       linked_file => '*', });
     if ($linked) {
         # These templates *are* linked.
         $param->{linked_theme} = 1;
@@ -245,7 +256,6 @@ sub select_theme {
     my $list_pref = $app->list_pref('theme') if $app->can('list_pref');
     $list_pref->{rows} = 999;
 
-    use ThemeManager::Util;
 
     my $plugin = MT->component('ThemeManager');
     my $tmpl = $plugin->load_tmpl('theme_select.mtml');
@@ -318,8 +328,6 @@ sub setup_theme {
     my $ts     = $plugin->{registry}->{'template_sets'}->{$ts_id};
     $param->{ts_label} = ThemeManager::Util::theme_label($ts_id, $plugin);
 
-    use ConfigAssistant::Util;
-
     # Check for the widgetsets beacon. It will be set after visiting the 
     # "Save Widgets" screen. Or, we may bypass it because we don't always
     # need to show the "Save Widgets" screen.
@@ -330,10 +338,9 @@ sub setup_theme {
             # Check the currently-used template set against the returned
             # widgetsets to determine if we need to give the user a chance
             # to save things.
-            use MT::Blog;
-            my $blog = MT::Blog->load($blog_id);
+            my $blog = MT->model('blog')->load($blog_id);
             my $cur_ts_id = $blog->template_set;
-            my $cur_ts_plugin = ConfigAssistant::Util::find_theme_plugin($cur_ts_id);
+            my $cur_ts_plugin = find_theme_plugin($cur_ts_id);
             my $cur_ts_widgetsets = 
                 $cur_ts_plugin->{registry}->{'template_sets'}->{$cur_ts_id}->{'templates'}->{'widgetset'};
 
@@ -396,8 +403,6 @@ sub setup_theme {
     # theme options?), so we can just skip this.
     if ($app->param('blog_id') ne '0') {
         if (my $optnames = $ts->{options}) {
-            use MT::Util qw( dirify );
-
             my $types = $app->registry('config_types');
             my $fieldsets = $ts->{options}->{fieldsets};
 
@@ -570,8 +575,7 @@ sub _link_templates {
     my $blog_id = $param->{blog}->id;
     my $ts_id   = $param->{blog}->template_set;
     
-    use ConfigAssistant::Util;
-    my $cur_ts_plugin = ConfigAssistant::Util::find_theme_plugin($ts_id);
+    my $cur_ts_plugin = find_theme_plugin($ts_id);
     my $cur_ts_widgets = 
         $cur_ts_plugin->{registry}->{'template_sets'}->{$ts_id}->{'templates'}->{'widget'};
     
@@ -921,11 +925,8 @@ sub _make_thumbnail {
     
     # Craft the destination path and URL.
     use File::Spec;
-    my $dest_path = File::Spec->catfile( 
-        $app->config('StaticFilePath'), 'support', 'plugins', 'ThemeManager', 
-            'theme_thumbs', $app->blog->id.'.jpg' 
-    );
-    my $dest_url = $app->static_path.'support/plugins/ThemeManager/theme_thumbs/'.$app->blog->id.'.jpg';
+    my $dest_path = File::Spec->catfile( _theme_thumb_path(), $app->blog->id.'.jpg' );
+    my $dest_url  = _theme_thumb_url();
 
     # Check if the thumbnail is cached (exists) and is less than 1 day old. 
     # If it's older, we want a new thumb to be created.
@@ -936,10 +937,7 @@ sub _make_thumbnail {
     else {
         # No screenshot was found, or it's too old--so create one.
         # First, create the destination directory, if necessary.
-        my $dir = File::Spec->catfile( 
-            $app->config('StaticFilePath'), 'support', 'plugins', 'ThemeManager', 
-                'theme_thumbs' 
-        );
+        my $dir = _theme_thumb_path();
         if (!-d $dir) {
             my $fmgr = MT::FileMgr->new('Local')
                 or return $app->error( MT::FileMgr->errstr );
@@ -991,20 +989,15 @@ sub _check_thumbalizr_result {
 
 sub _make_mini {
     my $app = MT->instance;
-    
+    my $tm     = MT->component('ThemeManager');
     use File::Spec;
-    my $dest_path = File::Spec->catfile( 
-        $app->config('StaticFilePath'), 'support', 'plugins', 'ThemeManager', 
-            'theme_thumbs', $app->blog->id.'-mini.jpg' 
+    my $dest_path = File::Spec->catfile( _theme_thumb_path(), $app->blog->id.'-mini.jpg' 
     );
-    my $dest_url = $app->static_path.'support/plugins/ThemeManager/theme_thumbs/'
-                    .$app->blog->id.'-mini.jpg';
+    my $dest_url = caturl($app->static_path,'support','plugins',$tm->id,'theme_thumbs',
+			  $app->blog->id.'-mini.jpg');
     # Decide if we need to create a new mini or not.
     unless ( (-e $dest_path) && (-M $dest_path <= 1) ) {
-        my $source_path = File::Spec->catfile( 
-            $app->config('StaticFilePath'), 'support', 'plugins', 'ThemeManager', 
-                'theme_thumbs', $app->blog->id.'.jpg' 
-        );
+        my $source_path = File::Spec->catfile( _theme_thumb_path(), $app->blog->id.'.jpg' );
         use MT::Image;
         my $img = MT::Image->new( Filename => $source_path )
             or return 0;
@@ -1042,9 +1035,8 @@ sub unlink_templates {
     # Unlink all templates.
     my $app = shift;
     my $blog_id = $app->param('blog_id');
-    use MT::Template;
-    my $iter = MT::Template->load_iter({ blog_id     => $blog_id,
-                                         linked_file => '*', });
+    my $iter = MT->model('template')->load_iter({ blog_id     => $blog_id,
+						  linked_file => '*', });
     while ( my $tmpl = $iter->() ) {
         $tmpl->linked_file(undef);
         $tmpl->linked_file_mtime(undef);
@@ -1094,11 +1086,7 @@ sub _refresh_all_templates {
 
     my @id = ( scalar $blog_id );
     
-    require MT::Template;
     require MT::DefaultTemplates;
-    require MT::Blog;
-    require MT::Permission;
-    require MT::Util;
 
     my $user = $app->user;
     my @blogs_not_refreshed;
@@ -1107,12 +1095,12 @@ sub _refresh_all_templates {
     for my $blog_id (@id) {
         my $blog;
         if ($blog_id) {
-            $blog = MT::Blog->load($blog_id);
+            $blog = MT->model('blog')->load($blog_id);
             next BLOG unless $blog;
         }
 
         if (!$can_refresh_system) {  # system refreshers can refresh all blogs
-            my $perms = MT::Permission->load(
+            my $perms = MT->model('permission')->load(
                 { blog_id => $blog_id, author_id => $user->id } );
             my $can_refresh_blog = !$perms                       ? 0
                                  : $perms->can_edit_templates()  ? 1
@@ -1129,12 +1117,12 @@ sub _refresh_all_templates {
 
         # the user wants to back up all templates and
         # install the new ones
-        my @ts = MT::Util::offset_time_list( $t, $blog_id );
+        my @ts = offset_time_list( $t, $blog_id );
         my $ts = sprintf "%04d-%02d-%02d %02d:%02d:%02d",
             $ts[5] + 1900, $ts[4] + 1, @ts[ 3, 2, 1, 0 ];
 
         # Backup/delete all the existing templates.
-        my $tmpl_iter = MT::Template->load_iter({
+        my $tmpl_iter = MT->model('template')->load_iter({
             blog_id => $blog_id,
             type    => { not => 'backup' },
         });
@@ -1160,8 +1148,7 @@ sub _refresh_all_templates {
             }
             if ($skip == 0) {
                 # zap all template maps
-                require MT::TemplateMap;
-                MT::TemplateMap->remove({
+                MT->model('templatemap')->remove({
                     template_id => $tmpl->id,
                 });
                 $tmpl->name( $tmpl->name
@@ -1194,10 +1181,8 @@ sub _refresh_all_templates {
         # thumbnail gets displayed on the Theme Dashboard, which means we should
         # delete the existing thumb (if there is one), so that it gets recreated
         # when the user visits the dashboard.
-        my $thumb_path = File::Spec->catfile( 
-            $app->config('StaticFilePath'), 'support', 'plugins', 'ThemeManager', 
-                'theme_thumbs', $blog_id.'.jpg'
-        );
+	my $tm = MT->component('ThemeManager');
+        my $thumb_path = File::Spec->catfile( _theme_thumb_path(), $blog_id.'.jpg' );
         if (-e $thumb_path) {
             unlink $thumb_path;
         }
@@ -1217,8 +1202,7 @@ sub xfrm_disable_tmpl_link {
     # them, because that "breaks the seal" and lets them modify the template,
     # so upgrades are no longer easy. 
     my ($cb, $app, $tmpl) = @_;
-    use MT::Template;
-    my $linked = MT::Template->load(
+    my $linked = MT->model('template')->load(
                         { id          => $app->param('id'),
                           linked_file => '*', });
     if ( $linked ) {
@@ -1264,7 +1248,6 @@ sub _theme_check {
     
     # Look through all the plugins and find the template sets.
     for my $sig ( keys %MT::Plugins ) {
-        use ThemeManager::Util;
         my $plugin = $MT::Plugins{$sig};
         my $obj    = $MT::Plugins{$sig}{object};
         my $r      = $obj->{registry};
@@ -1365,7 +1348,7 @@ sub list_templates {
         if ( $type =~ m/^(individual|page|category|archive)$/ ) {
             $template_type = 'archive';
             # populate context with templatemap loop
-            my $tblog = $obj->blog_id == $blog->id ? $blog : MT::Blog->load( $obj->blog_id );
+            my $tblog = $obj->blog_id == $blog->id ? $blog : MT->model('blog')->load( $obj->blog_id );
             if ($tblog) {
                 require MT::CMS::Template;
                 $row->{archive_types} = MT::CMS::Template::_populate_archive_loop( $app, $tblog, $obj );
