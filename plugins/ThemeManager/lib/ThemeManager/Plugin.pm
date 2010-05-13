@@ -91,7 +91,7 @@ sub update_page_actions {
                     my $ts_id = MT->instance->blog->template_set;
                     return 0 if !$ts_id;
                     my $app = MT::App->instance;
-                    return 1 if eval {$app->registry('template_sets')->{$ts_id}->{templates}->{widgetset}};
+                    return 1 if eval {$app->registry('template_sets',$ts_id,'templates','widgetset')};
                     return 0;
                 },
             },
@@ -342,7 +342,7 @@ sub setup_theme {
             my $cur_ts_id = $blog->template_set;
             my $cur_ts_plugin = find_theme_plugin($cur_ts_id);
             my $cur_ts_widgetsets = 
-                $cur_ts_plugin->{registry}->{'template_sets'}->{$cur_ts_id}->{'templates'}->{'widgetset'};
+                $cur_ts_plugin->registry('template_sets',$cur_ts_id,'templates','widgetset');
 
             my @widgetsets = MT->model('template')->load({ type    => 'widgetset', 
                                                   blog_id => $blog_id, });
@@ -553,7 +553,7 @@ sub setup_theme {
         push @options, 'Theme Options'
             if eval {$app->registry('template_sets')->{$ts_id}->{options}};
         push @options, 'Widgets'
-            if eval {$app->registry('template_sets')->{$ts_id}->{templates}->{widgetset}};
+            if eval {$app->registry('template_sets',$ts_id,'templates','widgetset')};
         $param->{options} = join(' and ', @options);
     }
     
@@ -576,8 +576,7 @@ sub _link_templates {
     my $ts_id   = $param->{blog}->template_set;
     
     my $cur_ts_plugin = find_theme_plugin($ts_id);
-    my $cur_ts_widgets = 
-        $cur_ts_plugin->{registry}->{'template_sets'}->{$ts_id}->{'templates'}->{'widget'};
+    my $cur_ts_widgets = $cur_ts_plugin->registry('template_sets',$ts_id,'templates','widget');
     
     # Grab all of the templates except the Widget Sets, because the user
     # should be able to edit (drag-drop) those all the time.
@@ -613,9 +612,10 @@ sub _set_module_caching_prefs {
     my $set_name = $blog->template_set or return;
     my $set = MT->app->registry( 'template_sets', $set_name )
         or return;
+    my $tmpls = MT->app->registry( 'template_sets',$set_name,'templates' );
     foreach my $t (qw( module widget )) {
-        foreach my $m ( keys %{ $set->{templates}->{$t} } ) {
-            if ($set->{templates}->{$t}->{$m}->{cache}) {
+        foreach my $m ( keys %{ $tmpls->{$t} } ) {
+            if ($tmpls->{$t}->{$m}->{cache}) {
                 my $tmpl = MT->model('template')->load(
                     {
                         blog_id    => $blog->id,
@@ -624,12 +624,12 @@ sub _set_module_caching_prefs {
                     );
                 foreach (qw( expire_type expire_interval expire_event )) {
                     my $var = 'cache_' . $_;
-                    my $val = $set->{templates}->{$t}->{$m}->{cache}->{$_};
+                    my $val = $tmpls->{$t}->{$m}->{cache}->{$_};
                     $val = ($val * 60) if ($_ eq 'expire_interval');
                     $tmpl->$var($val);
                 }
                 foreach (qw( include_with_ssi )) {
-                    $tmpl->$_($set->{templates}->{$t}->{$m}->{cache}->{$_});
+                    $tmpl->$_($tmpls->{$t}->{$m}->{cache}->{$_});
                 }
                 $tmpl->save;
             }
@@ -644,12 +644,13 @@ sub _set_archive_map_publish_types {
     my $set_name = $blog->template_set or return;
     my $set = MT->app->registry( 'template_sets', $set_name )
         or return;
+    my $tmpls = MT->app->registry( 'template_sets',$set_name,'templates' );
     foreach my $a (qw( archive individual )) {
-        foreach my $t ( keys %{ $set->{templates}->{$a} } ) {
+        foreach my $t ( keys %{ $tmpls->{$a} } ) {
             foreach
-                my $m ( keys %{ $set->{templates}->{$a}->{$t}->{mappings} } )
+                my $m ( keys %{ $tmpls->{$a}->{$t}->{mappings} } )
             {
-                my $map = $set->{templates}->{$a}->{$t}->{mappings}->{$m};
+                my $map = $tmpls->{$a}->{$t}->{mappings}->{$m};
                 if ( $map->{build_type} ) {
                     my $tmpl = MT->model('template')->load(
                         {
@@ -683,9 +684,10 @@ sub _set_index_publish_type {
     my $set_name = $blog->template_set or return;
     my $set = MT->app->registry( 'template_sets', $set_name )
         or return;
+    my $tmpls = MT->app->registry( 'template_sets',$set_name,'templates' );
     
-    foreach my $t ( keys %{ $set->{templates}->{index} } ) {
-        if ( $set->{templates}->{index}->{$t}->{build_type} ) {
+    foreach my $t ( keys %{ $tmpls->{index} } ) {
+        if ( $tmpls->{index}->{$t}->{build_type} ) {
             my $tmpl = MT->model('template')->load(
                 {
                     blog_id    => $blog->id,
@@ -693,7 +695,7 @@ sub _set_index_publish_type {
                 }
                 );
             return unless $tmpl;
-            $tmpl->build_type( $set->{templates}->{index}->{$t}->{build_type} );
+            $tmpl->build_type( $tmpls->{index}->{$t}->{build_type} );
             $tmpl->save()
                 or MT->log(
                     { message => "Could not update template map for template $t." } );
