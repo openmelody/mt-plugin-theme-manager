@@ -138,6 +138,7 @@ sub theme_docs {
     } else { # no spaces in $docs; must be a filename...
         my $app = MT->instance();
         my $tmpl = eval { $obj->load_tmpl($docs) };
+        return '' unless $tmpl;
         my $ctx = $tmpl->context;
         $ctx->stash('blog',$app->blog);
         $ctx->stash('blog_id',$app->blog->id);
