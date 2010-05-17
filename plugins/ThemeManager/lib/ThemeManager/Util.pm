@@ -132,11 +132,18 @@ sub theme_docs {
         $docs = MT->handler_to_coderef($docs->{code});
     }
     return $docs->($obj, @_) if ref $docs eq 'CODE';
-    
+
     if ($docs =~ /\s/) {
         return $docs;
     } else { # no spaces in $docs; must be a filename...
-        return eval {$obj->load_tmpl($docs)};
+        my $app = MT->instance();
+        my $tmpl = eval { $obj->load_tmpl($docs) };
+        return '' unless $tmpl;
+        my $ctx = $tmpl->context;
+        $ctx->stash('blog',$app->blog);
+        $ctx->stash('blog_id',$app->blog->id);
+        my $contents = $app->build_page($tmpl);
+        return $contents;
     }
 }
 

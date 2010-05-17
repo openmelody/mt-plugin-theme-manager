@@ -1,0 +1,42 @@
+#docs-tab-content {
+  padding-top: 20px;
+}
+#docs-tab-content h1 {
+  font-size: 24px;
+  border-bottom: 1px solid #CCC;
+  margin-bottom: 10px;
+}
+#docs-tab-content h2 {
+  font-size: 20px;
+}
+#docs-tab-content h3 {
+  font-size: 18px;
+}
+#docs-tab-content h4 {
+  font-size: 16px;
+}
+#docs-tab-content h5 {
+  font-size: 14px;
+}
+#docs-tab-content ul,
+#docs-tab-content ol {
+  margin-left: 25px;
+  margin-bottom: 10px;
+}
+#docs-tab-content ul {
+  list-style: disc;
+}
+#docs-tab-content ol {
+  list-style-type: decimal;
+}
+#docs-tab-content li {
+  padding-bottom: 3px;
+}
+#docs-tab-content pre {
+    margin: 0 0 10px 0 !important;
+    padding: 10px;
+    background: #f4f5f5;
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    overflow: auto;
+}

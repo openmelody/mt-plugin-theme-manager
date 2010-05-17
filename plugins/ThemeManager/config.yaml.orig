@@ -4,7 +4,11 @@ key: ThemeManager
 author_link: http://endevver.com/
 author_name: Endevver
 description: 'A comprehensive theme management plugin!'
+<<<<<<< HEAD
+version: 0.9.5
+=======
 version: 0.9.9
+>>>>>>> 6fccddf7907c39b45e32cd0d6440f14df796bbeb
 schema_version: 1
 static_version: 3
 

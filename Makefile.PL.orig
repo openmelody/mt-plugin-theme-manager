@@ -7,6 +7,10 @@ my $version = LoadFile($file)->{version} ||
 
 WriteMakefile(
     NAME            => 'Theme Manager',
+<<<<<<< HEAD
+    VERSION         => '0.9.5',
+=======
     VERSION         => $version,
+>>>>>>> 6fccddf7907c39b45e32cd0d6440f14df796bbeb
     DISTNAME        => 'ThemeManager',
 );

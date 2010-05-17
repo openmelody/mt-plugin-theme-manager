@@ -1,7 +1,7 @@
 <mt:SetVarBlock name="page_title">Theme: <mt:Var name="label"></mt:SetVarBlock>
 
 <mt:SetVarBlock name="html_head" append="1">
-    <link rel="stylesheet" href="<mt:ThemeManagerStaticWebPath>css/app.css" type="text/css" />
+    <link rel="stylesheet" href="<mt:PluginStaticWebPath component="ThemeManager">css/app.css" type="text/css" />
     <script type="text/javascript">
     function applyTheme() {
         document.getElementById('status').style.display='block';

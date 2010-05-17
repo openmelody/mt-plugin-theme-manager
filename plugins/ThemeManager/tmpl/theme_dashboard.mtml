@@ -4,10 +4,10 @@
 </mt:SetVarBlock>
 
 <mt:SetVarBlock name="html_head" append="1">
-    <link rel="stylesheet" href="<mt:ThemeManagerStaticWebPath>css/app.css" type="text/css" />
+    <link rel="stylesheet" href="<mt:PluginStaticWebPath component="ThemeManager">css/app.css" type="text/css" />
+    <link rel="stylesheet" href="<mt:PluginStaticWebPath component="ThemeManager">css/docs.css" type="text/css" />
     <script src="<mt:Var name="static_uri">jquery/jquery.js" type="text/javascript"></script>
-    <script src="<mt:ThemeManagerStaticWebPath>js/app.js" type="text/javascript"></script>
-
+    <script src="<mt:PluginStaticWebPath component="ThemeManager">js/app.js" type="text/javascript"></script>
     <script type="text/javascript">
     </script>
 </mt:SetVarBlock>
@@ -138,7 +138,7 @@
         <ul>
         <mt:Loop name="page_actions">
             <li class="icon-mini-left icon-mini-settings">
-                <a href="<mt:Var name="link" escape="html">&amp;blog_id=<mt:Var name="blog_id">"
+                <a href="<mt:var name="script_url" escape="html">?__mode=theme_export_start&amp;blog_id=<mt:Var name="blog_id">"
                     <mt:If name="continue_prompt"> onclick="return confirm('<mt:var name="continue_prompt" escape="js">');"</mt:If>>
                         <mt:Var name="label">
                 </a>
