@@ -114,6 +114,12 @@ sub _theme_thumb_url {
 
 sub theme_dashboard {
     my $app    = MT::App->instance;
+    # Since there is no Theme Dashboard at the system level, capture and
+    # redirect to the System Dashboard, if necessary.
+    if ( !eval {$app->blog->id} && ($app->param('__mode') eq 'theme_dashboard') ) {
+        $app->redirect( $app->uri.'?__mode=dashboard&blog_id=0' );
+    }
+    
     my $ts     = $app->blog->template_set;
     my $tm     = MT->component('ThemeManager');
     my $plugin = find_theme_plugin($ts);
