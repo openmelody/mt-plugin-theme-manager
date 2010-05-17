@@ -786,7 +786,7 @@ sub _install_containers {
     my $pid = $parent ? $parent->id : 0;
     foreach my $basename (keys %$struct) {
         my $c = $struct->{$basename};
-        my $obj = MT->model($model)->load({ basename => $basename });
+        my $obj = MT->model($model)->load({ basename => $basename, parent => $pid });
         unless ($obj) {
             $obj = MT->model($model)->new;
             $obj->blog_id( $blog->id );
