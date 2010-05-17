@@ -35,7 +35,7 @@
     <$MTApp:PageActions from="list_template"$>
 </mt:setvarblock>
 <mt:setvarblock name="html_head" append="1">
-<link rel="stylesheet" href="<mt:ThemeManagerStaticWebPath>css/app.css" type="text/css" />
+<link rel="stylesheet" href="<mt:PluginStaticWebPath component="ThemeManager">css/app.css" type="text/css" />
 <script type="text/javascript" src="<mt:Var name="static_uri">jquery/jquery.js"></script>
 <script type="text/javascript">
 
@@ -48,13 +48,13 @@ $(document).ready( function() {
       url: '<mt:var name="script_url">?__mode=tm.rebuild_tmpl&amp;blog_id=<mt:var name="blog_id">&amp;id=' + id,
       dataType: 'json',
       error: function (xhr, status, error) {
-        link.css('background','url(<mt:ThemeManagerStaticWebPath>images/icon-error.gif) no-repeat center -1px');
+        link.css('background','url(<mt:PluginStaticWebPath component="ThemeManager">images/icon-error.gif) no-repeat center -1px');
       },
       success: function (data, status, xhr) {
         if (data.success) {
           link.css('background','url(<mt:Var name="static_uri">images/nav-icon-rebuild.gif) no-repeat center 0px');
         } else {
-          link.css('background','url(<mt:ThemeManagerStaticWebPath>images/icon-error.gif) no-repeat center -1px');
+          link.css('background','url(<mt:PluginStaticWebPath component="ThemeManager">images/icon-error.gif) no-repeat center -1px');
         }
       }
     });
