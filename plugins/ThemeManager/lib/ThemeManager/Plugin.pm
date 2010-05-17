@@ -668,6 +668,7 @@ sub _set_archive_map_publish_types {
                         );
                     return unless $tm;
                     $tm->build_type( $map->{build_type} );
+                    $tm->is_preferred( $map->{preferred} );
                     $tm->save()
                         or MT->log(
                             { message => "Could not update template map for template $t." } );
