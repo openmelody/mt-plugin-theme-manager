@@ -136,14 +136,21 @@
     <mt:If name="page_actions">
         <h3>Customize this Theme</h3>
         <ul>
-        <mt:Loop name="page_actions">
+<mt:loop name="page_actions">
+    <mt:if name="link">
             <li class="icon-mini-left icon-mini-settings">
-                <a href="<mt:Var name="link" escape="html">&amp;blog_id=<mt:Var name="blog_id">"
-                    <mt:If name="continue_prompt"> onclick="return confirm('<mt:var name="continue_prompt" escape="js">');"</mt:If>>
-                        <mt:Var name="label">
+                <a href="<mt:var name="link" escape="html"><mt:if name="blog_id">&amp;blog_id=<mt:var name="blog_id"></mt:if>"<mt:if name="continue_prompt"> onclick="return confirm('<mt:var name="continue_prompt" escape="js">');"</mt:if>>
+                    <mt:var name="label">
                 </a>
             </li>
-        </mt:Loop>
+    <mt:Else name="dialog">
+            <li class="icon-mini-left icon-mini-settings">
+                <a href="javascript:void(0)" onclick="<mt:if name="continue_prompt">if(!confirm('<mt:var name="continue_prompt" escape="js">'))return false;</mt:if>return openDialog(false, '<mt:var name="dialog">', '<mt:if name="dialog_args"><mt:var name="dialog_args" escape="url"></mt:if><mt:if name="id">&amp;id=<mt:var name="id"></mt:if><mt:if name="blog_id">&amp;blog_id=<mt:var name="blog_id"></mt:if>')">
+                    <mt:var name="label">
+                </a>
+            </li>
+    </mt:if>
+</mt:loop>
         </ul>
     </mt:If>
     <div id="advanced-options">
