@@ -114,6 +114,12 @@ sub _theme_thumb_url {
 
 sub theme_dashboard {
     my $app    = MT::App->instance;
+    # Since there is no Theme Dashboard at the system level, capture and
+    # redirect to the System Dashboard, if necessary.
+    if ( !eval {$app->blog->id} && ($app->param('__mode') eq 'theme_dashboard') ) {
+        $app->redirect( $app->uri.'?__mode=dashboard&blog_id=0' );
+    }
+    
     my $ts     = $app->blog->template_set;
     my $tm     = MT->component('ThemeManager');
     my $plugin = find_theme_plugin($ts);
@@ -331,7 +337,10 @@ sub setup_theme {
     # Check for the widgetsets beacon. It will be set after visiting the 
     # "Save Widgets" screen. Or, we may bypass it because we don't always
     # need to show the "Save Widgets" screen.
-    if ( !$app->param('save_widgetsets_beacon') ) {
+    # Also, bypass the option to save widgets if we are mass-applying themes.
+    # Bulk applying means we probably are just trying to wipe everything back
+    # to a clean slate.
+    if ( (scalar @blog_ids == 1) && !$app->param('save_widgetsets_beacon') ) {
         # Because the beacon hasn't been set, we need to first determine if
         # we should show the Save Widgets screen.
         foreach my $blog_id (@blog_ids) {
@@ -873,8 +882,7 @@ sub template_set_change {
 sub template_filter {
     my ($cb, $templates) = @_;
     my $app = MT->instance;
-    return unless $app->isa('MT::App::CMS');
-    my $blog_id = $app->blog 
+    my $blog_id = $app->can('blog') 
         ? $app->blog->id 
         : return; # Only work on blog-specific widgets and widget sets
 

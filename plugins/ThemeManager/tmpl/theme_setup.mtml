@@ -79,12 +79,14 @@
     <input type="hidden" name="<mt:Var name="name">" value="<mt:Var name="value" encode_html="1">" />
     </mt:Loop>
 
+<mt:If name="fields_loop">
     <div id="status">
         <div id="status-inner">
             <p>Saving theme options...</p>
             <img src="<mt:Var name="static_uri">images/indicator.gif" width="66" height="66" border="0" />
         </div>
     </div>
+</mt:If>
 
     <div class="actions-bar">
         <div class="actions-bar-inner pkg actions">
