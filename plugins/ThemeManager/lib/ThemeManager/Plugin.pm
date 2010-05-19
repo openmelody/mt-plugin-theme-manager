@@ -651,28 +651,26 @@ sub _set_archive_map_publish_types {
                 my $m ( keys %{ $tmpls->{$a}->{$t}->{mappings} } )
             {
                 my $map = $tmpls->{$a}->{$t}->{mappings}->{$m};
-                if ( $map->{build_type} ) {
-                    my $tmpl = MT->model('template')->load(
-                        {
-                            blog_id    => $blog->id,
-                            identifier => $t,
-                        }
-                        );
-                    return unless $tmpl;
-                    my $tm = MT->model('templatemap')->load(
-                        {
-                            blog_id      => $blog->id,
-                            archive_type => $map->{archive_type},
-                            template_id  => $tmpl->id,
-                        }
-                        );
-                    return unless $tm;
-                    $tm->build_type( $map->{build_type} );
-                    $tm->is_preferred( $map->{preferred} );
-                    $tm->save()
-                        or MT->log(
-                            { message => "Could not update template map for template $t." } );
-                }
+                my $tmpl = MT->model('template')->load(
+                    {
+                        blog_id    => $blog->id,
+                        identifier => $t,
+                    }
+                    );
+                next unless $tmpl;
+                my $tm = MT->model('templatemap')->load(
+                    {
+                        blog_id      => $blog->id,
+                        archive_type => $map->{archive_type},
+                        template_id  => $tmpl->id,
+                    }
+                    );
+                next unless $tm;
+                $tm->build_type( $map->{build_type} ) if $map->{build_type};
+                $tm->is_preferred( $map->{preferred} ) if $map->{preferred};
+                $tm->save()
+                    or MT->log(
+                        { message => "Could not update template map for template $t." } );
             }
         }
     }
@@ -875,6 +873,7 @@ sub template_set_change {
 sub template_filter {
     my ($cb, $templates) = @_;
     my $app = MT->instance;
+    return unless $app->isa('MT::App::CMS');
     my $blog_id = $app->blog 
         ? $app->blog->id 
         : return; # Only work on blog-specific widgets and widget sets

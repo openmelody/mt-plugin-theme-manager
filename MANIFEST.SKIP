@@ -14,4 +14,4 @@
 # packages
 \.zip$
 \.tar\.gz$
-
+static/theme_thumbs
