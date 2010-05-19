@@ -1,7 +1,7 @@
 
 package String::CRC::Cksum;
 
-use 5.6.1;
+use 5.006_001;
 use strict;
 use warnings;
 use Carp;
@@ -63,6 +63,7 @@ sub add {
     use integer;
     my String::CRC::Cksum $self = shift;
     my $cksum = $self->{cksum};
+    $cksum ||= 0;
     my $size = $self->{size};
 
     while(@_) {
@@ -70,7 +71,9 @@ sub add {
 
         for(my $i = 0; $i < $n; ++$i) {
             my $c = unpack 'C', substr $_[0], $i, 1;
-            $cksum = ($cksum << 8) ^ $crctab[($cksum >> 24) ^ $c];
+            my $d = ($cksum >> 24) ^ $c;
+            my $e = $crctab[$d] || 0;
+            $cksum = ($cksum << 8) ^ $e;
             ++$size;
         }
 
@@ -111,7 +114,9 @@ sub peek {
     while($size != 0) {
         my $c = $size & 0377;
         $size >>= 8;
-        $cksum = ($cksum << 8) ^ $crctab[($cksum >> 24) ^ $c];
+        my $d = ($cksum >> 24) ^ $c;
+        my $e = $crctab[($cksum >> 24) ^ $c] || 0;
+        $cksum = ($cksum << 8) ^ $e;
     }
     $cksum = ~ $cksum;
 
