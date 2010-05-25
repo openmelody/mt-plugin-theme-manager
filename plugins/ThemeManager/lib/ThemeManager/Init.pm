@@ -41,12 +41,12 @@ sub _translate {
     # $c->l10n_class->get_handle() knows the correct place to look for
     # translations.
     my $app = MT->instance;
-    if ( eval{$app->param} && ($app->param('__mode') eq 'setup_theme') ) {
+    if ( eval{$app->param} && $app->param('__mode') && $app->param('__mode') eq 'setup_theme' ) {
         # The user is applying a new theme.
         $c = find_theme_plugin( $app->param('theme_id') );
         $h = $c->l10n_class->get_handle( $app->param('language') );
     }
-    elsif ( eval{$app->param} && ($app->param('__mode') eq 'save') && ($app->param('_type') eq 'blog') ) {
+    elsif ( eval{$app->param} && $app->param('__mode') && $app->param('__mode') eq 'save' && $app->param('_type') eq 'blog' ) {
         # The user is creating a new blog.
         $c = find_theme_plugin( $app->param('template_set') );
         $h = $c->l10n_class->get_handle( $app->param('template_set_language') );
