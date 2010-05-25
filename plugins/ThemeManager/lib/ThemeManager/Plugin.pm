@@ -137,7 +137,10 @@ sub theme_dashboard {
     $param->{paypal_email}      = ThemeManager::Util::theme_paypal_email($ts, $plugin);
     $param->{about_designer}    = ThemeManager::Util::about_designer($ts, $plugin);
     $param->{theme_docs}        = ThemeManager::Util::theme_docs($ts, $plugin);
-    
+    if ( $app->blog->language ne $app->blog->template_set_language ) {
+        $param->{template_set_language} = $app->blog->template_set_language;
+    }
+
     my $dest_path = _theme_thumb_path();
     if ( -w $dest_path ) {
         $param->{theme_thumb_url}   = _make_thumbnail($ts, $plugin);
@@ -150,9 +153,8 @@ sub theme_dashboard {
 
     # Are the templates linked? We use this to show/hide the Edit/View
     # Templates links.
-    my $linked = MT->model('template')->load(
-					     { blog_id     => $app->blog->id,
-					       linked_file => '*', });
+    my $linked = MT->model('template')->load({ blog_id     => $app->blog->id,
+                                               linked_file => '*', });
     if ($linked) {
         # These templates *are* linked.
         $param->{linked_theme} = 1;
@@ -165,8 +167,8 @@ sub theme_dashboard {
         # So, first grab templates in the current blog that are not 
         # backups and that have had modifications made (modified_on col).
         my $iter = MT->model('template')->load_iter(
-                        { blog_id    => $app->blog->id,
-                          type => {not_like => 'backup'},
+                        { blog_id     => $app->blog->id,
+                          type        => {not_like => 'backup'},
                           modified_on => {not_null => 1}, });
         while ( my $tmpl = $iter->() ) { 
             if ($tmpl->modified_on > $tmpl->created_on) {
@@ -212,7 +214,7 @@ sub theme_dashboard {
             $row->{label}         = ThemeManager::Util::theme_label($theme->ts_id, $plugin);
             $row->{thumbnail_url} = ThemeManager::Util::theme_thumbnail_url($theme->ts_id, $plugin);
             $row->{plugin_sig}    = $theme->plugin_sig;
-        
+
             return $row;
         },
     });
@@ -405,21 +407,12 @@ sub setup_theme {
         my @param_langs;
 
         # Load the specified plugin/theme.
-        #my $c = MT->component('ClassicBlogThemePack');
         my $c = $plugin;
         eval "require " . $c->l10n_class . ";";
         my $handles = MT->request('l10n_handle') || {};
         my $h       = $handles->{ $c->id };
 
         foreach my $language (@languages) {
-            # This will only let us access languages that MT has translations
-            # for. Since we may need to translate to other languages, this 
-            # doesn't cut it.
-            # my $lh = MT::L10N->get_handle($language);
-
-            #$h = $c->l10n_class->get_handle($language);
-            #push @param_langs, { lang_tag  => $h->language_tag,
-            #                     lang_name => $h->language_name };
             push @param_langs, { lang_tag  => $language,
                                  lang_name => $language };
 
@@ -429,7 +422,7 @@ sub setup_theme {
     }
     else {
         # Either a language has been set, or there is only one language: english.
-        my $selected_lang = $app->param('language') ? $app->param('language') : @languages[0];
+        my $selected_lang = $app->param('language') ? $app->param('language') : $languages[0];
         # If this theme is being applied to many blogs, assign the language to them all!
         foreach my $blog_id (@blog_ids) {
             my $blog = MT->model('blog')->load($blog_id);
@@ -440,8 +433,8 @@ sub setup_theme {
     
 
     # As you may guess, this applies the template set to the current blog.
+    use ThemeManager::Template;
     foreach my $blog_id (@blog_ids) {
-        use ThemeManager::Template;
         ThemeManager::Template::_refresh_all_templates($ts_id, $blog_id, $app);
     }
 
@@ -680,8 +673,8 @@ sub _check_thumbalizr_result {
     # eb433ad65b8aa50047e6f2de1530d6cf
     # The "failed" image has an MD5 hash of:
     # ac47a999e5ce1769d480a66b0554343d
-    if ( ($md5->hexdigest == 'eb433ad65b8aa50047e6f2de1530d6cf')
-            || ($md5->hexdigest == 'ac47a999e5ce1769d480a66b0554343d') ) {
+    if ( ($md5->hexdigest eq 'eb433ad65b8aa50047e6f2de1530d6cf')
+            || ($md5->hexdigest eq 'ac47a999e5ce1769d480a66b0554343d') ) {
         # This is the "queued" image being displayed. Instead of this, we
         # want to show the "preview" image defined by the template set.
         return ThemeManager::Util::theme_preview_url($ts_id, $plugin);
@@ -1157,7 +1150,7 @@ sub _find_supported_languages {
     }
     if (!@ts_langs) {
         # No languages were specified. So, lets default to english.
-        @ts_langs[0] = 'en-us';
+        $ts_langs[0] = 'en-us';
     }
     return @ts_langs;
 }

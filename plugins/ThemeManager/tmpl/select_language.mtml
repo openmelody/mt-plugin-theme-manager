@@ -1,0 +1,53 @@
+<mt:SetVarBlock name="page_title">Theme: <mt:Var name="ts_label"></mt:SetVarBlock>
+
+<mt:SetVarBlock name="html_head" append="1">
+    <link rel="stylesheet" href="<mt:PluginStaticWebPath component="ThemeManager">css/app.css" type="text/css" />
+</mt:SetVarBlock>
+
+<mt:include name="dialog/header.tmpl">
+
+<div id="theme-info">
+    <form method="post" action="<mt:Var name="script_url">" name="setup_theme">
+        <input type="hidden" name="__mode" value="setup_theme" />
+        <input type="hidden" name="_type" value="theme" />
+        <input type="hidden" name="blog_id" value="<mt:Var name="blog_id">" />
+        <input type="hidden" name="theme_id" value="<mt:Var name="ts_id">" />
+        <input type="hidden" name="plugin_sig" value="<mt:Var name="plugin_sig">" />
+        <input type="hidden" name="save_widgetsets_beacon" value="1" />
+
+<p>This template set has been translated into several languages. Select a language to be applied for the installation of this theme&rsquo;s template set.</p>
+
+<select name="language">
+<mt:Loop name="languages">
+    <option value="<mt:Var name="lang_tag">"><mt:Var name="lang_name"></option>
+</mt:Loop>
+</select>
+
+    <div id="status">
+        <div id="status-inner">
+            <p>Applying the selected theme...</p>
+            <img src="<mt:Var name="static_uri">images/indicator.gif" width="66" height="66" border="0" />
+        </div>
+    </div>
+
+    <div class="actions-bar">
+        <div class="actions-bar-inner pkg actions">
+                <button
+                    type="submit"
+                    onclick="document.getElementById('status').style.display='block';this.submit();"
+                    accesskey="s"
+                    title="<__trans phrase="Apply (s)">"
+                    class="primary-button"
+                    ><__trans phrase="Apply"></button>
+                <button
+                    onclick="closeDialog(); return false"
+                    type="submit"
+                    accesskey="x"
+                    class="cancel"
+                    title="<__trans phrase="Cancel (x)">"
+                    ><__trans phrase="Cancel"></button>
+        </div>
+    </div>
+</form>
+</div>
+<mt:include name="dialog/footer.tmpl">

@@ -215,42 +215,52 @@ UI, this option corresponds to the "Process as [SSI method] include." Server
 Side Includes must be enabled at the blog level (check this in Preferences > 
 Publishing).
 
+An advanced feature that Theme Manager supports installing localized templates. 
+Localized templates (that is, templates translated to another language) need to 
+be defined within your plugin. You'll need to specify an `l10n_class` and the 
+accompanying translations in your plugin.
+
     name: Awesomeness
     version: 1.0
+    l10n_class: 'Awesomeness::L10N'
     template_sets:
         my_awesome_theme:
             base_path: 'templates'
             label: 'My Awesome Theme'
-        templates:
-            index:
-                main_index:
+            languages:
+                - en-us
+                - fr
+                - es
+            templates:
+                index:
                     main_index:
-                        label: 'Main Index'
-                        outfile: index.html
-                        rebuild_me: 1
-                        build_type: 1
-            archive:
-                category_archive:
-                    label: 'Category Archive'
-                    mappings:
-                        category:
-                            archive_type: Category
-                            file_template: %c/%f
-                            preferred: 1
-                            build_type: 4
-            module:
-                recent_entries:
-                    label: 'Recent Entries'
-                    cache:
-                        expire_type: 2
-                        expire_event: entry
-            widget:
-                awesomeness_factor:
-                    label: 'My Awesomeness Factor'
-                    cache:
-                        expire_type: 1
-                        expire_interval: 30
-                        include_with_ssi: 1
+                        main_index:
+                            label: 'Main Index'
+                            outfile: index.html
+                            rebuild_me: 1
+                            build_type: 1
+                archive:
+                    category_archive:
+                        label: 'Category Archive'
+                        mappings:
+                            category:
+                                archive_type: Category
+                                file_template: %c/%f
+                                preferred: 1
+                                build_type: 4
+                module:
+                    recent_entries:
+                        label: 'Recent Entries'
+                        cache:
+                            expire_type: 2
+                            expire_event: entry
+                widget:
+                    awesomeness_factor:
+                        label: 'My Awesomeness Factor'
+                        cache:
+                            expire_type: 1
+                            expire_interval: 30
+                            include_with_ssi: 1
 
 # Acknowledgements
 

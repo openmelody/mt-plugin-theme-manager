@@ -1,0 +1,84 @@
+package ThemeManager::Init;
+
+use ConfigAssistant::Util qw( find_theme_plugin );
+# Sub::Install is included with Config Assistant. Since CA is required for
+# Theme Manager, we can rely on it being available.
+use Sub::Install;
+
+sub init_app {
+    # TODO - This should not have to reinstall a subroutine. It should invoke 
+    #        a callback.
+    Sub::Install::reinstall_sub( {
+        code => \&_translate,
+        into => 'MT::Component',
+        as   => 'translate',
+    });
+}
+
+sub _translate {
+    # This is basically lifted right from MT::CMS::Template (from Movable Type
+    # version 4.261), with some necessary changes to work with Theme Manager.
+    my $c       = shift;
+    my $handles = MT->request('l10n_handle') || {};
+    my $h       = $handles->{ $c->id };
+    unless ($h) {
+        my $lang = MT->current_language || MT->config->DefaultLanguage;
+        eval "require " . $c->l10n_class . ";";
+        if ($@) {
+            $h = MT->language_handle;
+        }
+        else {
+            $h = $c->l10n_class->get_handle($lang);
+        }
+        $handles->{ $c->id } = $h;
+        MT->request( 'l10n_handle', $handles );
+    }
+
+    # If a blog is being created or a new theme is being applied, we need to
+    # handle the template translation in this special case.
+    # $c is currently set to Theme Manager, which is incorrect: we need
+    # the plugin component of the template set being installed. That way,
+    # $c->l10n_class->get_handle() knows the correct place to look for
+    # translations.
+    my $app = MT->instance;
+    if ( eval{$app->param} && ($app->param('__mode') eq 'setup_theme') ) {
+        # The user is applying a new theme.
+        $c = find_theme_plugin( $app->param('theme_id') );
+        $h = $c->l10n_class->get_handle( $app->param('language') );
+    }
+    elsif ( eval{$app->param} && ($app->param('__mode') eq 'save') && ($app->param('_type') eq 'blog') ) {
+        # The user is creating a new blog.
+        $c = find_theme_plugin( $app->param('template_set') );
+        $h = $c->l10n_class->get_handle( $app->param('template_set_language') );
+    }
+
+    my ( $format, @args ) = @_;
+    foreach (@args) {
+        $_ = $_->() if ref($_) eq 'CODE';
+    }
+    my $enc = MT->instance->config('PublishCharset');
+    my $str;
+    if ($h) {
+        if ( $enc =~ m/utf-?8/i ) {
+            $str = $h->maketext( $format, @args );
+        }
+        else {
+            $str = MT::I18N::encode_text(
+                $h->maketext(
+                    $format,
+                    map { MT::I18N::encode_text( $_, $enc, 'utf-8' ) } @args
+                ),
+                'utf-8', $enc
+            );
+        }
+    }
+    if ( !defined $str ) {
+        $str = MT->translate(@_);
+    }
+    $str;
+}
+
+
+1;
+
+__END__
