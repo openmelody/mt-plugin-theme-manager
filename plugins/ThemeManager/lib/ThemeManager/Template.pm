@@ -14,7 +14,7 @@ sub _refresh_all_templates {
     my $t = time;
 
     my @id = ( scalar $blog_id );
-    
+
     require MT::DefaultTemplates;
 
     my $user = $app->user;
@@ -487,7 +487,7 @@ sub _refresh_system_custom_fields {
             );
         next FIELD;
     }
-      # Does the blog have a field with this basename?                                                       
+      # Does the blog have a field with this basename?
       my $field_obj = MT->model('field')->load(
           {
               blog_id  => $field_scope,
@@ -498,7 +498,7 @@ sub _refresh_system_custom_fields {
       
       if ($field_obj) {
           
-          # Warn if the type is different.                                                                   
+          # Warn if the type is different.
           MT->log(
               {
                   level   => MT->model('log')->WARNING(),
@@ -613,9 +613,8 @@ sub xfrm_add_language {
 $(document).ready( function() {
     // Template sets with languages
     var ts = new Array();
-<mt:Loop name="ts_languages_loop">
-    <mt:Var name="__counter__" op="--" setvar="index">
-    ts[<mt:Var name="index">] = '<mt:Var name="ts_id">';
+<mt:Loop name="ts_loop">
+    ts[<mt:Var name="__counter__" op="--">] = '<mt:Var name="ts_id">';
     <mt:Loop name="ts_languages">
         <mt:If name="__first__">
     var <mt:Var name="ts_id"> = new Array;
@@ -624,17 +623,25 @@ $(document).ready( function() {
     </mt:Loop>
 </mt:Loop>
 
+
     // Build the blog_language field and place it after the
     // template_set dropdown.
     $('#template_set-field').after( $('<div id="template_set_language-field" class="field field-left-label pkg hidden"></div>') );
     $('#template_set_language-field').html('<div class="field-inner"><div class="field-header"><label id="template_set_language-label" for="template_set_language">Template Set Language</label></div><div class="field-content"><select name="template_set_language"></select><div class="hint">Translate templates to the selected language.</div></div></div></div>');
 
-    // When the template_set field is clicked, look at the value and compare
-    // it to all template sets that have a language defined. If a template
-    // set has a language defined, then show a chooser to let them select a
-    // language.
     $('#template_set-field select').click( function() {
-        $.each(ts, function(index, ts_id) {
+        // By default, hide the language field for all template sets. No reason
+        // to show it if there are no translations to choose from.
+        $('#template_set_language-field').addClass('hidden');
+        // If no language is in the template set, then we will want to apply a
+        // default. It's probalby safe to say that the user's selected language
+        // is a good place to start.
+        $('#template_set_language-field select').html('<option value="<mt:Var name="default_language">"><mt:Var name="default_language"></option>');
+        // When the template_set field is clicked, look at the value and compare
+        // it to all template sets that have a language defined. If a template
+        // set has a language defined, then show a chooser to let them select 
+        // a language.
+        $.each(ts, function(index, ts_id) { alert($('#template_set-field select').val()+','+ts_id);
             if ( $('#template_set-field select').val() == ts_id ) {
                 $('#template_set_language-field').removeClass('hidden');
                 var ts_langs = eval(ts_id);
@@ -644,15 +651,6 @@ $(document).ready( function() {
                 for (var i = 0; i < ts_langs.length; i++) {
                     $('#template_set_language-field select').append('<option value="'+ts_langs[i]+'">'+ts_langs[i]+'</option>');
                 }
-            }
-            else {
-                // The selected template set doesn't have a language available,
-                // so hide the field.
-                $('#template_set_language-field').addClass('hidden');
-                // If no language is in the template set, then we will want to
-                // apply a default. It's probalby safe to say that the user's 
-                // selected language is a good place to start.
-                $('#template_set_language-field select').append('<option value="<mt:Var name="default_language">"><mt:Var name="default_language"></option>');
             }
         });
     });
@@ -669,31 +667,35 @@ HTML
 sub xfrm_param_add_language {
     my ($cb, $app, $param, $tmpl) = @_;
     
+
+    # The user probably wants to apply a new theme; we start by browsing the
+    # available themes.
+    # Save themes to the theme table, so that we can build a listing screen from them.
+    ThemeManager::Plugin::_theme_check();
+
     # Grab all of the themes/template sets.
-    my @ts_langs;
-    my @ts_lang_loop;
+    my @ts_loop;
     my $iter = MT->model('theme')->load_iter();
     while ( my $theme = $iter->() ) {
         # Grab the languages available
         my $ts_plugin = $MT::Plugins{$theme->plugin_sig}{object};
-        my $langs = $ts_plugin->registry('template_sets',$theme->ts_id,'languages');
-        @ts_langs = ();
+        my $langs = $ts_plugin->registry('template_sets', $theme->ts_id, 'languages');
         # If any languages are available, put them in the loop.
         if ($langs) {
+            my @ts_langs;
             foreach my $lang (@$langs) {
-                push @ts_langs, { 
+                push @ts_langs, {
                         ts_id       => $theme->ts_id,
                         ts_language => $lang,
                     };
             }
-            push @ts_lang_loop, {
+            push @ts_loop, {
                     ts_id => $theme->ts_id,
                     ts_languages => \@ts_langs,
                 };
         }
     }
-    
-    $param->{ts_languages_loop} = \@ts_lang_loop;
+    $param->{ts_loop} = \@ts_loop;
     $param->{default_language}  = $app->user->preferred_language || 'en-us';
 
 }

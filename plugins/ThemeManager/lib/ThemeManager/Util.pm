@@ -6,8 +6,8 @@ sub theme_label {
     # Grab the theme label. If no template set label is supplied then use
     # the parent plugin's name plus the template set ID.
     my ($set, $obj) = @_;
-    return $obj->{registry}->{'template_sets'}->{$set}->{label}
-        ? $obj->{registry}->{'template_sets'}->{$set}->{label}
+    return $obj->registry('template_sets', $set, 'label')
+        ? $obj->registry('template_sets', $set, 'label')
         : eval {$obj->name.': '} . $set;
 }
 
@@ -133,7 +133,7 @@ sub theme_docs {
     }
     return $docs->($obj, @_) if ref $docs eq 'CODE';
 
-    if ($docs =~ /\s/) {
+    if ( $docs && ($docs =~ /\s/) ) {
         return $docs;
     } else { # no spaces in $docs; must be a filename...
         my $app = MT->instance();
