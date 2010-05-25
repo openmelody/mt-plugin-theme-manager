@@ -113,6 +113,7 @@ sub about_designer {
     # just some HTML, or even code.
     my ($set, $obj) = @_;
     my $about_designer = $obj->{registry}->{'template_sets'}->{$set}->{about_designer};
+    return unless $about_designer;
     if (ref $about_designer eq 'HASH') {
         $about_designer = MT->handler_to_coderef($about_designer->{code});
     }
@@ -128,6 +129,7 @@ sub theme_docs {
     # Theme Docs are inline-presented documentation.
     my ($set, $obj) = @_;
     my $docs = $obj->{registry}->{'template_sets'}->{$set}->{documentation};
+    return unless $docs;
     if (ref $docs eq 'HASH') {
         $docs = MT->handler_to_coderef($docs->{code});
     }

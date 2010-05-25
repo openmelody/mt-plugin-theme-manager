@@ -44,9 +44,7 @@ sub update_page_actions {
             refresh_all_blog_templates => {
                 label     => "Refresh Blog Templates",
                 dialog    => 'select_theme',
-                condition => sub {
-                                MT->app->blog;
-                             },
+                condition => sub { MT->app->blog; },
                 order => 1000,
             },
             refresh_fields => {
@@ -100,20 +98,20 @@ sub update_page_actions {
 }
 
 sub _theme_thumb_path {
-    my $app = MT::App->instance();
-    my $tm = MT->component('ThemeManager');
+    my $app  = MT::App->instance();
+    my $tm   = MT->component('ThemeManager');
     my @path = ($app->config('StaticFilePath'), 'support', 'plugins', $tm->id, 'theme_thumbs');
     return File::Spec->catfile( @path );
 }
 sub _theme_thumb_url {
     my $app = MT::App->instance();
-    my $tm = MT->component('ThemeManager');
+    my $tm  = MT->component('ThemeManager');
     return caturl( $app->static_path , 'support' , 'plugins', $tm->id, 'theme_thumbs', 
-		   $app->blog->id.'.jpg' );
+            $app->blog->id.'.jpg' );
 }
 
 sub theme_dashboard {
-    my $app    = MT::App->instance;
+    my $app = MT::App->instance;
     # Since there is no Theme Dashboard at the system level, capture and
     # redirect to the System Dashboard, if necessary.
     if ( !eval {$app->blog->id} && ($app->param('__mode') eq 'theme_dashboard') ) {
@@ -143,13 +141,12 @@ sub theme_dashboard {
 
     my $dest_path = _theme_thumb_path();
     if ( -w $dest_path ) {
-        $param->{theme_thumb_url}   = _make_thumbnail($ts, $plugin);
+        $param->{theme_thumb_url} = _make_thumbnail($ts, $plugin);
     }
     else {
         $param->{theme_thumbs_path} = $dest_path;
     }
-    $param->{theme_mini}        = _make_mini();
-    
+    $param->{theme_mini} = _make_mini();
 
     # Are the templates linked? We use this to show/hide the Edit/View
     # Templates links.
@@ -627,7 +624,9 @@ sub _make_thumbnail {
 
     # Check if the thumbnail is cached (exists) and is less than 1 day old. 
     # If it's older, we want a new thumb to be created.
-    if ( (-e $dest_path) && (-M $dest_path <= 1) ) {
+    my $fmgr = MT::FileMgr->new('Local')
+        or return $app->error( MT::FileMgr->errstr );
+    if ( ($fmgr->exists($dest_path)) && (-M $dest_path <= 1) ) {
         # We've found a cached image! Now we need to check that it's usable.
         return _check_thumbalizr_result($dest_path, $dest_url, $ts_id, $plugin);
     }
@@ -636,8 +635,6 @@ sub _make_thumbnail {
         # First, create the destination directory, if necessary.
         my $dir = _theme_thumb_path();
         if (!-d $dir) {
-            my $fmgr = MT::FileMgr->new('Local')
-                or return $app->error( MT::FileMgr->errstr );
             $fmgr->mkpath($dir)
                 or return $app->error( MT::FileMgr->errstr );
         }
@@ -691,16 +688,16 @@ sub _make_mini {
     my $dest_path = File::Spec->catfile( _theme_thumb_path(), $app->blog->id.'-mini.jpg' 
     );
     my $dest_url = caturl($app->static_path,'support','plugins',$tm->id,'theme_thumbs',
-			  $app->blog->id.'-mini.jpg');
+            $app->blog->id.'-mini.jpg');
     # Decide if we need to create a new mini or not.
-    unless ( (-e $dest_path) && (-M $dest_path <= 1) ) {
+    my $fmgr = MT::FileMgr->new('Local')
+        or return MT::FileMgr->errstr;
+    unless ( ($fmgr->exists($dest_path)) && (-M $dest_path <= 1) ) {
         my $source_path = File::Spec->catfile( _theme_thumb_path(), $app->blog->id.'.jpg' );
         use MT::Image;
         my $img = MT::Image->new( Filename => $source_path )
             or return 0;
         my $resized_img = $img->scale( Width => 138 );
-        my $fmgr = MT::FileMgr->new('Local')
-            or return MT::FileMgr->errstr;
         $fmgr->put_data($resized_img, $dest_path)
             or return MT::FileMgr->errstr;
     }
