@@ -50,3 +50,8 @@ skip_static:
     - .psd
 
 widgets: $ThemeManager::ThemeManager::DashboardWidget::widget
+
+tags:
+    function:
+        TemplateSetLanguage: $ThemeManager::ThemeManager::Tags::template_set_language
+

@@ -6,6 +6,12 @@ use ConfigAssistant::Util qw( find_theme_plugin );
 use Sub::Install;
 
 sub init_app {
+    MT::Blog->install_meta({
+        column_defs => {
+            'template_set_language' => 'string',
+        }
+    });
+    
     # TODO - This should not have to reinstall a subroutine. It should invoke 
     #        a callback.
     Sub::Install::reinstall_sub( {
