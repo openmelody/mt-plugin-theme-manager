@@ -306,6 +306,7 @@ sub setup_theme {
     my $app = shift;
     my $ts_id      = $app->param('theme_id');
     my $plugin_sig = $app->param('plugin_sig');
+    
     my @blog_ids;
     if ( $app->param('blog_ids') ) {
         @blog_ids = split(/,/, $app->param('blog_ids'));

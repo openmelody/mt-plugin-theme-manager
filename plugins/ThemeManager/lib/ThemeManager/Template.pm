@@ -615,6 +615,12 @@ sub xfrm_add_language {
 <script src="<mt:Var name="static_uri">jquery/jquery.js" type="text/javascript"></script>
 <script type="text/javascript">
 $(document).ready( function() {
+    // Expand upon the Template Sets dropdown with a visual chooser.
+    $('#template_set-field .field-content').append('<div class="hint">Select a theme template set to create a new blog with, or use the <a href="javascript:void(0)" onclick="return openDialog(false, \'select_theme\')">visual chooser</a>.</div>');
+    // Add an ID to the template set dropdown just to make things easier.
+    $('#template_set-field select').attr('id', 'template_set');
+    
+    
     // Template sets with languages
     var ts = new Array();
 <mt:Loop name="ts_loop">
@@ -626,7 +632,6 @@ $(document).ready( function() {
     <mt:Var name="ts_id">[<mt:Var name="__counter__" op="--">] = '<mt:Var name="ts_language">';
     </mt:Loop>
 </mt:Loop>
-
 
     // Build the blog_language field and place it after the
     // template_set dropdown.
@@ -660,7 +665,7 @@ $(document).ready( function() {
     });
     
     // Offer an explanation of what the Blog Language selection is.
-    $('#blog_language-field .field-content').append('<div class="hint">The blog language controls date and time display.');
+    $('#blog_language-field .field-content').append('<div class="hint">The blog language controls date and time display.</div>');
 });
 </script>
 HTML
