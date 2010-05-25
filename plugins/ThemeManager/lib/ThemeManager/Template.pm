@@ -641,7 +641,7 @@ $(document).ready( function() {
         // it to all template sets that have a language defined. If a template
         // set has a language defined, then show a chooser to let them select 
         // a language.
-        $.each(ts, function(index, ts_id) { alert($('#template_set-field select').val()+','+ts_id);
+        $.each(ts, function(index, ts_id) {
             if ( $('#template_set-field select').val() == ts_id ) {
                 $('#template_set_language-field').removeClass('hidden');
                 var ts_langs = eval(ts_id);
