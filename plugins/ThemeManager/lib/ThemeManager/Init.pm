@@ -41,11 +41,15 @@ sub _translate {
     # $c->l10n_class->get_handle() knows the correct place to look for
     # translations.
     my $app = MT->instance;
+    # This first check for $app->param is necessary so that
+    # run-periodic-tasks doesn't throw errors.
     if ( eval{$app->param} && $app->param('__mode') ) {
         if ( $app->param('__mode') eq 'setup_theme' ) {
             # The user is applying a new theme.
             $c = find_theme_plugin( $app->param('theme_id') );
-            $h = $c->l10n_class->get_handle( $app->param('language') );
+            my $template_set_language = $app->param('language') || $app->user->preferred_language;
+            eval "require " . $c->l10n_class . ";";
+            $h = $c->l10n_class->get_handle( $template_set_language );
         }
         elsif ( $app->param('__mode') eq 'save' && $app->param('_type') eq 'blog' ) {
             # The user is creating a new blog.
