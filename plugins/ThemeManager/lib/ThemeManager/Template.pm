@@ -292,7 +292,10 @@ sub template_set_change {
     # Forcibly turn-on module caching for the blog
     _override_publishing_settings(@_);
     # Link installed templates to theme files
-    _link_templates(@_);
+    # Template linking is commented out so that templates start life in a 
+    # "production" environment. This lets localization happen, and allows the
+    # user to edit templates from the admin interface.
+    #_link_templates(@_);
 }
 
 sub _new_blog_template_set_language {
