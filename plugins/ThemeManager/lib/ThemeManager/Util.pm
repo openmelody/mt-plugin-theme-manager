@@ -20,7 +20,7 @@ sub theme_thumbnail_url {
         ? $app->config('StaticWebPath').'support/plugins/'
             .$obj->key.'/'.$obj->{registry}->{'template_sets'}->{$set}->{thumbnail}
         : $app->config('StaticWebPath').'support/plugins/'
-            .'ThemeManager/images/default_theme_thumb-small.png';
+            .'thememanager/images/default_theme_thumb-small.png';
 }
 
 sub theme_preview_url {
@@ -32,7 +32,7 @@ sub theme_preview_url {
         ? $app->config('StaticWebPath').'support/plugins/'
             .$obj->key.'/'.$obj->{registry}->{'template_sets'}->{$set}->{preview}
         : $app->config('StaticWebPath').'support/plugins/'
-            .'ThemeManager/images/default_theme_thumb-large.png';
+            .'thememanager/images/default_theme_thumb-large.png';
 }
 
 sub theme_description {
