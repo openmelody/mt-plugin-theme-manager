@@ -1,10 +1,10 @@
 name: 'Theme Manager'
-id: ThemeManager
+id: thememanager
 key: ThemeManager
 author_link: http://endevver.com/
 author_name: Endevver
 description: 'A comprehensive theme management plugin!'
-version: 0.9.12
+version: 0.9.13
 schema_version: 2
 static_version: 3
 
