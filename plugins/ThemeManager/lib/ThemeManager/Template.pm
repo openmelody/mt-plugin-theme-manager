@@ -228,7 +228,7 @@ sub template_filter {
     my $app = MT->instance;
     
     # If a new blog is being created/saved, we don't want to run this callback.
-    return if ( eval{$app->param} && ($app->param('__mode') eq 'save') && ($app->param('_type') eq 'blog') );
+    return if ( eval{$app->param} && $app->param('__mode') && ($app->param('__mode') eq 'save') && ($app->param('_type') eq 'blog') );
 
     my $blog_id = $app->can('blog') 
         ? $app->blog->id 
