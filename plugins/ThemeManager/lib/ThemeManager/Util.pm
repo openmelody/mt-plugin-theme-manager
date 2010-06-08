@@ -112,7 +112,7 @@ sub about_designer {
     # Return the content about the designer. This may be a file reference or 
     # just some HTML, or even code.
     my ($set, $obj) = @_;
-    my $about_designer = $obj->{registry}->{'template_sets'}->{$set}->{about_designer};
+    my $about_designer = $obj->{registry}->{'template_sets'}->{$set}->{about_designer} || "";
     if (ref $about_designer eq 'HASH') {
         $about_designer = MT->handler_to_coderef($about_designer->{code});
     }
@@ -127,7 +127,7 @@ sub about_designer {
 sub theme_docs {
     # Theme Docs are inline-presented documentation.
     my ($set, $obj) = @_;
-    my $docs = $obj->{registry}->{'template_sets'}->{$set}->{documentation};
+    my $docs = $obj->{registry}->{'template_sets'}->{$set}->{documentation} || "";
     if (ref $docs eq 'HASH') {
         $docs = MT->handler_to_coderef($docs->{code});
     }

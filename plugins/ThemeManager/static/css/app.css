@@ -2,12 +2,14 @@
 
 #about-tab-content,
 #docs-tab-content,
+#templates-tab-content,
 #customize-tab-content,
 #apply-theme-tab-content { 
     display: none;
 }
 #about-tab-content,
 #docs-tab-content,
+#templates-tab-content,
 #customize-tab-content {
     margin: 0 15px;
 }

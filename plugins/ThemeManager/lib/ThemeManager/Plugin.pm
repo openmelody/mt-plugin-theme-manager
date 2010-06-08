@@ -72,6 +72,7 @@ sub update_page_actions {
                 order => 100,
                 mode => 'theme_options',
                 condition => sub {
+                    return 0 unless MT->component('ConfigAssistant');
                     my $blog = MT->instance->blog;
                     return 0 if !$blog;
                     my $ts_id = MT->instance->blog->template_set;
@@ -178,6 +179,9 @@ sub theme_dashboard {
         }
     }
     $param->{new_theme} = $app->param('new_theme');
+
+    _populate_list_templates_context( $app, $param );
+
     
     # The user probably wants to apply a new theme; we start by browsing the
     # available themes.
@@ -775,8 +779,6 @@ sub _refresh_system_custom_fields {
       }
       
       $field_obj = MT->model('field')->new;
-      use Data::Dumper;
-      MT->log("Setting fields: " . Dumper(%field));
       $field_obj->set_values(
           {
               blog_id  => $field_scope,
@@ -986,8 +988,8 @@ sub _check_thumbalizr_result {
     # eb433ad65b8aa50047e6f2de1530d6cf
     # The "failed" image has an MD5 hash of:
     # ac47a999e5ce1769d480a66b0554343d
-    if ( ($md5->hexdigest == 'eb433ad65b8aa50047e6f2de1530d6cf')
-            || ($md5->hexdigest == 'ac47a999e5ce1769d480a66b0554343d') ) {
+    if ( ($md5->hexdigest eq 'eb433ad65b8aa50047e6f2de1530d6cf')
+            || ($md5->hexdigest eq 'ac47a999e5ce1769d480a66b0554343d') ) {
         # This is the "queued" image being displayed. Instead of this, we
         # want to show the "preview" image defined by the template set.
         return ThemeManager::Util::theme_preview_url($ts_id, $plugin);
@@ -1001,14 +1003,13 @@ sub _make_mini {
     my $app = MT->instance;
     my $tm     = MT->component('ThemeManager');
     use File::Spec;
-    my $dest_path = File::Spec->catfile( _theme_thumb_path(), $app->blog->id.'-mini.jpg' 
-    );
+    my $dest_path = File::Spec->catfile( _theme_thumb_path(), $app->blog->id.'-mini.jpg' );
     my $dest_url = caturl($app->static_path,'support','plugins',$tm->id,'theme_thumbs',
 			  $app->blog->id.'-mini.jpg');
     # Decide if we need to create a new mini or not.
-    unless ( (-e $dest_path) && (-M $dest_path <= 1) ) {
-        my $source_path = File::Spec->catfile( _theme_thumb_path(), $app->blog->id.'.jpg' );
-        use MT::Image;
+    my $source_path = File::Spec->catfile( _theme_thumb_path(), $app->blog->id.'.jpg' );
+    unless ( (-e $source_path) && (-e $dest_path) && (-M $dest_path <= 1) ) {
+        require MT::Image;
         my $img = MT::Image->new( Filename => $source_path )
             or return 0;
         my $resized_img = $img->scale( Width => 138 );
@@ -1191,7 +1192,7 @@ sub _refresh_all_templates {
         # thumbnail gets displayed on the Theme Dashboard, which means we should
         # delete the existing thumb (if there is one), so that it gets recreated
         # when the user visits the dashboard.
-	my $tm = MT->component('ThemeManager');
+        my $tm = MT->component('ThemeManager');
         my $thumb_path = File::Spec->catfile( _theme_thumb_path(), $blog_id.'.jpg' );
         if (-e $thumb_path) {
             unlink $thumb_path;
@@ -1334,18 +1335,13 @@ sub _send_json_response {
     return undef;
 }
 
-# Copied from MT::CMS::Template::list
-sub list_templates {
+sub _populate_list_templates_context {
     my $app = shift;
+    my ($params) = @_;
+#    my ($params_ref) = @_;
+#    $params = $$params_ref;
 
-    my $perms = $app->blog ? $app->permissions : $app->user->permissions;
-    return $app->return_to_dashboard( redirect => 1 )
-      unless $perms || $app->user->is_superuser;
-    if ( $perms && !$perms->can_edit_templates ) {
-        return $app->return_to_dashboard( permission => 1 );
-    }
     my $blog = $app->blog;
-
     require MT::Template;
     my $blog_id = $app->param('blog_id') || 0;
     my $terms = { blog_id => $blog_id };
@@ -1400,7 +1396,6 @@ sub list_templates {
         $row->{published_url} = $published_url if $published_url;
     };
 
-    my $params        = {};
     my $filter = $app->param('filter_key');
     my $template_type = $filter || '';
     $template_type =~ s/_templates//;
@@ -1545,6 +1540,21 @@ sub list_templates {
 
     $params->{template_type_loop} = \@tmpl_loop;
     $params->{screen_id} = "list-template";
+}
+
+# Copied from MT::CMS::Template::list
+sub list_templates {
+    my $app = shift;
+
+    my $perms = $app->blog ? $app->permissions : $app->user->permissions;
+    return $app->return_to_dashboard( redirect => 1 )
+      unless $perms || $app->user->is_superuser;
+    if ( $perms && !$perms->can_edit_templates ) {
+        return $app->return_to_dashboard( permission => 1 );
+    }
+
+    my $params = {};
+    _populate_list_templates_context( $app, $params );
 
     return $app->load_tmpl('list_template.tmpl', $params);
 }

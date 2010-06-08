@@ -36,4 +36,26 @@ $(document).ready( function() {
         var changed = $(this).parent().parent().parent().parent().attr('id');
         $('#content-nav ul li.'+changed).addClass('changed');
     });
+
+  $('#templates-tab-content td.status a').click( function() {
+    var id = $(this).parents('tr').find('.cb input').val();
+    var link = $(this);
+    link.css('background','url(<mt:Var name="static_uri">images/ani-rebuild.gif) no-repeat center -1px');
+    $.ajax({
+      url: '<mt:var name="script_url">?__mode=tm.rebuild_tmpl&amp;blog_id=<mt:var name="blog_id">&amp;id=' + id,
+      dataType: 'json',
+      error: function (xhr, status, error) {
+        link.css('background','url(<mt:PluginStaticWebPath component="ThemeManager">images/icon-error.gif) no-repeat center -1px');
+      },
+      success: function (data, status, xhr) {
+        if (data.success) {
+          link.css('background','url(<mt:Var name="static_uri">images/nav-icon-rebuild.gif) no-repeat center 0px');
+        } else {
+          link.css('background','url(<mt:PluginStaticWebPath component="ThemeManager">images/icon-error.gif) no-repeat center -1px');
+        }
+      }
+    });
+  });
+
+
 });
