@@ -6,8 +6,8 @@ sub theme_label {
     # Grab the theme label. If no template set label is supplied then use
     # the parent plugin's name plus the template set ID.
     my ($set, $obj) = @_;
-    return $obj->{registry}->{'template_sets'}->{$set}->{label}
-        ? $obj->{registry}->{'template_sets'}->{$set}->{label}
+    return $obj->registry('template_sets', $set, 'label')
+        ? $obj->registry('template_sets', $set, 'label')
         : eval {$obj->name.': '} . $set;
 }
 
@@ -20,7 +20,7 @@ sub theme_thumbnail_url {
         ? $app->config('StaticWebPath').'support/plugins/'
             .$obj->key.'/'.$obj->{registry}->{'template_sets'}->{$set}->{thumbnail}
         : $app->config('StaticWebPath').'support/plugins/'
-            .'ThemeManager/images/default_theme_thumb-small.png';
+            .'thememanager/images/default_theme_thumb-small.png';
 }
 
 sub theme_preview_url {
@@ -32,7 +32,7 @@ sub theme_preview_url {
         ? $app->config('StaticWebPath').'support/plugins/'
             .$obj->key.'/'.$obj->{registry}->{'template_sets'}->{$set}->{preview}
         : $app->config('StaticWebPath').'support/plugins/'
-            .'ThemeManager/images/default_theme_thumb-large.png';
+            .'thememanager/images/default_theme_thumb-large.png';
 }
 
 sub theme_description {
@@ -112,12 +112,13 @@ sub about_designer {
     # Return the content about the designer. This may be a file reference or 
     # just some HTML, or even code.
     my ($set, $obj) = @_;
-    my $about_designer = $obj->{registry}->{'template_sets'}->{$set}->{about_designer} || "";
+    my $about_designer = $obj->{registry}->{'template_sets'}->{$set}->{about_designer};
+    return unless $about_designer;
     if (ref $about_designer eq 'HASH') {
         $about_designer = MT->handler_to_coderef($about_designer->{code});
     }
     return $about_designer->($obj, @_) if ref $about_designer eq 'CODE';
-    if ($about_designer =~ /\s/) {
+    if ( $about_designer && ($about_designer =~ /\s/) ) {
         return "<h3>About the Designer</h3>".$about_designer;
     } else { # no spaces in $about_designer; must be a filename...
         return eval {$obj->load_tmpl($about_designer)};
@@ -127,13 +128,14 @@ sub about_designer {
 sub theme_docs {
     # Theme Docs are inline-presented documentation.
     my ($set, $obj) = @_;
-    my $docs = $obj->{registry}->{'template_sets'}->{$set}->{documentation} || "";
+    my $docs = $obj->{registry}->{'template_sets'}->{$set}->{documentation};
+    return unless $docs;
     if (ref $docs eq 'HASH') {
         $docs = MT->handler_to_coderef($docs->{code});
     }
     return $docs->($obj, @_) if ref $docs eq 'CODE';
 
-    if ($docs =~ /\s/) {
+    if ( $docs && ($docs =~ /\s/) ) {
         return $docs;
     } else { # no spaces in $docs; must be a filename...
         my $app = MT->instance();

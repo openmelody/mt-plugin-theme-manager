@@ -27,7 +27,15 @@ sub class_label {
 sub class_label_plural {
     MT->translate("Themes");
 }
- 
+
+
+MT::Blog->install_meta({
+    column_defs => {
+        'template_set_language' => 'string',
+    }
+});
+
+
 1;
 
 __END__

@@ -1,11 +1,11 @@
 name: 'Theme Manager'
-id: ThemeManager
+id: thememanager
 key: ThemeManager
 author_link: http://endevver.com/
 author_name: Endevver
 description: 'A comprehensive theme management plugin!'
-version: 0.9.11
-schema_version: 1
+version: 0.9.13
+schema_version: 2
 static_version: 3
 
 applications:
@@ -36,8 +36,12 @@ list_actions:
 callbacks:
     template_source.edit_template: $ThemeManager::ThemeManager::Plugin::xfrm_disable_tmpl_link
     template_source:               $ThemeManager::ThemeManager::Plugin::xfrm_add_thumb
-    blog_template_set_change:      $ThemeManager::ThemeManager::Plugin::template_set_change
-    DefaultTemplateFilter:         $ThemeManager::ThemeManager::Plugin::template_filter
+    blog_template_set_change:      $ThemeManager::ThemeManager::Template::template_set_change
+    DefaultTemplateFilter:         $ThemeManager::ThemeManager::Template::template_filter
+    template_source.edit_blog:     $ThemeManager::ThemeManager::Template::xfrm_add_language
+    template_param.edit_blog:      $ThemeManager::ThemeManager::Template::xfrm_param_add_language
+
+init_app: $ThemeManager::ThemeManager::Init::init_app
 
 object_types:
     theme: ThemeManager::Theme
@@ -46,3 +50,8 @@ skip_static:
     - .psd
 
 widgets: $ThemeManager::ThemeManager::DashboardWidget::widget
+
+tags:
+    function:
+        TemplateSetLanguage: $ThemeManager::ThemeManager::Tags::template_set_language
+

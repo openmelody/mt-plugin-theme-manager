@@ -44,6 +44,23 @@
         }
         document.getElementById('status').style.display = "block";
 
+        <mt:Ignore>
+            No blog ids have been supplied. This means we must be creating a new blog, so we need to return the template set ID to the creation form (in the parent window).
+        </mt:Ignore>
+        <mt:Unless name="blog_ids">
+            <mt:Unless name="blog_id">
+        var ts = window.parent.document.getElementById('template_set')
+        if (ts) {
+            ts.value = f.theme_id.value;
+        }
+        else {
+            alert("The template_set dropdown selector for creating a new blog couldn't be found.")
+        }
+        closeDialog();
+        return;
+            </mt:Unless>
+        </mt:Unless>
+
         f.submit();
     }
     

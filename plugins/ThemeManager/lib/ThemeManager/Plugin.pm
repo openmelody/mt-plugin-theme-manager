@@ -44,9 +44,7 @@ sub update_page_actions {
             refresh_all_blog_templates => {
                 label     => "Refresh Blog Templates",
                 dialog    => 'select_theme',
-                condition => sub {
-                                MT->app->blog;
-                             },
+                condition => sub { MT->app->blog; },
                 order => 1000,
             },
             refresh_fields => {
@@ -101,20 +99,20 @@ sub update_page_actions {
 }
 
 sub _theme_thumb_path {
-    my $app = MT::App->instance();
-    my $tm = MT->component('ThemeManager');
+    my $app  = MT::App->instance();
+    my $tm   = MT->component('ThemeManager');
     my @path = ($app->config('StaticFilePath'), 'support', 'plugins', $tm->id, 'theme_thumbs');
     return File::Spec->catfile( @path );
 }
 sub _theme_thumb_url {
     my $app = MT::App->instance();
-    my $tm = MT->component('ThemeManager');
+    my $tm  = MT->component('ThemeManager');
     return caturl( $app->static_path , 'support' , 'plugins', $tm->id, 'theme_thumbs', 
-		   $app->blog->id.'.jpg' );
+            $app->blog->id.'.jpg' );
 }
 
 sub theme_dashboard {
-    my $app    = MT::App->instance;
+    my $app = MT::App->instance;
     # Since there is no Theme Dashboard at the system level, capture and
     # redirect to the System Dashboard, if necessary.
     if ( !eval {$app->blog->id} && ($app->param('__mode') eq 'theme_dashboard') ) {
@@ -138,22 +136,23 @@ sub theme_dashboard {
     $param->{paypal_email}      = ThemeManager::Util::theme_paypal_email($ts, $plugin);
     $param->{about_designer}    = ThemeManager::Util::about_designer($ts, $plugin);
     $param->{theme_docs}        = ThemeManager::Util::theme_docs($ts, $plugin);
-    
+    if ( $app->blog->language ne $app->blog->template_set_language ) {
+        $param->{template_set_language} = $app->blog->template_set_language;
+    }
+
     my $dest_path = _theme_thumb_path();
     if ( -w $dest_path ) {
-        $param->{theme_thumb_url}   = _make_thumbnail($ts, $plugin);
+        $param->{theme_thumb_url} = _make_thumbnail($ts, $plugin);
     }
     else {
         $param->{theme_thumbs_path} = $dest_path;
     }
-    $param->{theme_mini}        = _make_mini();
-    
+    $param->{theme_mini} = _make_mini();
 
     # Are the templates linked? We use this to show/hide the Edit/View
     # Templates links.
-    my $linked = MT->model('template')->load(
-					     { blog_id     => $app->blog->id,
-					       linked_file => '*', });
+    my $linked = MT->model('template')->load({ blog_id     => $app->blog->id,
+                                               linked_file => '*', });
     if ($linked) {
         # These templates *are* linked.
         $param->{linked_theme} = 1;
@@ -166,8 +165,8 @@ sub theme_dashboard {
         # So, first grab templates in the current blog that are not 
         # backups and that have had modifications made (modified_on col).
         my $iter = MT->model('template')->load_iter(
-                        { blog_id    => $app->blog->id,
-                          type => {not_like => 'backup'},
+                        { blog_id     => $app->blog->id,
+                          type        => {not_like => 'backup'},
                           modified_on => {not_null => 1}, });
         while ( my $tmpl = $iter->() ) { 
             if ($tmpl->modified_on > $tmpl->created_on) {
@@ -216,7 +215,7 @@ sub theme_dashboard {
             $row->{label}         = ThemeManager::Util::theme_label($theme->ts_id, $plugin);
             $row->{thumbnail_url} = ThemeManager::Util::theme_thumbnail_url($theme->ts_id, $plugin);
             $row->{plugin_sig}    = $theme->plugin_sig;
-        
+
             return $row;
         },
     });
@@ -311,6 +310,7 @@ sub setup_theme {
     my $app = shift;
     my $ts_id      = $app->param('theme_id');
     my $plugin_sig = $app->param('plugin_sig');
+    
     my @blog_ids;
     if ( $app->param('blog_ids') ) {
         @blog_ids = split(/,/, $app->param('blog_ids'));
@@ -399,10 +399,45 @@ sub setup_theme {
             return $app->load_tmpl('save_widgetsets.mtml', $param);
         }
     }
+    
+    # Language support.
+    # If there is more than one language supplied for the theme, we want to
+    # offer the opportunity to select a language to apply to the templates
+    # during installation.
+    my @languages = _find_supported_languages($ts_id);
+    if ( !$app->param('language') && (scalar @languages > 1) ) {
+        my @param_langs;
+
+        # Load the specified plugin/theme.
+        my $c = $plugin;
+        eval "require " . $c->l10n_class . ";";
+        my $handles = MT->request('l10n_handle') || {};
+        my $h       = $handles->{ $c->id };
+
+        foreach my $language (@languages) {
+            push @param_langs, { lang_tag  => $language,
+                                 lang_name => $language };
+
+        }
+        $param->{languages} = \@param_langs;
+        return $app->load_tmpl('select_language.mtml', $param);
+    }
+    else {
+        # Either a language has been set, or there is only one language: english.
+        my $selected_lang = $app->param('language') ? $app->param('language') : $languages[0];
+        # If this theme is being applied to many blogs, assign the language to them all!
+        foreach my $blog_id (@blog_ids) {
+            my $blog = MT->model('blog')->load($blog_id);
+            $blog->template_set_language($selected_lang);
+            $blog->save;
+        }
+    }
+    
 
     # As you may guess, this applies the template set to the current blog.
+    use ThemeManager::Template;
     foreach my $blog_id (@blog_ids) {
-        _refresh_all_templates($ts_id, $blog_id, $app);
+        ThemeManager::Template::_refresh_all_templates($ts_id, $blog_id, $app);
     }
 
 
@@ -942,7 +977,9 @@ sub _make_thumbnail {
 
     # Check if the thumbnail is cached (exists) and is less than 1 day old. 
     # If it's older, we want a new thumb to be created.
-    if ( (-e $dest_path) && (-M $dest_path <= 1) ) {
+    my $fmgr = MT::FileMgr->new('Local')
+        or return $app->error( MT::FileMgr->errstr );
+    if ( ($fmgr->exists($dest_path)) && (-M $dest_path <= 1) ) {
         # We've found a cached image! Now we need to check that it's usable.
         return _check_thumbalizr_result($dest_path, $dest_url, $ts_id, $plugin);
     }
@@ -951,8 +988,6 @@ sub _make_thumbnail {
         # First, create the destination directory, if necessary.
         my $dir = _theme_thumb_path();
         if (!-d $dir) {
-            my $fmgr = MT::FileMgr->new('Local')
-                or return $app->error( MT::FileMgr->errstr );
             $fmgr->mkpath($dir)
                 or return $app->error( MT::FileMgr->errstr );
         }
@@ -1005,16 +1040,16 @@ sub _make_mini {
     use File::Spec;
     my $dest_path = File::Spec->catfile( _theme_thumb_path(), $app->blog->id.'-mini.jpg' );
     my $dest_url = caturl($app->static_path,'support','plugins',$tm->id,'theme_thumbs',
-			  $app->blog->id.'-mini.jpg');
+            $app->blog->id.'-mini.jpg');
     # Decide if we need to create a new mini or not.
-    my $source_path = File::Spec->catfile( _theme_thumb_path(), $app->blog->id.'.jpg' );
-    unless ( (-e $source_path) && (-e $dest_path) && (-M $dest_path <= 1) ) {
-        require MT::Image;
+    my $fmgr = MT::FileMgr->new('Local')
+        or return MT::FileMgr->errstr;
+    unless ( ($fmgr->exists($dest_path)) && (-M $dest_path <= 1) ) {
+        my $source_path = File::Spec->catfile( _theme_thumb_path(), $app->blog->id.'.jpg' );
+        use MT::Image;
         my $img = MT::Image->new( Filename => $source_path )
             or return 0;
         my $resized_img = $img->scale( Width => 138 );
-        my $fmgr = MT::FileMgr->new('Local')
-            or return MT::FileMgr->errstr;
         $fmgr->put_data($resized_img, $dest_path)
             or return MT::FileMgr->errstr;
     }
@@ -1557,6 +1592,45 @@ sub list_templates {
     _populate_list_templates_context( $app, $params );
 
     return $app->load_tmpl('list_template.tmpl', $params);
+}
+
+sub _find_supported_languages {
+    my $ts_id = shift;
+    my $ts_plugin = find_theme_plugin($ts_id);
+    # Languages need to be specified for each template set. We can't just
+    # search for all available languages because if the plugin is a theme
+    # pack (that is, contains many themes), it's possible that only some
+    # themes may contain tranlations.
+    my $langs = $ts_plugin->registry('template_sets',$ts_id,'languages');
+    my @ts_langs;
+    foreach my $lang (@$langs) {
+        # A quick check to see if the $lang is formatted as a language tag. If
+        # it is, then we can use it.
+#        if ( I18N::LangTags::is_language_tag($lang) ) {
+            push @ts_langs, $lang;
+#        }
+#        else {
+#            # Not a valid language tag!
+#            my $app = MT->instance;
+#            my $blog_id = $app->blog->id;
+#            MT->log(
+#                {
+#                    level   => MT->model('log')->ERROR(),
+#                    blog_id => $blog_id,
+#                    message => MT->translate(
+#                        'The language "[_1]" specified in the theme [_2] is invalid.',
+#                        $lang,
+#                        $ts_plugin->registry('template_sets',$ts_id,'label'),
+#                    ),
+#                }
+#            );
+#        }
+    }
+    if (!@ts_langs) {
+        # No languages were specified. So, lets default to english.
+        $ts_langs[0] = 'en-us';
+    }
+    return @ts_langs;
 }
 
 1;
