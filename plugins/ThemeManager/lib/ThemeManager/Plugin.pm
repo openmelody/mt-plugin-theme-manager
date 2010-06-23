@@ -875,7 +875,7 @@ sub template_set_change {
 sub template_filter {
     my ($cb, $templates) = @_;
     my $app = MT->instance;
-    my $blog_id = $app->blog 
+    my $blog_id = $app->can('blog') 
         ? $app->blog->id 
         : return; # Only work on blog-specific widgets and widget sets
 

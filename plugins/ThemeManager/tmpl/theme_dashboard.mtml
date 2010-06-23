@@ -138,7 +138,7 @@
         <ul>
         <mt:Loop name="page_actions">
             <li class="icon-mini-left icon-mini-settings">
-                <a href="<mt:var name="script_url" escape="html">?__mode=theme_export_start&amp;blog_id=<mt:Var name="blog_id">"
+                <a href="<mt:var name="script_url" escape="html">?__mode=<mt:var name="mode">&amp;blog_id=<mt:Var name="blog_id">"
                     <mt:If name="continue_prompt"> onclick="return confirm('<mt:var name="continue_prompt" escape="js">');"</mt:If>>
                         <mt:Var name="label">
                 </a>
