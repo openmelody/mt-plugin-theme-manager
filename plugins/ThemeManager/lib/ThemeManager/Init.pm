@@ -54,15 +54,17 @@ sub _translate {
             # The user is applying a new theme.
             $c = find_theme_plugin( $app->param('theme_id') );
             my $template_set_language = $app->param('language') || $app->user->preferred_language;
-            eval "require " . $c->l10n_class . ";";
-            $h = $c->l10n_class->get_handle( $template_set_language );
+            if ( eval "require " . $c->l10n_class . ";" ) {
+                $h = $c->l10n_class->get_handle( $template_set_language );
+            }
         }
         elsif ( $app->param('__mode') eq 'save' && $app->param('_type') eq 'blog' ) {
             # The user is creating a new blog.
             $c = find_theme_plugin( $app->param('template_set') );
             my $template_set_language = $app->param('template_set_language') || $app->user->preferred_language;
-            eval "require " . $c->l10n_class . ";";
-            $h = $c->l10n_class->get_handle( $template_set_language );
+            if ( eval "require " . $c->l10n_class . ";" ) {
+                $h = $c->l10n_class->get_handle( $template_set_language );
+            }
         }
     }
 
