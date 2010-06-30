@@ -1343,20 +1343,25 @@ sub _theme_check {
 sub rebuild_tmpl {
     my $app = shift;
     my $blog = $app->blog;
-    my $result = 0;
+    my $return_val = {
+        success => 0
+    };
     my $templates = MT->model('template')->lookup_multi([ $app->param('id') ]);
   TEMPLATE: for my $tmpl (@$templates) {
       next TEMPLATE if !defined $tmpl;
       next TEMPLATE if $tmpl->blog_id != $blog->id;
       next TEMPLATE unless $tmpl->build_type;
       
-      $result = $app->rebuild_indexes(
+      $return_val->{success} = $app->rebuild_indexes(
           Blog     => $blog,
           Template => $tmpl,
           Force    => 1,
       );
+      unless ($return_val->{success}) {
+          $return_val->{errstr} = $app->errstr;
+      }
     }
-    return _send_json_response( $app, { success => $result } );
+    return _send_json_response( $app, $return_val );
 }
 
 
