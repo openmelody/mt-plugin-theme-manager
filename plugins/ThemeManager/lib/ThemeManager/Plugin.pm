@@ -131,6 +131,9 @@ sub theme_dashboard {
     $param->{paypal_email}      = ThemeManager::Util::theme_paypal_email($ts, $plugin);
     $param->{about_designer}    = ThemeManager::Util::about_designer($ts, $plugin);
     $param->{theme_docs}        = ThemeManager::Util::theme_docs($ts, $plugin);
+
+    $param->{search_label} = $app->translate('Templates');
+    $param->{object_type}  = 'template';
     
     my $dest_path = _theme_thumb_path();
     if ( -w $dest_path ) {
