@@ -768,8 +768,6 @@ sub _refresh_system_custom_fields {
       }
       
       $field_obj = MT->model('field')->new;
-      use Data::Dumper;
-      MT->log("Setting fields: " . Dumper(%field));
       $field_obj->set_values(
           {
               blog_id  => $field_scope,
@@ -875,7 +873,7 @@ sub template_set_change {
 sub template_filter {
     my ($cb, $templates) = @_;
     my $app = MT->instance;
-    my $blog_id = $app->can('blog') 
+    my $blog_id = $app->can('blog') && $app->blog
         ? $app->blog->id 
         : return; # Only work on blog-specific widgets and widget sets
 
