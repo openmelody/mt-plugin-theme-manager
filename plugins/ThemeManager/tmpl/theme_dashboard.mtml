@@ -70,9 +70,6 @@
     <mt:If name="theme_description">
         <div id="theme-description"><mt:Var name="theme_description"></div>
     </mt:If>
-    <mt:If name="template_set_language">
-        <p id="template-set-language">Templates have been translated to: <mt:Var name="template_set_language">.</p>
-    </mt:If>
         <ul id="theme-links">
         <mt:If name="theme_doc_link">
             <li>
@@ -142,8 +139,9 @@
 <mt:loop name="page_actions">
     <mt:if name="link">
             <li class="icon-mini-left icon-mini-settings">
-                <a href="<mt:var name="link" escape="html"><mt:if name="blog_id">&amp;blog_id=<mt:var name="blog_id"></mt:if>"<mt:if name="continue_prompt"> onclick="return confirm('<mt:var name="continue_prompt" escape="js">');"</mt:if>>
-                    <mt:var name="label">
+                <a href="<mt:var name="script_url" escape="html">?__mode=<mt:var name="mode">&amp;blog_id=<mt:Var name="blog_id">"
+                    <mt:If name="continue_prompt"> onclick="return confirm('<mt:var name="continue_prompt" escape="js">');"</mt:If>>
+                        <mt:Var name="label">
                 </a>
             </li>
     <mt:Else name="dialog">
