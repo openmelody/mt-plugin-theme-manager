@@ -2,28 +2,27 @@ package ThemeManager::Plugin;
 
 use strict;
 use ConfigAssistant::Util qw( find_theme_plugin );
-use ThemeManager::Util;
+use ThemeManager::Util qw( theme_label theme_thumbnail_url theme_preview_url
+        theme_description theme_author_name theme_author_link 
+        theme_paypal_email theme_version theme_link theme_doc_link 
+        about_designer theme_docs _theme_thumb_path _theme_thumb_url );
 use MT::Util qw(caturl dirify offset_time_list);
 use MT;
 
 sub update_menus {
     my $app = MT->instance;
+    # Theme Manager is turning the Design menu into a friendlier, more useful
+    # area than it used to be, and the first step to that is removing the 
+    # Templates option. Templates can now be found within the Theme Dashboard
     # We only want to remove the Templates menu at the blog-level. We don't
     # know for sure what templates are at the system-level, so just blanket
     # denying access is probably not best.
     my $blog_id = $app->param('blog_id');
     if ($blog_id) {
-        # Any linked templates?
-        my $linked_tmpl = MT->model('template')->load(
-                            { blog_id     => $blog_id,
-                              linked_file => '*', });
-        # If there are linked templates, then remove the Templates menu.
-        if ($linked_tmpl) {
-            my $core = MT->component('Core');
-            delete $core->{registry}->{applications}->{cms}->{menus}->{'design:template'};
-        }
+        my $core = MT->component('Core');
+        delete $core->{registry}->{applications}->{cms}->{menus}->{'design:template'};
     }
-    # Now just add the Theme Options menu item.
+    # Now just add the Theme Dashboard menu item.
     return {
         'design:theme_dashboard' => {
             label      => 'Theme Dashboard',
@@ -98,19 +97,6 @@ sub update_page_actions {
     };
 }
 
-sub _theme_thumb_path {
-    my $app  = MT::App->instance();
-    my $tm   = MT->component('ThemeManager');
-    my @path = ($app->config('StaticFilePath'), 'support', 'plugins', $tm->id, 'theme_thumbs');
-    return File::Spec->catfile( @path );
-}
-sub _theme_thumb_url {
-    my $app = MT::App->instance();
-    my $tm  = MT->component('ThemeManager');
-    return caturl( $app->static_path , 'support' , 'plugins', $tm->id, 'theme_thumbs', 
-            $app->blog->id.'.jpg' );
-}
-
 sub theme_dashboard {
     my $app = MT::App->instance;
     # Since there is no Theme Dashboard at the system level, capture and
@@ -119,30 +105,30 @@ sub theme_dashboard {
         $app->redirect( $app->uri.'?__mode=dashboard&blog_id=0' );
     }
     
-    my $ts     = $app->blog->template_set;
+    my $ts_id  = $app->blog->template_set;
     my $tm     = MT->component('ThemeManager');
-    my $plugin = find_theme_plugin($ts);
+    my $plugin = find_theme_plugin($ts_id);
 
     my $param = {};
     # Build the theme dashboard links
 
-    $param->{theme_label}       = ThemeManager::Util::theme_label($ts, $plugin);
-    $param->{theme_description} = ThemeManager::Util::theme_description($ts, $plugin);
-    $param->{theme_author_name} = ThemeManager::Util::theme_author_name($ts, $plugin);
-    $param->{theme_author_link} = ThemeManager::Util::theme_author_link($ts, $plugin);
-    $param->{theme_link}        = ThemeManager::Util::theme_link($ts, $plugin);
-    $param->{theme_doc_link}    = ThemeManager::Util::theme_doc_link($ts, $plugin);
-    $param->{theme_version}     = ThemeManager::Util::theme_version($ts, $plugin);
-    $param->{paypal_email}      = ThemeManager::Util::theme_paypal_email($ts, $plugin);
-    $param->{about_designer}    = ThemeManager::Util::about_designer($ts, $plugin);
-    $param->{theme_docs}        = ThemeManager::Util::theme_docs($ts, $plugin);
+    $param->{theme_label}       = theme_label($ts_id, $plugin);
+    $param->{theme_description} = theme_description($ts_id, $plugin);
+    $param->{theme_author_name} = theme_author_name($ts_id, $plugin);
+    $param->{theme_author_link} = theme_author_link($ts_id, $plugin);
+    $param->{theme_link}        = theme_link($ts_id, $plugin);
+    $param->{theme_doc_link}    = theme_doc_link($ts_id, $plugin);
+    $param->{theme_version}     = theme_version($ts_id, $plugin);
+    $param->{paypal_email}      = theme_paypal_email($ts_id, $plugin);
+    $param->{about_designer}    = about_designer($ts_id, $plugin);
+    $param->{theme_docs}        = theme_docs($ts_id, $plugin);
     if ( $app->blog->language ne $app->blog->template_set_language ) {
         $param->{template_set_language} = $app->blog->template_set_language;
     }
 
     my $dest_path = _theme_thumb_path();
     if ( -w $dest_path ) {
-        $param->{theme_thumb_url} = _make_thumbnail($ts, $plugin);
+        $param->{theme_thumb_url} = _make_thumbnail($ts_id, $plugin);
     }
     else {
         $param->{theme_thumbs_path} = $dest_path;
@@ -164,10 +150,11 @@ sub theme_dashboard {
         # the created_on and modified_on dates.
         # So, first grab templates in the current blog that are not 
         # backups and that have had modifications made (modified_on col).
-        my $iter = MT->model('template')->load_iter(
-                        { blog_id     => $app->blog->id,
-                          type        => {not_like => 'backup'},
-                          modified_on => {not_null => 1}, });
+        my $iter = MT->model('template')->load_iter({
+                blog_id     => $app->blog->id,
+                type        => {not_like => 'backup'},
+                modified_on => {not_null => 1},
+            });
         while ( my $tmpl = $iter->() ) { 
             if ($tmpl->modified_on > $tmpl->created_on) {
                 $param->{templates_modified} = 1;
@@ -187,20 +174,19 @@ sub theme_dashboard {
     # Save themes to the theme table, so that we can build a listing screen from them.
     _theme_check();
 
-    # Set the number of items to appear on the theme grid. 6 fit, so that's
-    # what it's set to here. However, if unset, it defaults to 25!
+    # Set the number of themes to appear per page. We set it to 999 just so 
+    # that there is no pagination, because paginating through themes kind
+    # of sucks. However, if unset, it defaults to 25!
     my $list_pref = $app->list_pref('theme') if $app->can('list_pref');
-    # Hack by Byrne to turn off pagination
     $list_pref->{rows} = 999;
 
-    my $tm_plugin = MT->component('ThemeManager');
-    my $tmpl = $tm_plugin->load_tmpl('theme_dashboard.mtml');
+    my $tmpl = $tm->load_tmpl('theme_dashboard.mtml');
     return $app->listing({
         type     => 'theme',
         template => $tmpl,
-#        terms    => \@terms,
+        #terms    => \@terms,
         params   => $param,
-        code => sub {
+        code     => sub {
             my ($theme, $row) = @_;
             # Use the plugin sig to grab the plugin.
             my $plugin = $MT::Plugins{$theme->plugin_sig}->{object};
@@ -219,7 +205,6 @@ sub theme_dashboard {
             return $row;
         },
     });
-
 }
 
 sub select_theme {
@@ -435,9 +420,9 @@ sub setup_theme {
     
 
     # As you may guess, this applies the template set to the current blog.
-    use ThemeManager::Template;
+    use ThemeManager::TemplateInstall;
     foreach my $blog_id (@blog_ids) {
-        ThemeManager::Template::_refresh_all_templates($ts_id, $blog_id, $app);
+        ThemeManager::TemplateInstall::_refresh_all_templates($ts_id, $blog_id, $app);
     }
 
 
@@ -617,354 +602,6 @@ sub setup_theme {
     $app->load_tmpl('theme_setup.mtml', $param);
 }
 
-sub _link_templates {
-    # Link the templates to the theme.
-    my ($cb, $param) = @_;
-    my $blog_id = $param->{blog}->id;
-    my $ts_id   = $param->{blog}->template_set;
-    
-    my $cur_ts_plugin = find_theme_plugin($ts_id);
-    my $cur_ts_widgets = $cur_ts_plugin->registry('template_sets',$ts_id,'templates','widget');
-    
-    # Grab all of the templates except the Widget Sets, because the user
-    # should be able to edit (drag-drop) those all the time.
-    my $iter = MT->model('template')->load_iter({ blog_id => $blog_id,
-                                         type    => {not => 'backup'}, });
-    while ( my $tmpl = $iter->() ) {
-        if (
-            ( ($tmpl->type ne 'widgetset') && ($tmpl->type ne 'widget') )
-            || ( ($tmpl->type eq 'widget') && ($cur_ts_widgets->{$tmpl->identifier}) )
-        ) {
-            $tmpl->linked_file('*');
-        }
-        else {
-            # Just in case Widget Sets were previously linked,
-            # now forcefully unlink!
-            $tmpl->linked_file(undef);
-        }
-        $tmpl->save;
-    }
-}
-
-sub _override_publishing_settings {
-    my ( $cb, $param ) = @_;
-    my $blog = $param->{blog} or return;
-    $blog->include_cache(1);
-    $blog->save;
-}
-
-sub _set_module_caching_prefs {
-    my ( $cb, $param ) = @_;
-    my $blog = $param->{blog} or return;
-    
-    my $set_name = $blog->template_set or return;
-    my $set = MT->app->registry( 'template_sets', $set_name )
-        or return;
-    my $tmpls = MT->app->registry( 'template_sets',$set_name,'templates' );
-    foreach my $t (qw( module widget )) {
-        foreach my $m ( keys %{ $tmpls->{$t} } ) {
-            if ($tmpls->{$t}->{$m}->{cache}) {
-                my $tmpl = MT->model('template')->load(
-                    {
-                        blog_id    => $blog->id,
-                        identifier => $m,
-                    }
-                    );
-                foreach (qw( expire_type expire_interval expire_event )) {
-                    my $var = 'cache_' . $_;
-                    my $val = $tmpls->{$t}->{$m}->{cache}->{$_};
-                    $val = ($val * 60) if ($_ eq 'expire_interval');
-                    $tmpl->$var($val);
-                }
-                foreach (qw( include_with_ssi )) {
-                    $tmpl->$_($tmpls->{$t}->{$m}->{cache}->{$_});
-                }
-                $tmpl->save;
-            }
-        }
-    }
-}
-
-sub _set_archive_map_publish_types {
-    my ( $cb, $param ) = @_;
-    my $blog = $param->{blog} or return;
-    
-    my $set_name = $blog->template_set or return;
-    my $set = MT->app->registry( 'template_sets', $set_name )
-        or return;
-    my $tmpls = MT->app->registry( 'template_sets',$set_name,'templates' );
-    foreach my $a (qw( archive individual )) {
-        foreach my $t ( keys %{ $tmpls->{$a} } ) {
-            foreach
-                my $m ( keys %{ $tmpls->{$a}->{$t}->{mappings} } )
-            {
-                my $map = $tmpls->{$a}->{$t}->{mappings}->{$m};
-                my $tmpl = MT->model('template')->load(
-                    {
-                        blog_id    => $blog->id,
-                        identifier => $t,
-                    }
-                    );
-                next unless $tmpl;
-                my $tm = MT->model('templatemap')->load(
-                    {
-                        blog_id      => $blog->id,
-                        archive_type => $map->{archive_type},
-                        template_id  => $tmpl->id,
-                    }
-                    );
-                next unless $tm;
-                $tm->build_type( $map->{build_type} ) if $map->{build_type};
-                $tm->is_preferred( $map->{preferred} ) if $map->{preferred};
-                $tm->save()
-                    or MT->log(
-                        { message => "Could not update template map for template $t." } );
-            }
-        }
-    }
-}
-
-sub _set_index_publish_type {
-    my ($cb, $param) = @_;
-    my $blog = $param->{blog} or return;
-    
-    my $set_name = $blog->template_set or return;
-    my $set = MT->app->registry( 'template_sets', $set_name )
-        or return;
-    my $tmpls = MT->app->registry( 'template_sets',$set_name,'templates' );
-    
-    foreach my $t ( keys %{ $tmpls->{index} } ) {
-        if ( $tmpls->{index}->{$t}->{build_type} ) {
-            my $tmpl = MT->model('template')->load(
-                {
-                    blog_id    => $blog->id,
-                    identifier => $t,
-                }
-                );
-            return unless $tmpl;
-            $tmpl->build_type( $tmpls->{index}->{$t}->{build_type} );
-            $tmpl->save()
-                or MT->log(
-                    { message => "Could not update template map for template $t." } );
-        }
-    }
-}
-
-sub _install_template_set_fields {
-    my ($cb, $param ) = @_;
-    my $blog = $param->{blog} or return;
-    return _refresh_system_custom_fields($blog);
-}
-
-sub _refresh_system_custom_fields {
-    my ( $blog ) = @_;
-    return unless MT->component('Commercial');
-    
-    my $set_name = $blog->template_set or return;
-    my $set = MT->app->registry( 'template_sets', $set_name )
-        or return;
-    my $fields = $set->{sys_fields} or return;
-    
-  FIELD: while ( my ( $field_id, $field_data ) = each %$fields ) {
-      next if UNIVERSAL::isa( $field_data, 'MT::Component' );    # plugin                                    
-      my %field = %$field_data;
-      delete @field{qw( blog_id basename )};
-      my $field_name = delete $field{label};
-      my $field_scope = ( delete $field{scope} eq 'system' ? 0 : $blog->id );
-      $field_name = $field_name->() if 'CODE' eq ref $field_name;
-    REQUIRED: for my $required (qw( obj_type tag )) {
-        next REQUIRED if $field{$required};
-        
-        MT->log(
-            {
-                level   => MT->model('log')->ERROR(),
-                blog_id => $field_scope,
-                message => MT->translate(
-                    'Could not install custom field [_1]: field attribute [_2] is required',
-                    $field_id,
-                    $required,
-                    ),
-            }
-            );
-        next FIELD;
-    }
-      # Does the blog have a field with this basename?                                                       
-      my $field_obj = MT->model('field')->load(
-          {
-              blog_id  => $field_scope,
-              basename => $field_id,
-              obj_type => $field_data->{obj_type} || q{},
-          }
-          );
-      
-      if ($field_obj) {
-          
-          # Warn if the type is different.                                                                   
-          MT->log(
-              {
-                  level   => MT->model('log')->WARNING(),
-                  blog_id => $field_scope,
-                  message => MT->translate(
-                      'Could not install custom field [_1] on blog [_2]: the blog already has a field [_1] with a conflicting type',
-                      $field_id,
-                      ),
-              }
-              ) if $field_obj->type ne $field_data->{type};
-          next FIELD;
-      }
-      
-      $field_obj = MT->model('field')->new;
-      $field_obj->set_values(
-          {
-              blog_id  => $field_scope,
-              name     => $field_name,
-              basename => $field_id,
-              %field,
-          }
-          );
-      $field_obj->save() or die $field_obj->errstr();
-  }
-}
-
-sub _install_containers {
-    my ($model, $key, $blog, $struct, $parent) = @_;
-    my $pid = $parent ? $parent->id : 0;
-    foreach my $basename (keys %$struct) {
-        my $c = $struct->{$basename};
-        my $obj = MT->model($model)->load({ basename => $basename, parent => $pid });
-        unless ($obj) {
-            $obj = MT->model($model)->new;
-            $obj->blog_id( $blog->id );
-            $obj->basename( $basename );
-            $obj->label( &{$c->{label}} );
-            $obj->parent( $pid );
-            $obj->save;
-        }
-        if ($c->{$key}) {
-            _install_containers( $model, $key, $blog, $c->{$key}, $obj );
-        }
-    }
-}
-
-sub _install_categories {
-    return _install_containers('category','categories',@_);
-}
-
-sub _install_folders {
-    return _install_containers('folder','folders',@_);
-}
-
-sub _install_pages {
-    my ($blog, $struct) = @_;
-    my $app = MT::App->instance;
-    foreach my $basename (keys %$struct) {
-        my $p = $struct->{$basename};
-        my $obj = MT->model('page')->load({ basename => $basename, blog_id => $blog->id });
-        unless ($obj) {
-            my $title = &{$p->{label}};
-            $obj = MT->model('page')->new;
-            $obj->basename( $basename );
-            $obj->blog_id( $blog->id );
-            $obj->title( $title );
-            $obj->text( $p->{body} );
-            $obj->author_id( $app->user->id );
-            $obj->status( MT->model('entry')->RELEASE() );
-            foreach (keys %{$p->{meta}}) {
-                $obj->meta( $_, $p->{meta}->{$_} );
-            }
-            $obj->set_tags( @{$p->{tags}} );
-            $obj->save;
-        }
-    }
-}
-
-sub _install_default_content {
-    my ($cb, $param ) = @_;
-    my $blog = $param->{blog} or return;
-    my $set_name = $blog->template_set or return;
-    my $set = MT->app->registry( 'template_sets', $set_name )
-        or return;
-    my $content = $set->{content} or return;
-    foreach my $key (keys %$content) {
-        my $struct = $content->{$key};
-        if ($key eq 'folders') {
-            my $parent = 0;
-            _install_folders( $blog, $struct );
-        } elsif ($key eq 'categories') {
-            my $parent = 0;
-            _install_categories( $blog, $struct );
-        } elsif ($key eq 'pages') {
-            _install_pages( $blog, $struct );
-        }
-    }
-}
-
-sub template_set_change {
-    # Install Default Content
-    _install_default_content(@_);
-    # Install Template Set Custom Fields
-    _install_template_set_fields(@_);
-    # Set the publishing preferences for archive mappings
-    _set_archive_map_publish_types(@_);
-    # Set the publishing preferences for index templates
-    _set_index_publish_type(@_);
-    # Set the caching preferences for template modules and widgets
-    _set_module_caching_prefs(@_);
-    # Forcibly turn-on module caching for the blog
-    _override_publishing_settings(@_);
-    # Link installed templates to theme files
-    _link_templates(@_);
-}
-
-sub template_filter {
-    my ($cb, $templates) = @_;
-    my $app = MT->instance;
-    my $blog_id = $app->can('blog') 
-        ? $app->blog->id 
-        : return; # Only work on blog-specific widgets and widget sets
-
-    # Give up if the user didn't ask for anything to be saved.
-    unless ( $app->param('save_widgets') || $app->param('save_widgetsets') ) {
-        return;
-    }
-
-    my $index = 0; # To grab the current array item index.
-    my $tmpl_count = scalar @$templates;
-
-    while ($index <= $tmpl_count) {
-        my $tmpl = @$templates[$index];
-        if ( $tmpl->{'type'} eq 'widgetset' ) {
-            if ( $app->param('save_widgetsets') ) {
-                # Try to count a Widget Set in this blog with the same identifier.
-                my $installed = MT->model('template')->load( { blog_id    => $blog_id,
-                                                       type       => 'widgetset',
-                                                       identifier => $tmpl->{'identifier'}, } );
-                # If a Widget Set by this name was found, remove the template from the
-                # array of those templates to be installed.
-                if ($installed) {
-                    # Delete the Widget Set so it doesn't overwrite our existing Widget Set!
-                    splice(@$templates, $index, 1);
-                    next;
-                }
-            }
-        }
-        elsif ( $app->param('save_widgets') && $tmpl->{'type'} eq 'widget' ) {
-            # Try to count a Widget in this blog with the same identifier.
-            my $installed = MT->model('template')->count( { blog_id    => $blog_id,
-                                                   type       => 'widget',
-                                                   identifier => $tmpl->{'identifier'}, } );
-            # If a Widget by this name was found, remove the template from the
-            # array of those templates to be installed.
-            if ($installed) {
-                # Delete the Widget so it doesn't overwrite our existing Widget!
-                splice(@$templates, $index, 1);
-                next;
-            }
-        }
-        $index++;
-    }
-}
-
 sub _make_thumbnail {
     # We want a custom thumbnail to display on the Theme Options About tab.
     my ($ts_id, $plugin) = @_;
@@ -1105,15 +742,15 @@ sub theme_info {
     my $ts_id = $app->param('ts_id');
     
     $param->{id}             = $ts_id;
-    $param->{label}          = ThemeManager::Util::theme_label($ts_id, $plugin);
-    $param->{thumbnail_url}  = ThemeManager::Util::theme_thumbnail_url($ts_id, $plugin);
-    $param->{preview_url}    = ThemeManager::Util::theme_preview_url($ts_id, $plugin);
-    $param->{description}    = ThemeManager::Util::theme_description($ts_id, $plugin);
-    $param->{author_name}    = ThemeManager::Util::theme_author_name($ts_id, $plugin);
-    $param->{version}        = ThemeManager::Util::theme_version($ts_id, $plugin);
-    $param->{theme_link}     = ThemeManager::Util::theme_link($ts_id, $plugin);
-    $param->{theme_doc_link} = ThemeManager::Util::theme_doc_link($ts_id, $plugin);
-    $param->{about_designer} = ThemeManager::Util::about_designer($ts_id, $plugin);
+    $param->{label}          = theme_label($ts_id, $plugin);
+    $param->{thumbnail_url}  = theme_thumbnail_url($ts_id, $plugin);
+    $param->{preview_url}    = theme_preview_url($ts_id, $plugin);
+    $param->{description}    = theme_description($ts_id, $plugin);
+    $param->{author_name}    = theme_author_name($ts_id, $plugin);
+    $param->{version}        = theme_version($ts_id, $plugin);
+    $param->{theme_link}     = theme_link($ts_id, $plugin);
+    $param->{theme_doc_link} = theme_doc_link($ts_id, $plugin);
+    $param->{about_designer} = about_designer($ts_id, $plugin);
     $param->{plugin_sig}     = $plugin_sig;
     my $ts_count = keys %{ $plugin->{registry}->{'template_sets'} };
     $param->{plugin_label}   = $ts_count > 1 ? $plugin->label : 0;
@@ -1121,126 +758,6 @@ sub theme_info {
     $param->{theme_details} = $app->load_tmpl('theme_details.mtml', $param);
     
     return $app->load_tmpl('theme_info.mtml', $param);
-}
-
-sub _refresh_all_templates {
-    # This is basically lifted right from MT::CMS::Template (from Movable Type
-    # version 4.261), with some necessary changes to work with Theme Manager.
-    my ($template_set, $blog_id, $app) = @_;
-
-    my $t = time;
-
-    my @id = ( scalar $blog_id );
-    
-    require MT::DefaultTemplates;
-
-    my $user = $app->user;
-    my @blogs_not_refreshed;
-    my $can_refresh_system = $user->is_superuser() ? 1 : 0;
-    BLOG: 
-    for my $blog_id (@id) {
-        my $blog;
-        if ($blog_id) {
-            $blog = MT->model('blog')->load($blog_id);
-            next BLOG unless $blog;
-        }
-
-        if (!$can_refresh_system) {  # system refreshers can refresh all blogs
-            my $perms = MT->model('permission')->load(
-                { blog_id => $blog_id, author_id => $user->id } );
-            my $can_refresh_blog = !$perms                       ? 0
-                                 : $perms->can_edit_templates()  ? 1
-                                 : $perms->can_administer_blog() ? 1
-                                 :                                 0
-                                 ;
-            if (!$can_refresh_blog) {
-                push @blogs_not_refreshed, $blog->id;
-                next BLOG;
-            }
-        }
-
-        my $tmpl_list;
-
-        # the user wants to back up all templates and
-        # install the new ones
-        my @ts = offset_time_list( $t, $blog_id );
-        my $ts = sprintf "%04d-%02d-%02d %02d:%02d:%02d",
-            $ts[5] + 1900, $ts[4] + 1, @ts[ 3, 2, 1, 0 ];
-
-        # Backup/delete all the existing templates.
-        my $tmpl_iter = MT->model('template')->load_iter({
-            blog_id => $blog_id,
-            type    => { not => 'backup' },
-        });
-        while (my $tmpl = $tmpl_iter->()) {
-            # Don't backup Widgets or Widget Sets if the user asked
-            # that they be saved.
-            my $skip = 0;
-            # Because Widget Sets reference Widgets, we don't want to backup
-            # widgets, either, because that will change their "type" and
-            # therefore not be widgets anymore--potentially breaking the
-            # Widget Set.
-            if ( $app->param('save_widgetsets') 
-                && ( ($tmpl->type eq 'widgetset') || ($tmpl->type eq 'widget') ) 
-                && ( ($tmpl->linked_file ne '*') || !defined($tmpl->linked_file) )
-            ) {
-                $skip = 1;
-            }
-            if ( $app->param('save_widgets') 
-                && ($tmpl->type eq 'widget') 
-                && ( ($tmpl->linked_file ne '*') || !defined($tmpl->linked_file) )
-            ) {
-                $skip = 1;
-            }
-            if ($skip == 0) {
-                # zap all template maps
-                MT->model('templatemap')->remove({
-                    template_id => $tmpl->id,
-                });
-                $tmpl->name( $tmpl->name
-                        . ' (Backup from '
-                        . $ts . ') '
-                        . $tmpl->type );
-                $tmpl->type('backup');
-                $tmpl->identifier(undef);
-                $tmpl->rebuild_me(0);
-                $tmpl->linked_file(undef);
-                $tmpl->outfile('');
-                $tmpl->save;
-            }
-        }
-
-        if ($blog_id) {
-            # Create the default templates and mappings for the selected
-            # set here, instead of below.
-            $blog->create_default_templates( $template_set );
-
-            if ($template_set) {
-                $blog->template_set( $template_set );
-                $blog->save;
-                $app->run_callbacks( 'blog_template_set_change', { blog => $blog } );
-            }
-
-            next BLOG;
-        }
-        # Now that a new theme has been applied, we want to be sure the correct
-        # thumbnail gets displayed on the Theme Dashboard, which means we should
-        # delete the existing thumb (if there is one), so that it gets recreated
-        # when the user visits the dashboard.
-        my $tm = MT->component('ThemeManager');
-        my $thumb_path = File::Spec->catfile( _theme_thumb_path(), $blog_id.'.jpg' );
-        if (-e $thumb_path) {
-            unlink $thumb_path;
-        }
-    }
-    if (@blogs_not_refreshed) {
-        # Failed!
-        return 0;
-    }
-    
-    
-    # Success!
-    return 1;
 }
 
 sub xfrm_disable_tmpl_link {

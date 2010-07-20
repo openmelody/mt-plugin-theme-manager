@@ -1,6 +1,16 @@
 package ThemeManager::Util;
 
 use strict;
+use MT::Util qw(caturl);
+use base 'Exporter';
+
+our @EXPORT_OK = qw( theme_label theme_thumbnail_url theme_preview_url
+        theme_description theme_author_name theme_author_link 
+        theme_paypal_email theme_version theme_link theme_doc_link 
+        about_designer theme_docs _theme_thumb_path _theme_thumb_url );
+
+my $app = MT::App->instance();
+my $tm  = MT->component('ThemeManager');
 
 sub theme_label {
     # Grab the theme label. If no template set label is supplied then use
@@ -18,9 +28,9 @@ sub theme_thumbnail_url {
     my $app = MT->instance;
     return $obj->{registry}->{'template_sets'}->{$set}->{thumbnail}
         ? $app->config('StaticWebPath').'support/plugins/'
-            .$obj->key.'/'.$obj->{registry}->{'template_sets'}->{$set}->{thumbnail}
+            .$tm->id.'/'.$obj->{registry}->{'template_sets'}->{$set}->{thumbnail}
         : $app->config('StaticWebPath').'support/plugins/'
-            .'thememanager/images/default_theme_thumb-small.png';
+            .$tm->id.'/images/default_theme_thumb-small.png';
 }
 
 sub theme_preview_url {
@@ -30,9 +40,9 @@ sub theme_preview_url {
     my $app = MT->instance;
     return $obj->{registry}->{'template_sets'}->{$set}->{preview}
         ? $app->config('StaticWebPath').'support/plugins/'
-            .$obj->key.'/'.$obj->{registry}->{'template_sets'}->{$set}->{preview}
+            .$tm->id.'/'.$obj->{registry}->{'template_sets'}->{$set}->{preview}
         : $app->config('StaticWebPath').'support/plugins/'
-            .'thememanager/images/default_theme_thumb-large.png';
+            .$tm->id.'/images/default_theme_thumb-large.png';
 }
 
 sub theme_description {
@@ -148,6 +158,16 @@ sub theme_docs {
         return $contents;
     }
 }
+
+sub _theme_thumb_path {
+    my @path = ($app->config('StaticFilePath'), 'support', 'plugins', $tm->id, 'theme_thumbs');
+    return File::Spec->catfile( @path );
+}
+sub _theme_thumb_url {
+    return caturl( $app->static_path , 'support' , 'plugins', $tm->id, 'theme_thumbs', 
+            $app->blog->id.'.jpg' );
+}
+
 
 
 1;
