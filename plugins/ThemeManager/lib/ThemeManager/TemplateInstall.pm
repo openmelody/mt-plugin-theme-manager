@@ -384,8 +384,10 @@ sub _set_module_caching_prefs {
                 foreach (qw( expire_type expire_interval expire_event )) {
                     my $var = 'cache_' . $_;
                     my $val = $tmpls->{$t}->{$m}->{cache}->{$_};
-                    $val = ($val * 60) if ($_ eq 'expire_interval');
-                    $tmpl->$var($val);
+                    if ($val) {
+                        $val = ($val * 60) if ($_ eq 'expire_interval');
+                        $tmpl->$var($val);
+                    }
                 }
                 foreach (qw( include_with_ssi )) {
                     $tmpl->$_($tmpls->{$t}->{$m}->{cache}->{$_});

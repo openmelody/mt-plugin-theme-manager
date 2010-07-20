@@ -179,6 +179,8 @@ sub theme_dashboard {
     # of sucks. However, if unset, it defaults to 25!
     my $list_pref = $app->list_pref('theme') if $app->can('list_pref');
     $list_pref->{rows} = 999;
+    
+    $param->{page_actions} = $app->page_actions('theme_dashboard');
 
     my $tmpl = $tm->load_tmpl('theme_dashboard.mtml');
     return $app->listing({
@@ -198,8 +200,8 @@ sub theme_dashboard {
                 next;
             }
             $row->{id}            = $theme->ts_id;
-            $row->{label}         = ThemeManager::Util::theme_label($theme->ts_id, $plugin);
-            $row->{thumbnail_url} = ThemeManager::Util::theme_thumbnail_url($theme->ts_id, $plugin);
+            $row->{label}         = theme_label($theme->ts_id, $plugin);
+            $row->{thumbnail_url} = theme_thumbnail_url($theme->ts_id, $plugin);
             $row->{plugin_sig}    = $theme->plugin_sig;
 
             return $row;
@@ -274,15 +276,15 @@ sub select_theme {
                 next;
             }
             $row->{id}             = $theme->ts_id;
-            $row->{label}          = ThemeManager::Util::theme_label($theme->ts_id, $plugin);
-            $row->{thumbnail_url}  = ThemeManager::Util::theme_thumbnail_url($theme->ts_id, $plugin);
-            $row->{preview_url}    = ThemeManager::Util::theme_preview_url($theme->ts_id, $plugin);
-            $row->{description}    = ThemeManager::Util::theme_description($theme->ts_id, $plugin);
-            $row->{author_name}    = ThemeManager::Util::theme_author_name($theme->ts_id, $plugin);
-            $row->{version}        = ThemeManager::Util::theme_version($theme->ts_id, $plugin);
-            $row->{theme_link}     = ThemeManager::Util::theme_link($theme->ts_id, $plugin);
-            $row->{theme_doc_link} = ThemeManager::Util::theme_doc_link($theme->ts_id, $plugin);
-            $row->{about_designer} = ThemeManager::Util::about_designer($theme->ts_id, $plugin);
+            $row->{label}          = theme_label($theme->ts_id, $plugin);
+            $row->{thumbnail_url}  = theme_thumbnail_url($theme->ts_id, $plugin);
+            $row->{preview_url}    = theme_preview_url($theme->ts_id, $plugin);
+            $row->{description}    = theme_description($theme->ts_id, $plugin);
+            $row->{author_name}    = theme_author_name($theme->ts_id, $plugin);
+            $row->{version}        = theme_version($theme->ts_id, $plugin);
+            $row->{theme_link}     = theme_link($theme->ts_id, $plugin);
+            $row->{theme_doc_link} = theme_doc_link($theme->ts_id, $plugin);
+            $row->{about_designer} = about_designer($theme->ts_id, $plugin);
             $row->{plugin_sig}     = $theme->plugin_sig;
             $row->{theme_details}  = $app->load_tmpl('theme_details.mtml', $row);
             
@@ -321,7 +323,7 @@ sub setup_theme {
     # fieldset, just like on the Theme Options page.
     my $plugin = $MT::Plugins{$plugin_sig}->{object};
     my $ts     = $plugin->{registry}->{'template_sets'}->{$ts_id};
-    $param->{ts_label} = ThemeManager::Util::theme_label($ts_id, $plugin);
+    $param->{ts_label} = theme_label($ts_id, $plugin);
 
     # Check for the widgetsets beacon. It will be set after visiting the 
     # "Save Widgets" screen. Or, we may bypass it because we don't always
@@ -342,8 +344,10 @@ sub setup_theme {
             my $cur_ts_widgetsets = 
                 $cur_ts_plugin->registry('template_sets',$cur_ts_id,'templates','widgetset');
 
-            my @widgetsets = MT->model('template')->load({ type    => 'widgetset', 
-                                                  blog_id => $blog_id, });
+            my @widgetsets = MT->model('template')->load({
+                    type    => 'widgetset',
+                    blog_id => $blog_id,
+                });
             foreach my $widgetset (@widgetsets) {
                 # Widget Sets from the currently-used template set need to be built.
                 my $cur_ts_widgetset = $cur_ts_widgetsets->{$widgetset->identifier}->{'widgets'};
@@ -359,20 +363,20 @@ sub setup_theme {
                     $param->{if_save_widgetsets} = 1;
                 }
             }
-            
+
             # Now we need to check the Widgets. Here we can just look for
             # unlinked templates. *Any* unlinked template will definitely
             # be replaced, and the user may want to save them.
-            my @widgets = MT->model('template')->load(
-                                     { type        => 'widget',
-                                       blog_id     => $blog_id, }
-                                    );
+            my @widgets = MT->model('template')->load({
+                    type    => 'widget',
+                    blog_id => $blog_id,
+                });
 
             # We've got to test the results to determine if it's linked or not.
             # We're looking for any widgets that aren't linked (not "*") _or_
             # is NULL. (There's no way to do a null test during the object load.)
             foreach my $widget (@widgets) {
-                if ( ($widget->linked_file ne '*') || ( !defined($widget->linked_file) ) ) {
+                if ( ($widget->linked_file ne '*') || !defined($widget->linked_file)  ) {
                     $param->{if_save_widgets} = 1;
                 }
             }
@@ -461,7 +465,7 @@ sub setup_theme {
                 next if $optname eq 'fieldsets';
 
                 my $field = $ts->{options}->{$optname};
-                if ($field->{required} == 1) {
+                if ( $field->{required} && $field->{required} == 1 ) {
                     if ( my $cond = $field->{condition} ) {
                         if ( !ref($cond) ) {
                             $cond = $field->{condition} = $app->handler_to_coderef($cond);
@@ -664,7 +668,7 @@ sub _check_thumbalizr_result {
             || ($md5->hexdigest eq 'ac47a999e5ce1769d480a66b0554343d') ) {
         # This is the "queued" image being displayed. Instead of this, we
         # want to show the "preview" image defined by the template set.
-        return ThemeManager::Util::theme_preview_url($ts_id, $plugin);
+        return theme_preview_url($ts_id, $plugin);
     }
     else {
         return $dest_url;
@@ -827,8 +831,8 @@ sub _theme_check {
                 $theme = ThemeManager::Theme->new();
                 $theme->plugin_sig( $sig );
                 $theme->ts_id( $set );
-                $theme->ts_label( ThemeManager::Util::theme_label($set, $obj) );
-                $theme->ts_desc(  ThemeManager::Util::theme_description($set, $obj) );
+                $theme->ts_label( theme_label($set, $obj) );
+                $theme->ts_desc(  theme_description($set, $obj) );
                 $theme->save;
             }
         }

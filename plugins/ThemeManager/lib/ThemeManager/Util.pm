@@ -28,7 +28,7 @@ sub theme_thumbnail_url {
     my $app = MT->instance;
     return $obj->{registry}->{'template_sets'}->{$set}->{thumbnail}
         ? $app->config('StaticWebPath').'support/plugins/'
-            .$tm->id.'/'.$obj->{registry}->{'template_sets'}->{$set}->{thumbnail}
+            .$obj->id.'/'.$obj->{registry}->{'template_sets'}->{$set}->{thumbnail}
         : $app->config('StaticWebPath').'support/plugins/'
             .$tm->id.'/images/default_theme_thumb-small.png';
 }
@@ -40,7 +40,7 @@ sub theme_preview_url {
     my $app = MT->instance;
     return $obj->{registry}->{'template_sets'}->{$set}->{preview}
         ? $app->config('StaticWebPath').'support/plugins/'
-            .$tm->id.'/'.$obj->{registry}->{'template_sets'}->{$set}->{preview}
+            .$obj->id.'/'.$obj->{registry}->{'template_sets'}->{$set}->{preview}
         : $app->config('StaticWebPath').'support/plugins/'
             .$tm->id.'/images/default_theme_thumb-large.png';
 }
