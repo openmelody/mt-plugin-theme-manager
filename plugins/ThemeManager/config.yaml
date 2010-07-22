@@ -4,8 +4,8 @@ key: ThemeManager
 author_link: http://endevver.com/
 author_name: Endevver
 description: 'A comprehensive theme management plugin!'
-version: 0.9.15
-schema_version: 2
+version: 0.9.16
+schema_version: 3
 static_version: 4
 
 applications:
@@ -41,8 +41,15 @@ callbacks:
 
 object_types:
     theme: ThemeManager::Theme
+    blog:
+        template_set_language: string meta
 
 skip_static:
     - .psd
 
 widgets: $ThemeManager::ThemeManager::DashboardWidget::widget
+
+tags:
+  function:
+    TemplateSetLanguage: $ThemeManager::ThemeManager::Tags::template_set_language
+

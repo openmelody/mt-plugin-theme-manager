@@ -2,8 +2,6 @@ package ThemeManager::Tags;
 
 use strict;
 
-use base qw( MT::App );
-
 sub template_set_language {
     my ($ctx, $args) = @_;
     my $blog = $ctx->stash('blog');

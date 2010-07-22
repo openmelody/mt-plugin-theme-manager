@@ -19,23 +19,52 @@ This plugin is installed [just like any other Movable Type Plugin](http://www.ma
 
 # Reference and Documentation
 
+## Admins: Navigating the Theme Dashboard
+
 A user can visit the Design menu and choose Theme Dashboard to interact with 
 their current theme or apply a new theme. The Theme Dashboard is populated with 
 information about the current theme and links to work with the theme, all of 
 which can be specified by the theme designer.
 
-Apply a new theme by visiting the Theme Dashboard and clicking the "Apply a 
-New Theme" link to get started. A paginated view of the installed themes 
-appears. Here the user can see more detail about the theme (click the 
-thumbnail) and select a theme to apply. After selecting a theme the user 
-will be required to fill-in any fields marked "required" by the theme 
-designer to finish the process.
+The Theme Dashboard featured a tabbed display of information. A brief overview:
+
+* About this Theme - Presents basic information about the installed theme: 
+  the name, version, and description, for example, along with a link to the
+  theme designer, off-site documentation, and a PayPal donate button. 
+  Additionally, a preview image of the theme on your site is presented. This
+  image is refreshed periodically to be current.
+* Documentation - If the designer has provided documentation with the theme, 
+  it is presented here. Note that a designer may supply inline documentation 
+  displayed here, or they may provide off-site documentation (or both, or 
+  none). Each option has benefits.
+* Customization - The Customization tab provides an a way for designers and 
+  plugin developers to integrate links to tools that may be used to build a 
+  theme. Options like a link to Theme Options and Widgets may be included if 
+  those features are used in a theme. Additionally, Advanced Options provides 
+  a way to work with template listing page actions.
+* Templates - The Template Listing screen gets some minor reworking with 
+  inline notification of template republishing status (click the spinner next 
+  to an Index template)!
+* Change Theme - Detailed below.
+
+## Admins: Applying a Theme
+
+Apply a new theme by visiting the Theme Dashboard and clicking the **Change 
+Theme** link to get started. A list of the installed themes appears. Here 
+the user can see more detail about the theme (click the thumbnail) and select 
+a theme to apply. After selecting a theme the user will be required to 
+fill-in any fields marked "required" by the theme designer to finish the 
+process.
 
 (Need to apply a theme to many blogs? Visit System Overview > Blogs and use 
 the Apply Theme list action.)
 
-Keep reading for details on creating a theme that takes full advantage of all 
-that Theme Manager offers!
+When applying a theme, Theme Manager will take a closer look at your Widgets 
+and Widget Sets (if used). If either will change when applying the theme, you 
+are given the opportunity to preserve the current Widgets and Widget Sets. 
+This can be useful if, for example, you've created some custom Widgets and 
+sorted them into a specific order in a Widget Set, and you want to save those 
+changes to use in the new theme.
 
 ## Designers: Specifying Your Theme's Details
 

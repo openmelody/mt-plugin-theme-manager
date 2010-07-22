@@ -308,6 +308,9 @@ sub template_set_change {
     # "production" environment. This lets localization happen, and allows the
     # user to edit templates from the admin interface.
     #_link_templates(@_);
+    # Since the Production and Designer modes aren't ready yet, just link
+    # templates so that designers can work quickly!
+    _link_templates(@_);
 }
 
 sub _new_blog_template_set_language {
@@ -317,12 +320,6 @@ sub _new_blog_template_set_language {
 
     my ($cb, $param) = @_;
     my $ts_id = $param->{blog}->template_set;
-
-    MT::Blog->install_meta({
-        column_defs => {
-            'template_set_language' => 'string',
-        }
-    });
 
     my $template_set_language = $app->param('template_set_language') 
                                     || $app->user->preferred_language;

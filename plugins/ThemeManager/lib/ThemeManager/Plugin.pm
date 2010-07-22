@@ -35,17 +35,16 @@ sub update_menus {
 }
 
 sub update_page_actions {
-    # Override the blog-level "Refresh Blog Templates" page action, causing
-    # a popup to start the theme selection process. We want to keep the
-    # Refresh Blog Templates link because it's familiar at this point.
+    my $app = MT->instance;
+    my $blog_id = $app->param('blog_id');
+    if ($blog_id) {
+        my $core = MT->component('Core');
+        # Delete the Refresh Blog Templates page action because we don't want
+        # people to use this page action--they can apply a theme, instead.
+        delete $core->{registry}->{applications}->{cms}->{page_actions}->{list_templates}->{refresh_all_blog_templates};
+    }
     return {
         list_templates => {
-            refresh_all_blog_templates => {
-                label     => "Refresh Blog Templates",
-                dialog    => 'select_theme',
-                condition => sub { MT->app->blog; },
-                order => 1000,
-            },
             refresh_fields => {
                 label => "Refresh Custom Fields",
                 order => 1010,
@@ -104,14 +103,13 @@ sub theme_dashboard {
     if ( !eval {$app->blog->id} && ($app->param('__mode') eq 'theme_dashboard') ) {
         $app->redirect( $app->uri.'?__mode=dashboard&blog_id=0' );
     }
-    
+
     my $ts_id  = $app->blog->template_set;
     my $tm     = MT->component('ThemeManager');
     my $plugin = find_theme_plugin($ts_id);
 
     my $param = {};
     # Build the theme dashboard links
-
     $param->{theme_label}       = theme_label($ts_id, $plugin);
     $param->{theme_description} = theme_description($ts_id, $plugin);
     $param->{theme_author_name} = theme_author_name($ts_id, $plugin);
@@ -180,7 +178,8 @@ sub theme_dashboard {
     my $list_pref = $app->list_pref('theme') if $app->can('list_pref');
     $list_pref->{rows} = 999;
     
-    $param->{page_actions} = $app->page_actions('theme_dashboard');
+    $param->{theme_dashboard_page_actions} = $app->page_actions('theme_dashboard');
+    $param->{template_page_actions} = $app->page_actions('list_templates');
 
     my $tmpl = $tm->load_tmpl('theme_dashboard.mtml');
     return $app->listing({

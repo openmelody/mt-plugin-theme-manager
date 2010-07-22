@@ -63,9 +63,9 @@
 
 <mt:include name="include/header.tmpl">
 
+
 <mt:Ignore> The #theme-label is used with the page JS to create h2#page-title </mt:Ignore>
 <div id="theme-label"><mt:Var name="theme_label"></div>
-
 
 <div id="about-tab-content">
     <mt:If name="theme_thumb_url">
@@ -156,53 +156,52 @@
         </div>
     </mt:If>
 
-    <mt:If name="page_actions">
+<mt:loop name="theme_dashboard_page_actions">
+    <mt:If name="__first__">
         <h3><__trans phrase="Customize this Theme"></h3>
         <ul>
-<mt:loop name="page_actions">
-    <mt:if name="link">
+    </mt:If>
+    <mt:If name="link">
             <li class="icon-mini-left icon-mini-settings">
-                <a href="<mt:var name="script_url" escape="html">?__mode=<mt:var name="mode">&amp;blog_id=<mt:Var name="blog_id">"
+                <a href="<mt:var name="script_url" escape="html">?__mode=<mt:var name="mode">&amp;blog_id=<mt:Var name="blog_id">&amp;magic_token=<mt:Var name="magic_token">"
                     <mt:If name="continue_prompt"> onclick="return confirm('<mt:var name="continue_prompt" escape="js">');"</mt:If>>
                         <mt:Var name="label">
                 </a>
             </li>
     <mt:Else name="dialog">
             <li class="icon-mini-left icon-mini-settings">
-                <a href="javascript:void(0)" onclick="<mt:if name="continue_prompt">if(!confirm('<mt:var name="continue_prompt" escape="js">'))return false;</mt:if>return openDialog(false, '<mt:var name="dialog">', '<mt:if name="dialog_args"><mt:var name="dialog_args" escape="url"></mt:if><mt:if name="id">&amp;id=<mt:var name="id"></mt:if><mt:if name="blog_id">&amp;blog_id=<mt:var name="blog_id"></mt:if>')">
+                <a href="javascript:void(0)" onclick="<mt:if name="continue_prompt">if(!confirm('<mt:var name="continue_prompt" escape="js">'))return false;</mt:if>return openDialog(false, '<mt:var name="dialog">', '<mt:if name="dialog_args"><mt:var name="dialog_args" escape="url"></mt:if><mt:if name="id">&amp;id=<mt:var name="id"></mt:if>&amp;blog_id=<mt:var name="blog_id">&amp;magic_token=<mt:Var name="magic_token">')">
                     <mt:var name="label">
                 </a>
             </li>
-    </mt:if>
-</mt:loop>
+    </mt:If>
+    <mt:If name="__last__">
         </ul>
     </mt:If>
-    <div id="advanced-options">
+</mt:loop>
+<mt:loop name="template_page_actions">
+    <mt:If name="__first__">
         <h3><__trans phrase="Advanced Options"></h3>
         <ul>
-        <mt:If name="linked_theme">
-            <li>
-                <a href="<mt:Var name="script_uri">?__mode=list&_type=template&blog_id=<mt:Var name="blog_id">" 
-                    title="View this theme's templates" 
-                    class="icon-mini-left icon-mini-templates"><__trans phrase="View Templates"></a>
+    </mt:If>
+    <mt:If name="link">
+            <li class="icon-mini-left icon-mini-settings">
+                <a href="<mt:var name="script_url" escape="html">?__mode=<mt:var name="mode">&amp;blog_id=<mt:Var name="blog_id">&amp;magic_token=<mt:Var name="magic_token">"
+                    <mt:If name="continue_prompt"> onclick="return confirm('<mt:var name="continue_prompt" escape="js">');"</mt:If>>
+                        <mt:Var name="label">
+                </a>
             </li>
-            <li>
-                <a href="javascript:void(0);" onclick="return openDialog(null, 'edit_templates', 
-                    '&blog_id=<mt:Var name="blog_id">')" title="<__trans phrase="Edit this theme's templates">"
-                    class="icon-mini-left icon-mini-templates"><__trans phrase="Edit Templates"></a>
+    <mt:Else name="dialog">
+            <li class="icon-mini-left icon-mini-settings">
+                <a href="javascript:void(0)" onclick="<mt:if name="continue_prompt">if(!confirm('<mt:var name="continue_prompt" escape="js">'))return false;</mt:if>return openDialog(false, '<mt:var name="dialog">', '<mt:if name="dialog_args"><mt:var name="dialog_args" escape="url"></mt:if><mt:if name="id">&amp;id=<mt:var name="id"></mt:if>&amp;blog_id=<mt:var name="blog_id">&amp;magic_token=<mt:Var name="magic_token">')">
+                    <mt:var name="label">
+                </a>
             </li>
-        <mt:Else>
-            <li>
-                <a href="<mt:Var name="script_uri">?__mode=list&_type=template&blog_id=<mt:Var name="blog_id">" 
-                    title="Edit this theme's templates" 
-                    class="icon-mini-left icon-mini-templates"><__trans phrase="Edit Templates"></a>
-                <mt:If name="templates_modified">
-                <span class="templates-modified">The templates for this theme have been modified.</span>
-                </mt:If>
-            </li>
-        </mt:If>
+    </mt:If>
+    <mt:If name="__last__">
         </ul>
-    </div>
+    </mt:If>
+</mt:loop>
 </div>
 
 <div id="apply-theme-tab-content">
