@@ -38,7 +38,11 @@ callbacks:
     template_source:               $ThemeManager::ThemeManager::Plugin::xfrm_add_thumb
     blog_template_set_change:      $ThemeManager::ThemeManager::TemplateInstall::template_set_change
     DefaultTemplateFilter:         $ThemeManager::ThemeManager::TemplateInstall::template_filter
+    template_source.edit_blog:     $ThemeManager::ThemeManager::TemplateInstall::xfrm_add_language
+    template_param.edit_blog:      $ThemeManager::ThemeManager::TemplateInstall::xfrm_param_add_language
 
+init_app: $ThemeManager::ThemeManager::Init::init_app
+    
 object_types:
     theme: ThemeManager::Theme
     blog:

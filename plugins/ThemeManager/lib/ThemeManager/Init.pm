@@ -5,6 +5,13 @@ use ConfigAssistant::Util qw( find_theme_plugin );
 # Theme Manager, we can rely on it being available.
 use Sub::Install;
 
+MT::Blog->install_meta({
+    column_defs => {
+        'template_set_language' => 'string',
+    }
+});
+
+
 sub init_app {
     # TODO - This should not have to reinstall a subroutine. It should invoke 
     #        a callback.
@@ -19,16 +26,16 @@ sub _translate {
     # This is basically lifted right from MT::CMS::Template (from Movable Type
     # version 4.261), with some necessary changes to work with Theme Manager.
     my $c       = shift;
+    use Data::Dumper;
     my $handles = MT->request('l10n_handle') || {};
     my $h       = $handles->{ $c->id };
     unless ($h) {
         my $lang = MT->current_language || MT->config->DefaultLanguage;
-        eval "require " . $c->l10n_class . ";";
-        if ($@) {
-            $h = MT->language_handle;
+        if ( eval "require " . $c->l10n_class . ";" ) {
+            $h = $c->l10n_class->get_handle($lang);
         }
         else {
-            $h = $c->l10n_class->get_handle($lang);
+            $h = MT->language_handle;
         }
         $handles->{ $c->id } = $h;
         MT->request( 'l10n_handle', $handles );
@@ -56,7 +63,7 @@ sub _translate {
             # The user is creating a new blog.
             $c = find_theme_plugin( $app->param('template_set') );
             my $template_set_language = $app->param('template_set_language') || $app->user->preferred_language;
-            if ( eval "require " . $c->l10n_class . ";" ) {
+            if ( $c && eval "require " . $c->l10n_class . ";" ) {
                 $h = $c->l10n_class->get_handle( $template_set_language );
             }
         }

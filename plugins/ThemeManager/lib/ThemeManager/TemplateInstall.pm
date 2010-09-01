@@ -307,9 +307,6 @@ sub template_set_change {
     # Template linking is commented out so that templates start life in a 
     # "production" environment. This lets localization happen, and allows the
     # user to edit templates from the admin interface.
-    #_link_templates(@_);
-    # Since the Production and Designer modes aren't ready yet, just link
-    # templates so that designers can work quickly!
     _link_templates(@_);
 }
 
