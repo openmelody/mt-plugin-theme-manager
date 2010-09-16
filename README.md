@@ -300,6 +300,20 @@ levels like so:
 *Categories are done in an identical fashion except instead of using the
 key "folders" you would use "categories".*
 
+### Entries, Pages, and Tags
+
+You can specify default pages and entries, along with their vital meta data
+via Theme Manager as well. For example, the following will define an entry
+called "Press Kits" which will have two tags: `@nav` and `press`:
+
+    content:
+      entries:
+        press_kits:
+          label: 'Press Kits'
+          tags: 
+            - '@nav'
+            - 'press'
+
 ## Designers: Additional Template Settings
 
 Theme Manager allows you to specify some additional keys for templates: 
@@ -400,13 +414,13 @@ accompanying translations in your plugin.
 
 # Acknowledgements
 
-This plugin was commissioned by Endevver to Dan Wolfgang of uiNNOVATIONS. Endevver is proud to be partners with uiNNOVATIONS.
-http://uinnovations.com/
+This plugin was commissioned by Endevver to Dan Wolfgang of [uiNNOVATIONS](http://uinnovations.com/). 
+Endevver is proud to be partners with uiNNOVATIONS.
 
 # License
 
 This plugin is licensed under the same terms as Perl itself.
 
-#Copyright
+# Copyright
 
 Copyright 2010, Endevver LLC. All rights reserved.
