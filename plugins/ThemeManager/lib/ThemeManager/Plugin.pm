@@ -137,6 +137,9 @@ sub theme_dashboard {
     $param->{paypal_email}      = ThemeManager::Util::theme_paypal_email($ts, $plugin);
     $param->{about_designer}    = ThemeManager::Util::about_designer($ts, $plugin);
     $param->{theme_docs}        = ThemeManager::Util::theme_docs($ts, $plugin);
+
+    $param->{search_label} = $app->translate('Templates');
+    $param->{object_type}  = 'template';
     
     my $dest_path = _theme_thumb_path();
     if ( -w $dest_path ) {
@@ -775,8 +778,6 @@ sub _refresh_system_custom_fields {
       }
       
       $field_obj = MT->model('field')->new;
-      use Data::Dumper;
-      MT->log("Setting fields: " . Dumper(%field));
       $field_obj->set_values(
           {
               blog_id  => $field_scope,
@@ -882,7 +883,7 @@ sub template_set_change {
 sub template_filter {
     my ($cb, $templates) = @_;
     my $app = MT->instance;
-    my $blog_id = $app->can('blog') 
+    my $blog_id = $app->can('blog') && $app->blog
         ? $app->blog->id 
         : return; # Only work on blog-specific widgets and widget sets
 
