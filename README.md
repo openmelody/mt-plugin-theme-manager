@@ -1,12 +1,89 @@
 # About the Theme Manager plugin for Movable Type and Melody
 
-The Theme Manager plugin has two components:
+Theme Manager is a plugin for Movable Type and Melody created for designers and 
+users with an express goal of making it much easier to both build and use themes
+on the Movable Type and Melody platforms. 
 
-* A Theme Chooser to help users install and set up a theme, provides theme 
-  designers with ways to communicate their theme capabilities and requirements, 
-  and makes upgrading themes easier.
-* A Theme Dashboard for at-a-glance detail of the theme being used and links 
-  to work with the installed theme.
+## What Theme Manager Does for End Users
+
+Theme Manager provides a much more intuitive administrative interface for end 
+users allowing them to more easily apply and customize a theme. Furthermore, it
+virtually eliminates the need for end users to edit or worry about templates.
+
+## What Theme Manager Does for Designers
+
+### Eliminate Burdensome "Template Refreshing"
+
+Designers who have built sites on Movable Type are all too familiar with the
+workflow to see a simple change actually appear on a web site. It goes something
+like this:
+
+1. Edit template on file system.
+2. Go into MT, refresh template to pull in changes.
+3. Save and publish newly updated template.
+4. Go to browser, refresh and see change.
+5. Repeat.
+
+Theme Manager streamlines this process by eliminating the need to refresh 
+templates, and by providing simple mechanisms inside of Movable Type to 
+quickly and efficiently republish templates, entries and pages. With 
+Theme Manager installed, when you edit a theme on the filesystem, the 
+theme is immediately updated in Movable Type. Then republishing that file
+is as simple as clicking a rebuild icon next to the template or content
+you would like refreshed. 
+
+*Coming soon: see your changes in real time. In a future version of Theme
+Manager changes made to a theme will be reflected on the live site
+immediately. No refreshing and no republishing required.*
+
+### Create Better Products
+
+When a designers creates a theme with the intent to distribute it, it is
+essential that the product they produce is not only easy to use, but also easy
+to support. Themes should never have to include complex instructions in order
+to allow end users to apply, setup, configure and tweak them. These actions
+should be easy and obvious. Theme Manager makes that happen. Here's how:
+
+* Theme Manager allows you provide thumbnails for your theme so that users
+  can preview the theme more easily from directly within Movable Type.
+
+* Theme Manager allows end users to donate money to you via PayPal. Just
+  provide your PayPal email address and a donate appears automatically.
+
+* Theme Manager greatly expands upon the options made available to them in 
+  a theme's config file (e.g. `config.yaml`). Designers can specify caching
+  options, default content to be created (folders, categories, entries, 
+  pages), and much more.
+
+* Theme Manager integrates seamlessly with Config Assistant to provide a 
+  simple way for users to access a theme's options. These options allow a
+  designer to constrain the ways in which a theme can be customized and 
+  virtually eliminates the need for users to edit templates. 
+
+## Don't Let Upgrades Break Your Theme
+
+Upgrading a theme should be something every user should not only be able
+to do, but something they feel comfortable and safe in doing. Sadly, that
+is not often the case. Frequently, the thought of upgrading a theme is 
+frought with anxiety because upgrading may end up breaking your web site. 
+And who in their right mind wants that?
+
+Theme Manager prevents this by allowing themes to operate in two modes:
+developer mode and production mode. 
+
+In developer mode, a theme in the CMS is linked directly to the theme's 
+source files on the file system. When the theme changes on the file 
+system, it changes in the CMS. This helps make iterating through 
+changes to your web site much faster and more enjoyable. 
+
+When a theme is in production mode, then the link between
+the CMS and theme's source files are broken, such that changes to the 
+theme on the filesystem will not automatically appear on the live site.
+This allows for designers to work within the CMS on changes to a theme
+without fear of those changes they are iterating on and testing
+disruption the live/production web site. Then, when a set of changes are
+ready, simply re-apply the theme to live site and presto, your changes
+are live.
 
 # Prerequisites
 
@@ -83,17 +160,17 @@ opportunity to include simple or complex HTML along with inline CSS. Examples:
 
 * Inline, formatted as HTML:
 
-    `description: "<p>This is my great theme!</p>"
-    documentation: "<p>How to use this theme.</p>"
-    about_designer: "<p>I am the bestest designer <em>evar</em>!</p>"`
+      description: "<p>This is my great theme!</p>"
+      documentation: "<p>How to use this theme.</p>"
+      about_designer: "<p>I am the bestest designer <em>evar</em>!</p>"
 
 * As a file reference, which contains HTML. The file you specify should be
   placed in your plugin's envelope, or in a folder named `tmpl` within your
   plugin's envelope.
 
-    `description: description.html
-    documentation: documentation.html
-    about_designer: about.html`
+      description: description.html
+      documentation: documentation.html
+      about_designer: about.html
 
 Additionally, the Theme Chooser will display images to help the user select a 
 theme.
@@ -164,6 +241,65 @@ Dashboard, too, by specifying the additions as Page Actions targeted to the
 Of course, the code, mode or dialog being added needs to be created, but 
 that's beyond the scope of this document.
 
+## Designers: Specifying Default Content
+
+Theme Manager allows you to prepopulate a new web site using a theme with
+default content. This is very useful when a theme requires a certain set of 
+folders, categories, pages and/or entries to be in place to function 
+properly. It is also extremely helpful in providing a better "out-of-the-box"
+end user experience. That way when a user installs and applys a theme, and
+then views their web site for the first time there will be content there,
+as opposed to a big empty screen. 
+
+To specify default content, utilize the `content` property in your theme's
+config.yaml structure. Here is an example config.yaml file that specifies
+three default categories, a default entry, and an about page:
+
+    my_blog:
+      base_path: templates/blog
+      label: 'My Awesome Theme'
+      thumbnail: thumb.png
+      preview: preview.png
+      description: 'This theme is awesome.'
+      content:
+        categories:
+          announcements:
+            label: 'Announcements'
+          events:
+            label: 'Events'
+          news:
+            label: 'News'
+        entries:
+          welcome:
+            label: 'Welcome to my awesome theme'
+            text: 'You just installed a great theme. Congrats!'
+        pages:
+          about:
+            label: 'About'
+
+### Nested Categories and Folders
+
+You can easily build category and folder heirarchies with multiple
+levels like so:
+
+    content:
+      folders:
+        about:
+          label: 'About'
+          folders:
+            jobs:
+              label: "We're Hiring"
+            execs:
+              label: "Executive Team"
+              folders:
+                ceo:
+                  label: "About our CEO"
+                advisors:
+                  label: "Our Advisors"
+
+*Categories are done in an identical fashion except instead of using the
+key "folders" you would use "categories".*
+
 ## Designers: Additional Template Settings
 
 Theme Manager allows you to specify some additional keys for templates: 
@@ -215,42 +351,52 @@ UI, this option corresponds to the "Process as [SSI method] include." Server
 Side Includes must be enabled at the blog level (check this in Preferences > 
 Publishing).
 
+An advanced feature that Theme Manager supports installing localized templates. 
+Localized templates (that is, templates translated to another language) need to 
+be defined within your plugin. You'll need to specify an `l10n_class` and the 
+accompanying translations in your plugin.
+
     name: Awesomeness
     version: 1.0
+    l10n_class: 'Awesomeness::L10N'
     template_sets:
         my_awesome_theme:
             base_path: 'templates'
             label: 'My Awesome Theme'
-        templates:
-            index:
-                main_index:
+            languages:
+                - en-us
+                - fr
+                - es
+            templates:
+                index:
                     main_index:
-                        label: 'Main Index'
-                        outfile: index.html
-                        rebuild_me: 1
-                        build_type: 1
-            archive:
-                category_archive:
-                    label: 'Category Archive'
-                    mappings:
-                        category:
-                            archive_type: Category
-                            file_template: %c/%f
-                            preferred: 1
-                            build_type: 4
-            module:
-                recent_entries:
-                    label: 'Recent Entries'
-                    cache:
-                        expire_type: 2
-                        expire_event: entry
-            widget:
-                awesomeness_factor:
-                    label: 'My Awesomeness Factor'
-                    cache:
-                        expire_type: 1
-                        expire_interval: 30
-                        include_with_ssi: 1
+                        main_index:
+                            label: 'Main Index'
+                            outfile: index.html
+                            rebuild_me: 1
+                            build_type: 1
+                archive:
+                    category_archive:
+                        label: 'Category Archive'
+                        mappings:
+                            category:
+                                archive_type: Category
+                                file_template: %c/%f
+                                preferred: 1
+                                build_type: 4
+                module:
+                    recent_entries:
+                        label: 'Recent Entries'
+                        cache:
+                            expire_type: 2
+                            expire_event: entry
+                widget:
+                    awesomeness_factor:
+                        label: 'My Awesomeness Factor'
+                        cache:
+                            expire_type: 1
+                            expire_interval: 30
+                            include_with_ssi: 1
 
 # Acknowledgements
 
