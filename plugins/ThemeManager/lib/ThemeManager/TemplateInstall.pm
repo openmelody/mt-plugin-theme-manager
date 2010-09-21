@@ -526,6 +526,14 @@ sub _refresh_system_custom_fields {
     }
 }
 
+sub _install_categories {
+    return _install_containers('category','categories',@_);
+}
+
+sub _install_folders {
+    return _install_containers('folder','folders',@_);
+}
+
 sub _install_containers {
     my ($model, $key, $blog, $struct, $parent) = @_;
     my $pid = $parent ? $parent->id : 0;
@@ -550,12 +558,12 @@ sub _install_containers {
     }
 }
 
-sub _install_pages {
-    my ($blog, $struct) = @_;
+sub _install_pages_or_entries {
+    my ($obj_type, $blog, $struct) = @_;
     my $app = MT::App->instance;
     foreach my $basename (keys %$struct) {
         my $p = $struct->{$basename};
-        my $obj = MT->model('page')->load({
+        my $obj = MT->model($obj_type)->load({
             basename => $basename,
             blog_id  => $blog->id
         });
@@ -589,11 +597,16 @@ sub _install_default_content {
         if ($key eq 'folders') {
             my $parent = 0;
             _install_folders( $blog, $struct );
-        } elsif ($key eq 'categories') {
+        }
+        elsif ($key eq 'categories') {
             my $parent = 0;
             _install_categories( $blog, $struct );
-        } elsif ($key eq 'pages') {
-            _install_pages( $blog, $struct );
+        }
+        elsif ($key eq 'pages') {
+            _install_pages_or_entries( 'page', $blog, $struct );
+        }
+        elsif ($key eq 'entries') {
+            install_pages_or_entries( 'entry', $blog, $struct );
         }
     }
 }
