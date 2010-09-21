@@ -1,12 +1,89 @@
 # About the Theme Manager plugin for Movable Type and Melody
 
-The Theme Manager plugin has two components:
+Theme Manager is a plugin for Movable Type and Melody created for designers and 
+users with an express goal of making it much easier to both build and use themes
+on the Movable Type and Melody platforms. 
 
-* A Theme Chooser to help users install and set up a theme, provides theme 
-  designers with ways to communicate their theme capabilities and requirements, 
-  and makes upgrading themes easier.
-* A Theme Dashboard for at-a-glance detail of the theme being used and links 
-  to work with the installed theme.
+## What Theme Manager Does for End Users
+
+Theme Manager provides a much more intuitive administrative interface for end 
+users allowing them to more easily apply and customize a theme. Furthermore, it
+virtually eliminates the need for end users to edit or worry about templates.
+
+## What Theme Manager Does for Designers
+
+### Eliminate Burdensome "Template Refreshing"
+
+Designers who have built sites on Movable Type are all too familiar with the
+workflow to see a simple change actually appear on a web site. It goes something
+like this:
+
+1. Edit template on file system.
+2. Go into MT, refresh template to pull in changes.
+3. Save and publish newly updated template.
+4. Go to browser, refresh and see change.
+5. Repeat.
+
+Theme Manager streamlines this process by eliminating the need to refresh 
+templates, and by providing simple mechanisms inside of Movable Type to 
+quickly and efficiently republish templates, entries and pages. With 
+Theme Manager installed, when you edit a theme on the filesystem, the 
+theme is immediately updated in Movable Type. Then republishing that file
+is as simple as clicking a rebuild icon next to the template or content
+you would like refreshed. 
+
+*Coming soon: see your changes in real time. In a future version of Theme
+Manager changes made to a theme will be reflected on the live site
+immediately. No refreshing and no republishing required.*
+
+### Create Better Products
+
+When a designers creates a theme with the intent to distribute it, it is
+essential that the product they produce is not only easy to use, but also easy
+to support. Themes should never have to include complex instructions in order
+to allow end users to apply, setup, configure and tweak them. These actions
+should be easy and obvious. Theme Manager makes that happen. Here's how:
+
+* Theme Manager allows you provide thumbnails for your theme so that users
+  can preview the theme more easily from directly within Movable Type.
+
+* Theme Manager allows end users to donate money to you via PayPal. Just
+  provide your PayPal email address and a donate appears automatically.
+
+* Theme Manager greatly expands upon the options made available to them in 
+  a theme's config file (e.g. `config.yaml`). Designers can specify caching
+  options, default content to be created (folders, categories, entries, 
+  pages), and much more.
+
+* Theme Manager integrates seamlessly with Config Assistant to provide a 
+  simple way for users to access a theme's options. These options allow a
+  designer to constrain the ways in which a theme can be customized and 
+  virtually eliminates the need for users to edit templates. 
+
+## Don't Let Upgrades Break Your Theme
+
+Upgrading a theme should be something every user should not only be able
+to do, but something they feel comfortable and safe in doing. Sadly, that
+is not often the case. Frequently, the thought of upgrading a theme is 
+frought with anxiety because upgrading may end up breaking your web site. 
+And who in their right mind wants that?
+
+Theme Manager prevents this by allowing themes to operate in two modes:
+developer mode and production mode. 
+
+In developer mode, a theme in the CMS is linked directly to the theme's 
+source files on the file system. When the theme changes on the file 
+system, it changes in the CMS. This helps make iterating through 
+changes to your web site much faster and more enjoyable. 
+
+When a theme is in production mode, then the link between
+the CMS and theme's source files are broken, such that changes to the 
+theme on the filesystem will not automatically appear on the live site.
+This allows for designers to work within the CMS on changes to a theme
+without fear of those changes they are iterating on and testing
+disruption the live/production web site. Then, when a set of changes are
+ready, simply re-apply the theme to live site and presto, your changes
+are live.
 
 # Prerequisites
 
@@ -19,52 +96,23 @@ This plugin is installed [just like any other Movable Type Plugin](http://www.ma
 
 # Reference and Documentation
 
-## Admins: Navigating the Theme Dashboard
-
 A user can visit the Design menu and choose Theme Dashboard to interact with 
 their current theme or apply a new theme. The Theme Dashboard is populated with 
 information about the current theme and links to work with the theme, all of 
 which can be specified by the theme designer.
 
-The Theme Dashboard featured a tabbed display of information. A brief overview:
-
-* About this Theme - Presents basic information about the installed theme: 
-  the name, version, and description, for example, along with a link to the
-  theme designer, off-site documentation, and a PayPal donate button. 
-  Additionally, a preview image of the theme on your site is presented. This
-  image is refreshed periodically to be current.
-* Documentation - If the designer has provided documentation with the theme, 
-  it is presented here. Note that a designer may supply inline documentation 
-  displayed here, or they may provide off-site documentation (or both, or 
-  none). Each option has benefits.
-* Customization - The Customization tab provides an a way for designers and 
-  plugin developers to integrate links to tools that may be used to build a 
-  theme. Options like a link to Theme Options and Widgets may be included if 
-  those features are used in a theme. Additionally, Advanced Options provides 
-  a way to work with template listing page actions.
-* Templates - The Template Listing screen gets some minor reworking with 
-  inline notification of template republishing status (click the spinner next 
-  to an Index template)!
-* Change Theme - Detailed below.
-
-## Admins: Applying a Theme
-
-Apply a new theme by visiting the Theme Dashboard and clicking the **Change 
-Theme** link to get started. A list of the installed themes appears. Here 
-the user can see more detail about the theme (click the thumbnail) and select 
-a theme to apply. After selecting a theme the user will be required to 
-fill-in any fields marked "required" by the theme designer to finish the 
-process.
+Apply a new theme by visiting the Theme Dashboard and clicking the "Apply a 
+New Theme" link to get started. A paginated view of the installed themes 
+appears. Here the user can see more detail about the theme (click the 
+thumbnail) and select a theme to apply. After selecting a theme the user 
+will be required to fill-in any fields marked "required" by the theme 
+designer to finish the process.
 
 (Need to apply a theme to many blogs? Visit System Overview > Blogs and use 
 the Apply Theme list action.)
 
-When applying a theme, Theme Manager will take a closer look at your Widgets 
-and Widget Sets (if used). If either will change when applying the theme, you 
-are given the opportunity to preserve the current Widgets and Widget Sets. 
-This can be useful if, for example, you've created some custom Widgets and 
-sorted them into a specific order in a Widget Set, and you want to save those 
-changes to use in the new theme.
+Keep reading for details on creating a theme that takes full advantage of all 
+that Theme Manager offers!
 
 ## Designers: Specifying Your Theme's Details
 
@@ -112,17 +160,17 @@ opportunity to include simple or complex HTML along with inline CSS. Examples:
 
 * Inline, formatted as HTML:
 
-    `description: "<p>This is my great theme!</p>"
-    documentation: "<p>How to use this theme.</p>"
-    about_designer: "<p>I am the bestest designer <em>evar</em>!</p>"`
+        description: "<p>This is my great theme!</p>"
+        documentation: "<p>How to use this theme.</p>"
+        about_designer: "<p>I am the bestest designer <em>evar</em>!</p>"
 
 * As a file reference, which contains HTML. The file you specify should be
   placed in your plugin's envelope, or in a folder named `tmpl` within your
   plugin's envelope.
 
-    `description: description.html
-    documentation: documentation.html
-    about_designer: about.html`
+        description: description.html
+        documentation: documentation.html
+        about_designer: about.html
 
 Additionally, the Theme Chooser will display images to help the user select a 
 theme.
@@ -192,6 +240,84 @@ Dashboard, too, by specifying the additions as Page Actions targeted to the
 ([Page Actions documentation](http://www.movabletype.org/documentation/developer/apps/page-actions.html)). 
 Of course, the code, mode or dialog being added needs to be created, but 
 that's beyond the scope of this document.
+
+## Designers: Specifying Default Content
+
+Theme Manager allows you to prepopulate a new web site using a theme with
+default content. This is very useful when a theme requires a certain set of 
+folders, categories, pages and/or entries to be in place to function 
+properly. It is also extremely helpful in providing a better "out-of-the-box"
+end user experience. That way when a user installs and applys a theme, and
+then views their web site for the first time there will be content there,
+as opposed to a big empty screen. 
+
+To specify default content, utilize the `content` property in your theme's
+config.yaml structure. Here is an example config.yaml file that specifies
+three default categories, a default folder, a default entry, and an about 
+page. Also notice that a folder is being associated with the page.
+
+    my_blog:
+        base_path: templates/blog
+        label: 'My Awesome Theme'
+        thumbnail: thumb.png
+        preview: preview.png
+        description: 'This theme is awesome.'
+        content:
+            categories:
+                announcements:
+                    label: 'Announcements'
+                events:
+                    label: 'Events'
+                news:
+                    label: 'News'
+            folders:
+                our_company:
+                    label: 'Our Company'
+            entries:
+                welcome:
+                    label: 'Welcome to my awesome theme'
+                    text: 'You just installed a great theme. Congrats!'
+            pages:
+                about:
+                    label: 'About'
+                    folder: our_company
+
+### Nested Categories and Folders
+
+You can easily build category and folder heirarchies with multiple
+levels like so:
+
+    content:
+        folders:
+            about:
+                label: 'About'
+                folders:
+                    jobs:
+                        label: "We're Hiring"
+                    execs:
+                        label: "Executive Team"
+                        folders:
+                            ceo:
+                                label: "About our CEO"
+                            advisors:
+                                label: "Our Advisors"
+
+*Categories are done in an identical fashion except instead of using the
+key "folders" you would use "categories".*
+
+### Entries, Pages, and Tags
+
+You can specify default pages and entries, along with their vital meta data
+via Theme Manager as well. For example, the following will define an entry
+called "Press Kits" which will have two tags: `@nav` and `press`:
+
+    content:
+      entries:
+        press_kits:
+          label: 'Press Kits'
+          tags: 
+            - '@nav'
+            - 'press'
 
 ## Designers: Additional Template Settings
 
@@ -293,13 +419,13 @@ accompanying translations in your plugin.
 
 # Acknowledgements
 
-This plugin was commissioned by Endevver to Dan Wolfgang of uiNNOVATIONS. Endevver is proud to be partners with uiNNOVATIONS.
-http://uinnovations.com/
+This plugin was commissioned by Endevver to Dan Wolfgang of [uiNNOVATIONS](http://uinnovations.com/). 
+Endevver is proud to be partners with uiNNOVATIONS.
 
 # License
 
 This plugin is licensed under the same terms as Perl itself.
 
-#Copyright
+# Copyright
 
 Copyright 2010, Endevver LLC. All rights reserved.

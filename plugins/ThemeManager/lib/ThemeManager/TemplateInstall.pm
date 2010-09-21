@@ -548,7 +548,10 @@ sub _install_containers {
             $obj = MT->model($model)->new;
             $obj->blog_id( $blog->id );
             $obj->basename( $basename );
-            $obj->label( &{$c->{label}} );
+            # Use the label if it has been specified. If not, fall back to 
+            # the field basename.
+            my $label = eval{ &{$c->{label}} } ? &{$c->{label}} : $basename;
+            $obj->label( $label );
             $obj->parent( $pid );
             $obj->save;
         }
@@ -559,16 +562,17 @@ sub _install_containers {
 }
 
 sub _install_pages_or_entries {
-    my ($obj_type, $blog, $struct) = @_;
+    my ($model, $blog, $struct) = @_;
     my $app = MT::App->instance;
     foreach my $basename (keys %$struct) {
         my $p = $struct->{$basename};
-        my $obj = MT->model($obj_type)->load({
+        my $obj = MT->model($model)->load({
             basename => $basename,
             blog_id  => $blog->id
         });
         unless ($obj) {
-            my $title = &{$p->{label}};
+            # This entry or page doesn't exist yet, so let's create it.
+            my $title = eval { &{$p->{label}} } ? &{$p->{label}} : $basename;
             $obj = MT->model('page')->new;
             $obj->basename( $basename );
             $obj->blog_id( $blog->id );
@@ -581,6 +585,27 @@ sub _install_pages_or_entries {
             }
             $obj->set_tags( @{$p->{tags}} );
             $obj->save;
+            
+            # Create the category/folder association if necessary.
+            if ( $p->{folder} ) {
+                # First try to load the specified folder
+                my $folder = MT->model('folder')->load({
+                    basename => $p->{folder},
+                    blog_id  => $blog->id,
+                });
+                if ($folder) {
+                    # The folder exists, so lets create the placement
+                    my $placement = MT->model('placement')->new;
+                    $placement->blog_id( $blog->id );
+                    # Attach to the just-saved page.
+                    $placement->entry_id( $obj->id );
+                    # Attach to the just-loaded folder.
+                    $placement->category_id( $folder->id );
+                    # A folder always has a primary placement.
+                    $placement->is_primary(1);
+                    $placement->save;
+                }
+            }
         }
     }
 }
