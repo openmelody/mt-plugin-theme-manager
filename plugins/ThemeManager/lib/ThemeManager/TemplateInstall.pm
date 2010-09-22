@@ -303,11 +303,18 @@ sub template_set_change {
     _set_module_caching_prefs(@_);
     # Forcibly turn-on module caching for the blog
     _override_publishing_settings(@_);
-    # Link installed templates to theme files
-    # Template linking is commented out so that templates start life in a 
-    # "production" environment. This lets localization happen, and allows the
-    # user to edit templates from the admin interface.
-    _link_templates(@_);
+    
+    # Production and Designer Modes allow Theme Manager to be suited to two
+    # different use cases. Production Mode is used by default. Designer Mode
+    # is used to speed development. Eventually there will be many advantages
+    # for theme creators using Designer Mode, but for now the only one is
+    # that templates are linked by default.
+    my $tm   = MT->component('ThemeManager');
+    my $mode = $tm->get_config_value('tm_mode', 'system');
+    if ($mode eq 'Production Mode') {
+        # Link installed templates to theme files
+        _link_templates(@_);
+    }
 }
 
 sub _new_blog_template_set_language {
@@ -617,7 +624,12 @@ sub _install_default_content {
     my $set = MT->app->registry( 'template_sets', $set_name )
         or return;
     my $content = $set->{content} or return;
-    foreach my $key (keys %$content) {
+    # Sorting the keys is an easy way to ensure that Folders are created
+    # before Pages. This is important because when Pages are created, a 
+    #"folder" key may be specified that causes the Page to be associated
+    # with a Folder. And the Folder needs to exist before it can be
+    # associated with a Page.
+    foreach my $key (sort keys %$content) {
         my $struct = $content->{$key};
         if ($key eq 'folders') {
             my $parent = 0;

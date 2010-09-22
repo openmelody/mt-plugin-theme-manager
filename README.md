@@ -2,7 +2,7 @@
 
 Theme Manager is a plugin for Movable Type and Melody created for designers and 
 users with an express goal of making it much easier to both build and use themes
-on the Movable Type and Melody platforms. 
+on the Movable Type and Melody platforms.
 
 ## What Theme Manager Does for End Users
 
@@ -10,7 +10,17 @@ Theme Manager provides a much more intuitive administrative interface for end
 users allowing them to more easily apply and customize a theme. Furthermore, it
 virtually eliminates the need for end users to edit or worry about templates.
 
+Using Theme Manager as an end user is known as "Production Mode."
+
 ## What Theme Manager Does for Designers
+
+Designers can speed theme creation with the "Designer and Developer Mode." 
+Currently, the advantages of this mode are small (see the next section, 
+Eliminate Burdensome "Template Refreshing")
+
+Use the Designer and Developer Mode system-wide by visiting System > 
+Plugins > Theme Manager > Settings and selecting Designer and Developer 
+Mode.
 
 ### Eliminate Burdensome "Template Refreshing"
 
@@ -326,17 +336,22 @@ providing the ability to specify the publishing type, caching preferences for
 modules, and better handling of custom fields. Refer to the example YAML below 
 to use these keys.
 
-* `build_type` - the build type (or publishing method) can be specified 
-  for both index and archive templates. Specifying the `build_type` of 
-  templates is a great way to control what is republished when; look at the 
-  Publishing Profiles (in Design > Templates) for inspiration about the 
-  benefits of specifying this option for each template. Numerals 0-4 are valid 
-  `build_type` values, corresponding to the options listed below:
+### Efficient Publishing
+
+`build_type` - the build type (or publishing method) can be specified 
+for both index and archive templates. Specifying the `build_type` of 
+templates is a great way to control what is republished when; look at the 
+Publishing Profiles (in Design > Templates) for inspiration about the 
+benefits of specifying this option for each template. Numerals 0-4 are valid 
+`build_type` values, corresponding to the options listed below:
+
     * 0: Do Not Publish
     * 1: Static (the default method)
     * 2: Manually
     * 3: Dynamically
     * 4: Publish Queue
+
+### Set Caching and Include Options
 
 Caching options can also be specified for Template Modules and Widgets with 
 the following keys (if you've used the UI to set caching, these options should 
@@ -366,14 +381,26 @@ Another import aspect to caching is using "includes." The key
 `include_with_ssi` allows the specified module or widget to be included as an 
 external file, saving server resources and making it easy to keep content 
 updated site-wide. Possible values are `1` and `0` (the default). Within the 
-UI, this option corresponds to the "Process as [SSI method] include." Server 
-Side Includes must be enabled at the blog level (check this in Preferences > 
-Publishing).
+UI, this option corresponds to the "Process as [SSI method] include" option 
+found when editing Template Modules and Widgets.
 
-An advanced feature that Theme Manager supports installing localized templates. 
-Localized templates (that is, templates translated to another language) need to 
-be defined within your plugin. You'll need to specify an `l10n_class` and the 
-accompanying translations in your plugin.
+Server Side Includes must be enabled at the blog level (enable this in 
+Preferences > Publishing). A great way to enable this feature automatically
+is to use the AutoPrefs plugin.
+
+### Localized Template Support
+
+An advanced feature that Theme Manager supports is installing localized 
+templates. Localized templates (that is, templates translated to another 
+language) need to be defined within your plugin. You'll need to specify an 
+`l10n_class` and the accompanying translations in your plugin.
+
+Note that Production Mode *must* be used to deploy your theme with 
+localization support. Templates are translated when they are installed. 
+When templates are linked (as in Designer and Developer Mode), however, 
+this translation does not occur.
+
+### Example of Additional Template Settings
 
     name: Awesomeness
     version: 1.0

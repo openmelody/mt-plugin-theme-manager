@@ -4,7 +4,7 @@ key: ThemeManager
 author_link: http://endevver.com/
 author_name: Endevver
 description: 'A comprehensive theme management plugin!'
-version: 0.9.18
+version: 0.9.19
 schema_version: 3
 static_version: 4
 
@@ -54,6 +54,19 @@ skip_static:
 widgets: $ThemeManager::ThemeManager::DashboardWidget::widget
 
 tags:
-  function:
-    TemplateSetLanguage: $ThemeManager::ThemeManager::Tags::template_set_language
+    function:
+        TemplateSetLanguage: $ThemeManager::ThemeManager::Tags::template_set_language
 
+options:
+    fieldsets:
+        mode_overview:
+            label: 'Theme Deployment Mode'
+            hint: 'Theme Manager can deploy themes in one of two modes: Production Mode and Designer and Developer Mode. Production Mode is used for live, production sites; Designer and Developer Mode speeds theme creation. Refer to the Theme Manager documentation for more details on the difference between these options.'
+    tm_mode:
+        label: 'Select a Mode'
+        type: radio
+        values: 'Production Mode,Designer and Developer Mode'
+        default: 'Production Mode'
+        tag: ThemeManagerMode
+        scope: system
+        fieldset: mode_overview
