@@ -437,7 +437,8 @@ sub setup_theme {
     # have any fields to set, they almost definitely need to be set on a
     # per-blog basis (otherwise what's the point of separate blogs or separate
     # theme options?), so we can just skip this.
-    if ($app->param('blog_id') ne '0') {
+    unless ($app->param('blog_ids')) {
+        my $blog = MT->model('blog')->load( $param->{blog_id} );
         if (my $optnames = $ts->{options}) {
             my $types = $app->registry('config_types');
             my $fieldsets = $ts->{options}->{fieldsets};
@@ -452,7 +453,7 @@ sub setup_theme {
             # This is a localized stash for field HTML
             my $fields;
 
-            my $cfg_obj = $plugin->get_config_hash('blog:'.$app->blog->id);
+            my $cfg_obj = $plugin->get_config_hash('blog:'.$blog->id);
 
             foreach my $optname (
                 sort {
@@ -584,7 +585,7 @@ sub setup_theme {
     # If this theme is being applied at the blog level, offer a "home" link.
     # Otherwise, themes are being mass-applied to many blogs at the system
     # level and we don't want to offer a single home page link.
-    if ( !$app->param('blog_ids') ) {
+    unless ( $app->param('blog_ids') ) {
         my @options;
         push @options, 'Theme Options'
             if eval {$app->registry('template_sets')->{$ts_id}->{options}};
@@ -599,7 +600,6 @@ sub setup_theme {
     # contents, and the "Theme Applied" completion message will show.
     if ( !$missing_required[0] && $app->param('saved') ) {
         $param->{fields_loop} = '';
-        
     }
 
     $app->load_tmpl('theme_setup.mtml', $param);
