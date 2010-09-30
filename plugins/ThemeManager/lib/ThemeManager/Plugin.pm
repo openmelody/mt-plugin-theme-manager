@@ -17,7 +17,7 @@ sub update_menus {
     # We only want to remove the Templates menu at the blog-level. We don't
     # know for sure what templates are at the system-level, so just blanket
     # denying access is probably not best.
-    my $blog_id = $app->param('blog_id');
+    my $blog_id = $app->query->param('blog_id');
     if ($blog_id) {
         my $core = MT->component('Core');
         delete $core->{registry}->{applications}->{cms}->{menus}->{'design:template'};
@@ -36,7 +36,7 @@ sub update_menus {
 
 sub update_page_actions {
     my $app = MT->instance;
-    my $blog_id = $app->param('blog_id');
+    my $blog_id = $app->query->param('blog_id');
     if ($blog_id) {
         my $core = MT->component('Core');
         # Delete the Refresh Blog Templates page action because we don't want
@@ -100,7 +100,7 @@ sub theme_dashboard {
     my $app = MT::App->instance;
     # Since there is no Theme Dashboard at the system level, capture and
     # redirect to the System Dashboard, if necessary.
-    if ( !eval {$app->blog->id} && ($app->param('__mode') eq 'theme_dashboard') ) {
+    if ( !eval {$app->blog->id} && ($app->query->param('__mode') eq 'theme_dashboard') ) {
         $app->redirect( $app->uri.'?__mode=dashboard&blog_id=0' );
     }
 
@@ -162,7 +162,7 @@ sub theme_dashboard {
             }
         }
     }
-    $param->{new_theme} = $app->param('new_theme');
+    $param->{new_theme} = $app->query->param('new_theme');
 
     _populate_list_templates_context( $app, $param );
 
@@ -219,13 +219,13 @@ sub select_theme {
     # If the user is applying a theme to many blogs, they've come from a list 
     # action, and the ID parameter is full of blog IDs. Pass these along to
     # the template.
-    my $blog_ids = join( ',', $app->param('id') );
+    my $blog_ids = join( ',', $app->query->param('id') );
     
     # Terms may be supplied if the user is searching.
-    my $search_terms = $app->param('search');
+    my $search_terms = $app->query->param('search');
     # Unset the search parameter to that the $app->listing won't try to build
     # a search result.
-    $app->param('search', '');
+    $app->query->param('search', '');
     my @terms;
     if ($search_terms) {
         # Create an array of the search terms. "Like" lets us do the actual
@@ -294,15 +294,15 @@ sub select_theme {
 
 sub setup_theme {
     my $app = shift;
-    my $ts_id      = $app->param('theme_id');
-    my $plugin_sig = $app->param('plugin_sig');
+    my $ts_id      = $app->query->param('theme_id');
+    my $plugin_sig = $app->query->param('plugin_sig');
     
     my @blog_ids;
-    if ( $app->param('blog_ids') ) {
-        @blog_ids = split(/,/, $app->param('blog_ids'));
+    if ( $app->query->param('blog_ids') ) {
+        @blog_ids = split(/,/, $app->query->param('blog_ids'));
     }
     else {
-        @blog_ids = ( $app->param('blog_id') );
+        @blog_ids = ( $app->query->param('blog_id') );
     }
 
     my $param = {};
@@ -330,7 +330,7 @@ sub setup_theme {
     # Also, bypass the option to save widgets if we are mass-applying themes.
     # Bulk applying means we probably are just trying to wipe everything back
     # to a clean slate.
-    if ( (scalar @blog_ids == 1) && !$app->param('save_widgetsets_beacon') ) {
+    if ( (scalar @blog_ids == 1) && !$app->query->param('save_widgetsets_beacon') ) {
         # Because the beacon hasn't been set, we need to first determine if
         # we should show the Save Widgets screen.
         foreach my $blog_id (@blog_ids) {
@@ -393,7 +393,7 @@ sub setup_theme {
     # offer the opportunity to select a language to apply to the templates
     # during installation.
     my @languages = _find_supported_languages($ts_id);
-    if ( !$app->param('language') && (scalar @languages > 1) ) {
+    if ( !$app->query->param('language') && (scalar @languages > 1) ) {
         my @param_langs;
 
         # Load the specified plugin/theme.
@@ -412,7 +412,7 @@ sub setup_theme {
     }
     else {
         # Either a language has been set, or there is only one language: english.
-        my $selected_lang = $app->param('language') ? $app->param('language') : $languages[0];
+        my $selected_lang = $app->query->param('language') ? $app->query->param('language') : $languages[0];
         # If this theme is being applied to many blogs, assign the language to them all!
         foreach my $blog_id (@blog_ids) {
             my $blog = MT->model('blog')->load($blog_id);
@@ -437,7 +437,7 @@ sub setup_theme {
     # have any fields to set, they almost definitely need to be set on a
     # per-blog basis (otherwise what's the point of separate blogs or separate
     # theme options?), so we can just skip this.
-    unless ($app->param('blog_ids')) {
+    unless ($app->query->param('blog_ids')) {
         my $blog = MT->model('blog')->load( $param->{blog_id} );
         if (my $optnames = $ts->{options}) {
             my $types = $app->registry('config_types');
@@ -487,7 +487,7 @@ sub setup_theme {
                         # complain and make the user fill it in. But, only complain
                         # if the user has tried to save already! We don't want to be
                         # annoying.
-                        if ( !$value && $app->param('saved') ) {
+                        if ( !$value && $app->query->param('saved') ) {
                             # There is no value for this field, and it's a required
                             # field, so we need to tell the user to fix it!
                             push @missing_required, { label => $label };
@@ -579,13 +579,13 @@ sub setup_theme {
     }
 
     $param->{fields_loop}      = \@loop;
-    $param->{saved}            = $app->param('saved');
+    $param->{saved}            = $app->query->param('saved');
     $param->{missing_required} = \@missing_required;
     
     # If this theme is being applied at the blog level, offer a "home" link.
     # Otherwise, themes are being mass-applied to many blogs at the system
     # level and we don't want to offer a single home page link.
-    unless ( $app->param('blog_ids') ) {
+    unless ( $app->query->param('blog_ids') ) {
         my @options;
         push @options, 'Theme Options'
             if eval {$app->registry('template_sets')->{$ts_id}->{options}};
@@ -598,7 +598,7 @@ sub setup_theme {
     # been saved, that means we've completed everything that needs to be
     # done for the theme setup. So, *don't* return the fields_loop 
     # contents, and the "Theme Applied" completion message will show.
-    if ( !$missing_required[0] && $app->param('saved') ) {
+    if ( !$missing_required[0] && $app->query->param('saved') ) {
         $param->{fields_loop} = '';
     }
 
@@ -704,8 +704,8 @@ sub paypal_donate {
     # requirement.)
     my $app = MT->instance;
     my $param = {};
-    $param->{theme_label}  = $app->param('theme_label');
-    $param->{paypal_email} = $app->param('paypal_email');
+    $param->{theme_label}  = $app->query->param('theme_label');
+    $param->{paypal_email} = $app->query->param('paypal_email');
     return $app->load_tmpl( 'paypal_donate.mtml', $param );
 }
 
@@ -713,14 +713,14 @@ sub edit_templates {
     # Pop up the warning dialog about what it really means to "edit templates."
     my $app = shift;
     my $param = {};
-    $param->{blog_id} = $app->param('blog_id');
+    $param->{blog_id} = $app->query->param('blog_id');
     return $app->load_tmpl( 'edit_templates.mtml', $param );
 }
 
 sub unlink_templates {
     # Unlink all templates.
     my $app = shift;
-    my $blog_id = $app->param('blog_id');
+    my $blog_id = $app->query->param('blog_id');
     my $iter = MT->model('template')->load_iter({ blog_id     => $blog_id,
 						  linked_file => '*', });
     while ( my $tmpl = $iter->() ) {
@@ -739,10 +739,10 @@ sub theme_info {
     my $app = MT->instance;
     my $param = {};
     
-    my $plugin_sig = $app->param('plugin_sig');
+    my $plugin_sig = $app->query->param('plugin_sig');
     my $plugin = $MT::Plugins{$plugin_sig}->{object};
     
-    my $ts_id = $app->param('ts_id');
+    my $ts_id = $app->query->param('ts_id');
     
     $param->{id}             = $ts_id;
     $param->{label}          = theme_label($ts_id, $plugin);
@@ -769,7 +769,7 @@ sub xfrm_disable_tmpl_link {
     # so upgrades are no longer easy. 
     my ($cb, $app, $tmpl) = @_;
     my $linked = MT->model('template')->load(
-                        { id          => $app->param('id'),
+                        { id          => $app->query->param('id'),
                           linked_file => '*', });
     if ( $linked ) {
         my $old = 'name="linked_file"';
@@ -866,7 +866,7 @@ sub rebuild_tmpl {
     my $return_val = {
         success => 0
     };
-    my $templates = MT->model('template')->lookup_multi([ $app->param('id') ]);
+    my $templates = MT->model('template')->lookup_multi([ $app->query->param('id') ]);
   TEMPLATE: for my $tmpl (@$templates) {
       next TEMPLATE if !defined $tmpl;
       next TEMPLATE if $tmpl->blog_id != $blog->id;
@@ -903,7 +903,7 @@ sub _populate_list_templates_context {
 
     my $blog = $app->blog;
     require MT::Template;
-    my $blog_id = $app->param('blog_id') || 0;
+    my $blog_id = $app->query->param('blog_id') || 0;
     my $terms = { blog_id => $blog_id };
     my $args  = { sort    => 'name' };
 
@@ -956,7 +956,7 @@ sub _populate_list_templates_context {
         $row->{published_url} = $published_url if $published_url;
     };
 
-    my $filter = $app->param('filter_key');
+    my $filter = $app->query->param('filter_key');
     my $template_type = $filter || '';
     $template_type =~ s/_templates//;
 
@@ -968,11 +968,11 @@ sub _populate_list_templates_context {
     $params->{search_label} = $app->translate("Templates");
     $params->{object_type} = 'template';
     $params->{blog_view} = 1;
-    $params->{refreshed} = $app->param('refreshed');
-    $params->{published} = $app->param('published');
-    $params->{saved_copied} = $app->param('saved_copied');
-    $params->{saved_deleted} = $app->param('saved_deleted');
-    $params->{saved} = $app->param('saved');
+    $params->{refreshed} = $app->query->param('refreshed');
+    $params->{published} = $app->query->param('published');
+    $params->{saved_copied} = $app->query->param('saved_copied');
+    $params->{saved_deleted} = $app->query->param('saved_deleted');
+    $params->{saved} = $app->query->param('saved');
 
     # determine list of system template types:
     my $scope;
@@ -1051,19 +1051,19 @@ sub _populate_list_templates_context {
     $app->delete_param('filter_key') if $filter;
     foreach my $tmpl_type (@types) {
         if ( $tmpl_type eq 'index' ) {
-            $app->param( 'filter_key', 'index_templates' );
+            $app->query->param( 'filter_key', 'index_templates' );
         }
         elsif ( $tmpl_type eq 'archive' ) {
-            $app->param( 'filter_key', 'archive_templates' );
+            $app->query->param( 'filter_key', 'archive_templates' );
         }
         elsif ( $tmpl_type eq 'system' ) {
-            $app->param( 'filter_key', 'system_templates' );
+            $app->query->param( 'filter_key', 'system_templates' );
         }
         elsif ( $tmpl_type eq 'email' ) {
-            $app->param( 'filter_key', 'email_templates' );
+            $app->query->param( 'filter_key', 'email_templates' );
         }
         elsif ( $tmpl_type eq 'module' ) {
-            $app->param( 'filter_key', 'module_templates' );
+            $app->query->param( 'filter_key', 'module_templates' );
         }
         my $tmpl_param = {};
         unless ( exists($types{$tmpl_type}->{type})
@@ -1091,7 +1091,7 @@ sub _populate_list_templates_context {
         $params->{filter_key} = $filter;
         $params->{filter_label} = $types{$template_type}{label}
             if exists $types{$template_type};
-        $app->param('filter_key', $filter);
+        $app->query->param('filter_key', $filter);
     } else {
         # restore filter_key param (we modified it for the
         # sake of the individual table listings)

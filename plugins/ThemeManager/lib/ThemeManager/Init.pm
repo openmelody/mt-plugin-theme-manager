@@ -50,19 +50,19 @@ sub _translate {
     my $app = MT->instance;
     # This first check for $app->param is necessary so that
     # run-periodic-tasks doesn't throw errors.
-    if ( eval{$app->param} && $app->param('__mode') ) {
-        if ( $app->param('__mode') eq 'setup_theme' ) {
+    if ( eval{$app->query->param} && $app->query->param('__mode') ) {
+        if ( $app->query->param('__mode') eq 'setup_theme' ) {
             # The user is applying a new theme.
-            $c = find_theme_plugin( $app->param('theme_id') );
-            my $template_set_language = $app->param('language') || $app->user->preferred_language;
+            $c = find_theme_plugin( $app->query->param('theme_id') );
+            my $template_set_language = $app->query->param('language') || $app->user->preferred_language;
             if ( eval "require " . $c->l10n_class . ";" ) {
                 $h = $c->l10n_class->get_handle( $template_set_language );
             }
         }
-        elsif ( $app->param('__mode') eq 'save' && $app->param('_type') eq 'blog' ) {
+        elsif ( $app->query->param('__mode') eq 'save' && $app->query->param('_type') eq 'blog' ) {
             # The user is creating a new blog.
-            $c = find_theme_plugin( $app->param('template_set') );
-            my $template_set_language = $app->param('template_set_language') || $app->user->preferred_language;
+            $c = find_theme_plugin( $app->query->param('template_set') );
+            my $template_set_language = $app->query->param('template_set_language') || $app->user->preferred_language;
             if ( $c && eval "require " . $c->l10n_class . ";" ) {
                 $h = $c->l10n_class->get_handle( $template_set_language );
             }

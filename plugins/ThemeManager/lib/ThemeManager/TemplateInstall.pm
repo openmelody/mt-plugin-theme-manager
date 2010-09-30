@@ -63,13 +63,13 @@ sub _refresh_all_templates {
             # widgets, either, because that will change their "type" and
             # therefore not be widgets anymore--potentially breaking the
             # Widget Set.
-            if ( $app->param('save_widgetsets') 
+            if ( $app->query->param('save_widgetsets') 
                 && ( ($tmpl->type eq 'widgetset') || ($tmpl->type eq 'widget') ) 
                 && ( ($tmpl->linked_file ne '*') || !defined($tmpl->linked_file) )
             ) {
                 $skip = 1;
             }
-            if ( $app->param('save_widgets') 
+            if ( $app->query->param('save_widgets') 
                 && ($tmpl->type eq 'widget') 
                 && ( ($tmpl->linked_file ne '*') || !defined($tmpl->linked_file) )
             ) {
@@ -228,10 +228,10 @@ sub template_filter {
     
     # If a new blog is being created/saved, we don't want to run this callback.
     return if ( 
-        eval{$app->param} 
-        && eval{$app->param('__mode')} 
-        && ($app->param('__mode') eq 'save') 
-        && ($app->param('_type') eq 'blog')
+        eval{$app->query->param} 
+        && eval{$app->query->param('__mode')} 
+        && ($app->query->param('__mode') eq 'save') 
+        && ($app->query->param('_type') eq 'blog')
     );
     # If run-periodic-tasks is running we need to give up because the blog
     # context won't be set properly.
@@ -242,7 +242,7 @@ sub template_filter {
         : return; # Only work on blog-specific widgets and widget sets
 
     # Give up if the user didn't ask for anything to be saved.
-    unless ( $app->param('save_widgets') || $app->param('save_widgetsets') ) {
+    unless ( $app->query->param('save_widgets') || $app->query->param('save_widgetsets') ) {
         return;
     }
 
@@ -252,7 +252,7 @@ sub template_filter {
     while ($index <= $tmpl_count) {
         my $tmpl = @$templates[$index];
         if ( $tmpl->{'type'} eq 'widgetset' ) {
-            if ( $app->param('save_widgetsets') ) {
+            if ( $app->query->param('save_widgetsets') ) {
                 # Try to count a Widget Set in this blog with the same identifier.
                 my $installed = MT->model('template')->load({ 
                         blog_id    => $blog_id,
@@ -268,7 +268,7 @@ sub template_filter {
                 }
             }
         }
-        elsif ( $app->param('save_widgets') && $tmpl->{'type'} eq 'widget' ) {
+        elsif ( $app->query->param('save_widgets') && $tmpl->{'type'} eq 'widget' ) {
             # Try to count a Widget in this blog with the same identifier.
             my $installed = MT->model('template')->count({
                     blog_id    => $blog_id,
@@ -320,12 +320,12 @@ sub template_set_change {
 sub _new_blog_template_set_language {
     # Only run when a new blog is being created.
     my $app = MT->instance;
-    return unless ( ($app->param('__mode') eq 'save') && ($app->param('_type') eq 'blog') );
+    return unless ( ($app->query->param('__mode') eq 'save') && ($app->query->param('_type') eq 'blog') );
 
     my ($cb, $param) = @_;
     my $ts_id = $param->{blog}->template_set;
 
-    my $template_set_language = $app->param('template_set_language') 
+    my $template_set_language = $app->query->param('template_set_language') 
                                     || $app->user->preferred_language;
     my $blog = $param->{blog};
     $blog->template_set_language($template_set_language);
