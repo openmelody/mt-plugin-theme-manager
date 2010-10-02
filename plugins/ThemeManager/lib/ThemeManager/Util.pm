@@ -9,7 +9,7 @@ our @EXPORT_OK = qw( theme_label theme_thumbnail_url theme_preview_url
         theme_paypal_email theme_version theme_link theme_doc_link 
         about_designer theme_docs _theme_thumb_path _theme_thumb_url );
 
-my $app = MT::App->instance();
+my $app = MT->instance();
 my $tm  = MT->component('ThemeManager');
 
 sub theme_label {
