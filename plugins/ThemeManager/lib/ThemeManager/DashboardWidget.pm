@@ -25,7 +25,10 @@ sub widget {
                 $param->{theme_mini}        = ThemeManager::Plugin::_make_mini();
             },
             template => 'dashboard_widget.mtml',
-
+            condition => sub { 
+                my ($page, $scope) = @_;
+                return 1 if ($scope ne 'system');
+            },
             singular => 1,
         },
     };
