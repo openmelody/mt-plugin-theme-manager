@@ -340,6 +340,11 @@ sub setup_theme {
             my $blog = MT->model('blog')->load($blog_id);
             my $cur_ts_id = $blog->template_set;
             my $cur_ts_plugin = find_theme_plugin($cur_ts_id);
+            unless ($cur_ts_plugin) {
+                MT->log({ blog_id => $blog_id,
+                          message => MT->translate('Theme Manager could not find a plugin corresponding to the template set currently applied to this blog. Skipping this blog for saving widget sets.') });
+                next;
+            }
             my $cur_ts_widgetsets = 
                 $cur_ts_plugin->registry('template_sets',$cur_ts_id,'templates','widgetset');
 
