@@ -311,7 +311,7 @@ sub template_set_change {
     # that templates are linked by default.
     my $tm   = MT->component('ThemeManager');
     my $mode = $tm->get_config_value('tm_mode', 'system');
-    if ($mode eq 'Production Mode') {
+    if ($mode eq 'Designer and Developer Mode') {
         # Link installed templates to theme files
         _link_templates(@_);
     }
