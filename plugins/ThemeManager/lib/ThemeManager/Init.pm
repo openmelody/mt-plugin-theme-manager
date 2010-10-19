@@ -26,7 +26,6 @@ sub _translate {
     # This is basically lifted right from MT::CMS::Template (from Movable Type
     # version 4.261), with some necessary changes to work with Theme Manager.
     my $c       = shift;
-    use Data::Dumper;
     my $handles = MT->request('l10n_handle') || {};
     my $h       = $handles->{ $c->id };
     unless ($h) {
@@ -48,21 +47,22 @@ sub _translate {
     # $c->l10n_class->get_handle() knows the correct place to look for
     # translations.
     my $app = MT->instance;
-    # This first check for $app->param is necessary so that
-    # run-periodic-tasks doesn't throw errors.
-    if ( eval{$app->param} && $app->param('__mode') ) {
-        if ( $app->param('__mode') eq 'setup_theme' ) {
+    my $q = $app->can('query') ? $app->query : $app->param;
+    # This first check for $q is necessary so that run-periodic-tasks
+    # doesn't throw errors.
+    if ( eval{$q} && $q->param('__mode') ) {
+        if ( $q->param('__mode') eq 'setup_theme' ) {
             # The user is applying a new theme.
-            $c = find_theme_plugin( $app->param('theme_id') );
-            my $template_set_language = $app->param('language') || $app->user->preferred_language;
+            $c = find_theme_plugin( $q->param('theme_id') );
+            my $template_set_language = $q->param('language') || $app->user->preferred_language;
             if ( eval "require " . $c->l10n_class . ";" ) {
                 $h = $c->l10n_class->get_handle( $template_set_language );
             }
         }
-        elsif ( $app->param('__mode') eq 'save' && $app->param('_type') eq 'blog' ) {
+        elsif ( $q->param('__mode') eq 'save' && $q->param('_type') eq 'blog' ) {
             # The user is creating a new blog.
-            $c = find_theme_plugin( $app->param('template_set') );
-            my $template_set_language = $app->param('template_set_language') || $app->user->preferred_language;
+            $c = find_theme_plugin( $q->param('template_set') );
+            my $template_set_language = $q->param('template_set_language') || $app->user->preferred_language;
             if ( $c && eval "require " . $c->l10n_class . ";" ) {
                 $h = $c->l10n_class->get_handle( $template_set_language );
             }

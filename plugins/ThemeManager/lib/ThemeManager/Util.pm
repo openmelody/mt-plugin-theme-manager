@@ -9,7 +9,7 @@ our @EXPORT_OK = qw( theme_label theme_thumbnail_url theme_preview_url
         theme_paypal_email theme_version theme_link theme_doc_link 
         about_designer theme_docs _theme_thumb_path _theme_thumb_url );
 
-my $app = MT::App->instance();
+my $app = MT->instance;
 my $tm  = MT->component('ThemeManager');
 
 sub theme_label {
@@ -161,14 +161,18 @@ sub theme_docs {
 
 sub _theme_thumb_path {
     my @path = ($app->config('StaticFilePath'), 'support', 'plugins', $tm->id, 'theme_thumbs');
-    return File::Spec->catfile( @path );
+    my $dest_path = File::Spec->catfile( @path );
+    # If the destination directory doesn't exist, we need to create it.
+    if (!-w $dest_path) {
+        mkdir $dest_path;
+    }
+    return $dest_path;
 }
+
 sub _theme_thumb_url {
     return caturl( $app->static_path , 'support' , 'plugins', $tm->id, 'theme_thumbs', 
             $app->blog->id.'.jpg' );
 }
-
-
 
 1;
 

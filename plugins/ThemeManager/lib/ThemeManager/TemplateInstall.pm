@@ -10,6 +10,7 @@ sub _refresh_all_templates {
     # This is basically lifted right from MT::CMS::Template (from Movable Type
     # version 4.261), with some necessary changes to work with Theme Manager.
     my ($ts_id, $blog_id, $app) = @_;
+    my $q = $app->can('query') ? $app->query : $app->param;
 
     my $t = time;
 
@@ -63,13 +64,13 @@ sub _refresh_all_templates {
             # widgets, either, because that will change their "type" and
             # therefore not be widgets anymore--potentially breaking the
             # Widget Set.
-            if ( $app->param('save_widgetsets') 
+            if ( $q->param('save_widgetsets') 
                 && ( ($tmpl->type eq 'widgetset') || ($tmpl->type eq 'widget') ) 
                 && ( ($tmpl->linked_file ne '*') || !defined($tmpl->linked_file) )
             ) {
                 $skip = 1;
             }
-            if ( $app->param('save_widgets') 
+            if ( $q->param('save_widgets') 
                 && ($tmpl->type eq 'widget') 
                 && ( ($tmpl->linked_file ne '*') || !defined($tmpl->linked_file) )
             ) {
@@ -225,24 +226,25 @@ sub _create_default_templates {
 sub template_filter {
     my ($cb, $templates) = @_;
     my $app = MT->instance;
-    
+    my $q = $app->can('query') ? $app->query : $app->param;
+
     # If a new blog is being created/saved, we don't want to run this callback.
     return if ( 
-        eval{$app->param} 
-        && eval{$app->param('__mode')} 
-        && ($app->param('__mode') eq 'save') 
-        && ($app->param('_type') eq 'blog')
+        eval{$q} 
+        && eval{$q->param('__mode')} 
+        && ($q->param('__mode') eq 'save') 
+        && ($q->param('_type') eq 'blog')
     );
     # If run-periodic-tasks is running we need to give up because the blog
     # context won't be set properly.
     return unless eval{$app->blog};
 
-    my $blog_id = $app->can('blog') 
+    my $blog_id = $q->can('blog') 
         ? $app->blog->id 
         : return; # Only work on blog-specific widgets and widget sets
 
     # Give up if the user didn't ask for anything to be saved.
-    unless ( $app->param('save_widgets') || $app->param('save_widgetsets') ) {
+    unless ( $q->param('save_widgets') || $q->param('save_widgetsets') ) {
         return;
     }
 
@@ -252,7 +254,7 @@ sub template_filter {
     while ($index <= $tmpl_count) {
         my $tmpl = @$templates[$index];
         if ( $tmpl->{'type'} eq 'widgetset' ) {
-            if ( $app->param('save_widgetsets') ) {
+            if ( $q->param('save_widgetsets') ) {
                 # Try to count a Widget Set in this blog with the same identifier.
                 my $installed = MT->model('template')->load({ 
                         blog_id    => $blog_id,
@@ -268,7 +270,7 @@ sub template_filter {
                 }
             }
         }
-        elsif ( $app->param('save_widgets') && $tmpl->{'type'} eq 'widget' ) {
+        elsif ( $q->param('save_widgets') && $tmpl->{'type'} eq 'widget' ) {
             # Try to count a Widget in this blog with the same identifier.
             my $installed = MT->model('template')->count({
                     blog_id    => $blog_id,
@@ -320,12 +322,13 @@ sub template_set_change {
 sub _new_blog_template_set_language {
     # Only run when a new blog is being created.
     my $app = MT->instance;
-    return unless ( ($app->param('__mode') eq 'save') && ($app->param('_type') eq 'blog') );
+    my $q = $app->can('query') ? $app->query : $app->param;
+    return unless ( ($q->param('__mode') eq 'save') && ($q->param('_type') eq 'blog') );
 
     my ($cb, $param) = @_;
     my $ts_id = $param->{blog}->template_set;
 
-    my $template_set_language = $app->param('template_set_language') 
+    my $template_set_language = $q->param('template_set_language') 
                                     || $app->user->preferred_language;
     my $blog = $param->{blog};
     $blog->template_set_language($template_set_language);
