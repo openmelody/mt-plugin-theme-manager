@@ -299,6 +299,7 @@ sub select_theme {
 sub setup_theme {
     my $app = shift;
     my $q = $app->can('query') ? $app->query : $app->param;
+    my $plugin = MT->component('ThemeManager');
 
     my $ts_id      = $q->param('theme_id');
     my $plugin_sig = $q->param('plugin_sig');
@@ -348,7 +349,7 @@ sub setup_theme {
             my $cur_ts_plugin = find_theme_plugin($cur_ts_id);
             unless ($cur_ts_plugin) {
                 MT->log({ blog_id => $blog_id,
-                          message => MT->translate('Theme Manager could not find a plugin corresponding to the template set currently applied to this blog. Skipping this blog for saving widget sets.') });
+                          message => $plugin->translate('Theme Manager could not find a plugin corresponding to the template set currently applied to this blog. Skipping this blog for saving widget sets.') });
                 next;
             }
             my $cur_ts_widgetsets = 
@@ -455,7 +456,7 @@ sub setup_theme {
             my $fieldsets = $ts->{options}->{fieldsets};
 
             $fieldsets->{__global} = {
-                label => sub { "Global Options"; }
+                label => sub { $plugin->translate("Global Options"); }
             };
 
             require MT::Template::Context;
@@ -821,7 +822,7 @@ sub xfrm_add_thumb {
         if ($dest_url) {
             # Now finally update the Theme Options template
             my $old = '<mt:setvarblock name="content_nav">';
-            my $new = $old . '<div style="margin-bottom: 8px; border: 1px solid #ddd;"><a href="<mt:Var name="script_uri">?__mode=theme_dashboard&blog_id=<mt:Var name="blog_id">" title="Visit the Theme Dashboard"><img src="'.$dest_url.'" width="138" height="112" /></a></div>';
+            my $new = $old . '<div style="margin-bottom: 8px; border: 1px solid #ddd;"><a href="<mt:Var name="script_uri">?__mode=theme_dashboard&blog_id=<mt:Var name="blog_id">" title="<__trans phrase="Visit the Theme Dashboard">"><img src="'.$dest_url.'" width="138" height="112" /></a></div>';
             $$tmpl =~ s/$old/$new/mgi;
         }
     }
@@ -917,6 +918,7 @@ sub _send_json_response {
 
 sub _populate_list_templates_context {
     my $app = shift;
+    my $plugin = MT->component('ThemeManager');
     my $q = $app->can('query') ? $app->query : $app->param;
     my ($params) = @_;
 #    my ($params_ref) = @_;
@@ -986,7 +988,7 @@ sub _populate_list_templates_context {
 
     $app->load_list_actions( 'template', $params );
     $params->{page_actions} = $app->page_actions('list_templates');
-    $params->{search_label} = $app->translate("Templates");
+    $params->{search_label} = $plugin->translate("Templates");
     $params->{object_type} = 'template';
     $params->{blog_view} = 1;
     $params->{refreshed} = $q->param('refreshed');
@@ -1015,22 +1017,22 @@ sub _populate_list_templates_context {
             # blog template listings
             %types = ( 
                 'index' => {
-                    label => $app->translate("Index Templates"),
+                    label => $plugin->translate("Index Templates"),
                     type => 'index',
                     order => 100,
                 },
                 'archive' => {
-                    label => $app->translate("Archive Templates"),
+                    label => $plugin->translate("Archive Templates"),
                     type => ['archive', 'individual', 'page', 'category'],
                     order => 200,
                 },
                 'module' => {
-                    label => $app->translate("Template Modules"),
+                    label => $plugin->translate("Template Modules"),
                     type => 'custom',
                     order => 300,
                 },
                 'system' => {
-                    label => $app->translate("System Templates"),
+                    label => $plugin->translate("System Templates"),
                     type => [ keys %$sys_tmpl ],
                     order => 400,
                 },
@@ -1039,17 +1041,17 @@ sub _populate_list_templates_context {
             # global template listings
             %types = ( 
                 'module' => {
-                    label => $app->translate("Template Modules"),
+                    label => $plugin->translate("Template Modules"),
                     type => 'custom',
                     order => 100,
                 },
                 'email' => {
-                    label => $app->translate("Email Templates"),
+                    label => $plugin->translate("Email Templates"),
                     type => 'email',
                     order => 200,
                 },
                 'system' => {
-                    label => $app->translate("System Templates"),
+                    label => $plugin->translate("System Templates"),
                     type => [ keys %$sys_tmpl ],
                     order => 300,
                 },
@@ -1059,7 +1061,7 @@ sub _populate_list_templates_context {
         # global template listings
         %types = ( 
             'backup' => {
-                label => $app->translate("Template Backups"),
+                label => $plugin->translate("Template Backups"),
                 type => 'backup',
                 order => 100,
             },

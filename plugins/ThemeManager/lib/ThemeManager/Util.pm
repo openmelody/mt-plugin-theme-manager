@@ -129,7 +129,7 @@ sub about_designer {
     }
     return $about_designer->($obj, @_) if ref $about_designer eq 'CODE';
     if ( $about_designer && ($about_designer =~ /\s/) ) {
-        return "<h3>About the Designer</h3>".$about_designer;
+        return $tm->translate("<h3>About the Designer</h3> [_1]", $about_designer);
     } else { # no spaces in $about_designer; must be a filename...
         return eval {$obj->load_tmpl($about_designer)};
     }

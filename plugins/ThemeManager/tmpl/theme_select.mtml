@@ -1,5 +1,5 @@
 <mt:Unless name="json">
-<mt:SetVarBlock name="page_title">Select a Theme</mt:SetVarBlock>
+<mt:SetVarBlock name="page_title"><__trans phrase="Select a Theme"></mt:SetVarBlock>
 
 <mt:SetVarBlock name="html_head" append="1">
     <link rel="stylesheet" href="<mt:PluginStaticWebPath component="ThemeManager">css/app.css" type="text/css" />
@@ -24,7 +24,7 @@
             }
         }
         if (!sel_theme_id) {
-            alert('Select a theme to proceed.');
+            alert('<__trans phrase="Select a theme to proceed.">');
             return false;
         }
         // Now get the plugin ID. We want both because, it's possible that
@@ -54,7 +54,7 @@
             ts.value = f.theme_id.value;
         }
         else {
-            alert("The template_set dropdown selector for creating a new blog couldn't be found.")
+            alert("<__trans phrase="The template_set dropdown selector for creating a new blog couldn't be found.">")
         }
         closeDialog();
         return;
@@ -137,7 +137,7 @@
                     <input type="radio" class="radio-button" name="selected_theme_id" 
                         id="selected-theme_id-<mt:Var name="id">" value="<mt:Var name="id">">
                     <input type="hidden" id="<mt:Var name="id">_plugin_sig" value="<mt:Var name="plugin_sig">" />
-                    <h3><label for="selected-theme_id-<mt:Var name="id">"><mt:Var name="label" default="Untitled"></label></h3>
+                    <h3><label for="selected-theme_id-<mt:Var name="id">"><mt:Var name="label" default="<__trans phrase="Untitled">"></label></h3>
                     <a href="javascript:void(0);" onclick="selectTheme('<mt:Var name="id">');">
                         <img src="<mt:Var name="thumbnail_url">" width="175" height="140" border="1" />
                     </a>
@@ -164,7 +164,7 @@
 </mt:Ignore>
     <div id="status">
         <div id="status-inner">
-            <p>Applying the selected theme...</p>
+            <p><__trans phrase="Applying the selected theme..."></p>
             <img src="<mt:Var name="static_uri">images/indicator.gif" width="66" height="66" border="0" />
         </div>
     </div>

@@ -7,6 +7,7 @@ description: 'A comprehensive theme management plugin!'
 version: 0.9.23
 schema_version: 3
 static_version: 4
+l10n_class: ThemeManager::L10N
 
 applications:
     cms:
