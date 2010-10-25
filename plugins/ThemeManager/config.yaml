@@ -5,7 +5,7 @@ author_link: http://endevver.com/
 author_name: Endevver
 description: 'A comprehensive theme management plugin!'
 version: 0.9.23
-schema_version: 3
+schema_version: 4
 static_version: 4
 
 applications:
@@ -47,6 +47,7 @@ object_types:
     theme: ThemeManager::Theme
     blog:
         template_set_language: string meta
+        theme_meta: vblob meta
 
 skip_static:
     - .psd

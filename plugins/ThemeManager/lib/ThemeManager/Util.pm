@@ -2,12 +2,14 @@ package ThemeManager::Util;
 
 use strict;
 use MT::Util qw(caturl);
+use ConfigAssistant::Util qw( find_theme_plugin );
 use base 'Exporter';
 
 our @EXPORT_OK = qw( theme_label theme_thumbnail_url theme_preview_url
         theme_description theme_author_name theme_author_link 
         theme_paypal_email theme_version theme_link theme_doc_link 
-        about_designer theme_docs _theme_thumb_path _theme_thumb_url );
+        theme_about_designer theme_docs _theme_thumb_path _theme_thumb_url 
+        prepare_theme_meta unserialize_theme_meta );
 
 my $app = MT->instance;
 my $tm  = MT->component('ThemeManager');
@@ -15,20 +17,23 @@ my $tm  = MT->component('ThemeManager');
 sub theme_label {
     # Grab the theme label. If no template set label is supplied then use
     # the parent plugin's name plus the template set ID.
-    my ($set, $obj) = @_;
-    return $obj->registry('template_sets', $set, 'label')
-        ? $obj->registry('template_sets', $set, 'label')
-        : eval {$obj->name.': '} . $set;
+    my ($data, $obj) = @_;
+    # If the description wasn't found in the theme meta, return the plugin
+    # description (if present).
+    $data = eval {$obj->name || $obj->id} unless $data;
+    # If no name can be found for the theme, just give it a label.
+    $data = 'Unnamed Theme' unless $data;
+    return _return_data($data, $obj);
 }
 
 sub theme_thumbnail_url {
     # Build the theme thumbnail URL. If no thumb is supplied, grab the
     # "default" thumbnail.
-    my ($set, $obj) = @_;
+    my ($thumb_path, $obj_id) = @_;
     my $app = MT->instance;
-    return $obj->{registry}->{'template_sets'}->{$set}->{thumbnail}
+    return eval {$thumb_path}
         ? $app->config('StaticWebPath').'support/plugins/'
-            .$obj->id.'/'.$obj->{registry}->{'template_sets'}->{$set}->{thumbnail}
+            .$obj_id.'/'.$thumb_path
         : $app->config('StaticWebPath').'support/plugins/'
             .$tm->id.'/images/default_theme_thumb-small.png';
 }
@@ -36,11 +41,11 @@ sub theme_thumbnail_url {
 sub theme_preview_url {
     # Build the theme thumbnail URL. If no thumb is supplied, grab the
     # "default" thumbnail.
-    my ($set, $obj) = @_;
+    my ($thumb_path, $obj_id) = @_;
     my $app = MT->instance;
-    return $obj->{registry}->{'template_sets'}->{$set}->{preview}
+    return eval {$thumb_path}
         ? $app->config('StaticWebPath').'support/plugins/'
-            .$obj->id.'/'.$obj->{registry}->{'template_sets'}->{$set}->{preview}
+            .$obj_id.'/'.$thumb_path
         : $app->config('StaticWebPath').'support/plugins/'
             .$tm->id.'/images/default_theme_thumb-large.png';
 }
@@ -49,113 +54,102 @@ sub theme_description {
     # Grab the description. If no template set description is supplied
     # then use the parent plugin's description. This may be a file reference
     # or just some HTML, or even code.
-    my ($set, $obj) = @_;
-    my $desc = $obj->{registry}->{'template_sets'}->{$set}->{description}
-        ? $obj->{registry}->{'template_sets'}->{$set}->{description}
-        : eval {$obj->description};
-    if (ref $desc eq 'HASH') {
-        $desc = MT->handler_to_coderef($desc->{code});
-    }
-    return $desc->($obj, @_) if ref $desc eq 'CODE';
-    if ($desc =~ /\s/) {
-        return $desc;
-    } else { # no spaces in $about_designer; must be a filename...
-        return eval {$obj->load_tmpl($desc)};
-    }
+    my ($data, $obj) = @_;
+    # If the description wasn't found in the theme meta, return the plugin
+    # description (if present).
+    $data = eval {$obj->description} unless $data;
+    return _return_data($data, $obj);
 }
 
 sub theme_author_name {
     # Grab the author name. If no template set author name, then use
     # the parent plugin's author name.
-    my ($set, $obj) = @_;
-    return $obj->{registry}->{'template_sets'}->{$set}->{author_name}
-        ? $obj->{registry}->{'template_sets'}->{$set}->{author_name}
-        : eval {$obj->author_name};
+    my ($data, $obj) = @_;
+    # If the author name wasn't found in the theme meta, return the plugin
+    # author name (if present).
+    $data = eval {$obj->author_name} unless $data;
+    return _return_data($data, $obj);
 }
 
 sub theme_author_link {
     # Grab the author name. If no template set author link, then use
     # the parent plugin's author link.
-    my ($set, $obj) = @_;
-    return $obj->{registry}->{'template_sets'}->{$set}->{author_link}
-        ? $obj->{registry}->{'template_sets'}->{$set}->{author_link}
-        : eval {$obj->author_link};
+    my ($data, $obj) = @_;
+    # If the author name wasn't found in the theme meta, return the plugin
+    # author name (if present).
+    $data = eval {$obj->author_link} unless $data;
+    return _return_data($data, $obj);
 }
 
 sub theme_paypal_email {
     # Grab the paypal donation email address. If no template set paypal
     # email address, then it might have been set at the plugin level.
-    my ($set, $obj) = @_;
-    return $obj->{registry}->{'template_sets'}->{$set}->{paypal_email}
-        ? $obj->{registry}->{'template_sets'}->{$set}->{paypal_email}
-        : eval {$obj->paypal_email};
+    my ($data, $obj) = @_;
+    # The paypal_email may be specified at the theme level, or at the plugin
+    # level. (It may be specified at the plugin level if the theme contains
+    # many themes, for example.)
+    $data = eval {$obj->paypal_email} unless $data;
+    return _return_data($data, $obj);
 }
 
 sub theme_version {
     # Grab the version number. If no template set version, then use
     # the parent plugin's version.
-    my ($set, $obj) = @_;
-    return $obj->{registry}->{'template_sets'}->{$set}->{version}
-        ? $obj->{registry}->{'template_sets'}->{$set}->{version}
-        : eval {$obj->version};
+    my ($data, $obj) = @_;
+    # If no version was found in the theme meta, return the plugin
+    # version (if present).
+    $data = eval {$obj->version} unless $data;
+    return _return_data($data, $obj);
 }
 
 sub theme_link {
     # Grab the theme link URL. If no template set theme link, then use
     # the parent plugin's plugin_link.
-    my ($set, $obj) = @_;
-    return $obj->{registry}->{'template_sets'}->{$set}->{theme_link}
-        ? $obj->{registry}->{'template_sets'}->{$set}->{theme_link}
-        : eval {$obj->plugin_link};
+    my ($data, $obj) = @_;
+    # If no theme link was found in the theme meta, return the plugin
+    # link (if present).
+    $data = eval {$obj->plugin_link} unless $data;
+    return _return_data($data, $obj);
 }
 
 sub theme_doc_link {
     # Grab the theme doc URL. If no template set theme doc, then use
     # the parent plugin's doc_link.
-    my ($set, $obj) = @_;
-    return $obj->{registry}->{'template_sets'}->{$set}->{doc_link}
-        ? $obj->{registry}->{'template_sets'}->{$set}->{doc_link}
-        : eval {$obj->doc_link};
+    my ($data, $obj) = @_;
+    # If no documentation link was found in the theme meta, return the
+    # plugin documentation link (if present).
+    $data = eval {$obj->doc_link} unless $data;
+    return _return_data($data, $obj);
 }
 
-sub about_designer {
+sub theme_about_designer {
     # Return the content about the designer. This may be a file reference or 
     # just some HTML, or even code.
-    my ($set, $obj) = @_;
-    my $about_designer = $obj->{registry}->{'template_sets'}->{$set}->{about_designer};
-    return unless $about_designer;
-    if (ref $about_designer eq 'HASH') {
-        $about_designer = MT->handler_to_coderef($about_designer->{code});
-    }
-    return $about_designer->($obj, @_) if ref $about_designer eq 'CODE';
-    if ( $about_designer && ($about_designer =~ /\s/) ) {
-        return "<h3>About the Designer</h3>".$about_designer;
-    } else { # no spaces in $about_designer; must be a filename...
-        return eval {$obj->load_tmpl($about_designer)};
-    }
+    my ($data, $obj) = @_;
+    return _return_data($data, $obj);
 }
 
 sub theme_docs {
     # Theme Docs are inline-presented documentation.
-    my ($set, $obj) = @_;
-    my $docs = $obj->{registry}->{'template_sets'}->{$set}->{documentation};
-    return unless $docs;
-    if (ref $docs eq 'HASH') {
-        $docs = MT->handler_to_coderef($docs->{code});
-    }
-    return $docs->($obj, @_) if ref $docs eq 'CODE';
+    my ($data, $obj) = @_;
+    return _return_data($data, $obj);
+}
 
-    if ( $docs && ($docs =~ /\s/) ) {
-        return $docs;
-    } else { # no spaces in $docs; must be a filename...
-        my $app = MT->instance();
-        my $tmpl = eval { $obj->load_tmpl($docs) };
-        return '' unless $tmpl;
-        my $ctx = $tmpl->context;
-        $ctx->stash('blog',$app->blog);
-        $ctx->stash('blog_id',$app->blog->id);
-        my $contents = $app->build_page($tmpl);
-        return $contents;
+sub _return_data {
+    # The theme may keys may have been specified inline, or they could be
+    # code or template references. Just grab the final result and return it.
+    my ($data, $obj) = @_;
+    # It's possible their is no valid $data supplied, so deal with that.
+    return '' unless defined $data;
+    if (ref $data eq 'HASH') {
+        $data = MT->handler_to_coderef($data->{code});
+    }
+    return $data->($obj, @_) if ref $data eq 'CODE';
+    if ($data =~ /\.html$/) {
+        # Ends with .html so this must be a filename/template.
+        return eval {$obj->load_tmpl($data)};
+    } else { 
+        return $data;
     }
 }
 
@@ -172,6 +166,60 @@ sub _theme_thumb_path {
 sub _theme_thumb_url {
     return caturl( $app->static_path , 'support' , 'plugins', $tm->id, 'theme_thumbs', 
             $app->blog->id.'.jpg' );
+}
+
+sub prepare_theme_meta {
+    # Prepare the theme meta by ensuring that default values exist.
+    my ($ts_id) = @_;
+    my $theme_meta = {};
+
+    my $plugin = find_theme_plugin($ts_id);
+    # If the plugin couldn't be loaded that means it's been uninstalled or 
+    # disabled, and so we can't load any theme meta. Just give it a label
+    # and give up.
+    if (!$plugin) {
+        $theme_meta->{label} = 'Unknown Theme';
+        return $theme_meta;
+    }
+
+    my $sig = $plugin->{plugin_sig};
+    my $obj = $MT::Plugins{$sig}{object};
+    # Grab the existing theme meta
+    $theme_meta = $obj->registry('template_sets', $ts_id);
+
+    # We've grabbed the theme meta already, but we can't be sure 
+    # that all fields have been filled out; fallbacks may be used.
+    # Check the important fields and create fallbacks if needed.
+    $theme_meta->{label} 
+        = theme_label( $theme_meta->{label}, $plugin );
+    $theme_meta->{description} 
+        = theme_description( $theme_meta->{description}, $plugin );
+    $theme_meta->{author_name} 
+        = theme_author_name( $theme_meta->{author_name}, $plugin );
+    $theme_meta->{author_link} 
+        = theme_author_link( $theme_meta->{author_link}, $plugin );
+    $theme_meta->{paypal_email} 
+        = theme_paypal_email( $theme_meta->{paypal_email}, $plugin );
+    $theme_meta->{version} 
+        = theme_version( $theme_meta->{version}, $plugin );
+    $theme_meta->{theme_link} 
+        = theme_link( $theme_meta->{theme_link}, $plugin );
+    $theme_meta->{theme_doc_link} 
+        = theme_doc_link( $theme_meta->{theme_doc_link}, $plugin );
+    $theme_meta->{about_designer} 
+        = theme_about_designer( $theme_meta->{about_designer}, $plugin );
+
+    return $theme_meta;
+}
+
+sub unserialize_theme_meta {
+    # Unserialize the theme meta. It's actually a hash, and we need
+    # it changed back into a usable form.
+    my ($theme_meta) = @_;
+    my $serializer = MT::Serialize->new('MT');
+    my $meta = $serializer->unserialize( $theme_meta );
+    $meta = $$meta;
+    return $meta;
 }
 
 1;

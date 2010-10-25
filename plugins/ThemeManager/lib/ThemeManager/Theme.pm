@@ -10,7 +10,7 @@ __PACKAGE__->install_properties({
         'plugin_sig' => 'string(255)',
         'ts_id'      => 'string(255)',
         'ts_label'   => 'text',
-        'ts_desc'    => 'text',
+        'theme_meta' => 'blob',
     },
     indexes => {
         plugin_sig => 1,

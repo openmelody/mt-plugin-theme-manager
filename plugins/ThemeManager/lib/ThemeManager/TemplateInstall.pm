@@ -2,7 +2,7 @@ package ThemeManager::TemplateInstall;
 
 use strict;
 use ConfigAssistant::Util qw( find_theme_plugin );
-use ThemeManager::Util;
+use ThemeManager::Util qw( prepare_theme_meta );
 use MT::Util qw(caturl dirify offset_time_list);
 use MT;
 
@@ -99,11 +99,9 @@ sub _refresh_all_templates {
             # set here, instead of below.
             _create_default_templates($ts_id, $blog);
 
-            if ($ts_id) {
-                $blog->template_set( $ts_id );
-                $blog->save;
-                $app->run_callbacks( 'blog_template_set_change', { blog => $blog } );
-            }
+            $blog->template_set( $ts_id );
+            $blog->save;
+            $app->run_callbacks( 'blog_template_set_change', { blog => $blog } );
 
             next BLOG;
         }
@@ -317,6 +315,16 @@ sub template_set_change {
         # Link installed templates to theme files
         _link_templates(@_);
     }
+
+    # Save the meta about this theme to the DB. This is particularly
+    # important in two cases:
+    # 1) When a user might uninstall a theme. We want things to (basically)
+    #    continue working as expected.
+    # 2) Save the theme version, in particular, so that when upgrading to
+    #    the new version of a theme the user doesn't falsely think that
+    #    they've already upgraded (as is the case with dynamic display of
+    #    the version.)
+    _save_theme_meta(@_);
 }
 
 sub _new_blog_template_set_language {
@@ -379,6 +387,8 @@ sub _set_module_caching_prefs {
         or return;
     my $tmpls = MT->app->registry( 'template_sets',$set_name,'templates' );
     foreach my $t (qw( module widget )) {
+        # Give up if there are no templates that match
+        next unless eval { %{ $tmpls->{$t} } };
         foreach my $m ( keys %{ $tmpls->{$t} } ) {
             if ($tmpls->{$t}->{$m}->{cache}) {
                 my $tmpl = MT->model('template')->load({
@@ -411,6 +421,8 @@ sub _set_archive_map_publish_types {
         or return;
     my $tmpls = MT->app->registry( 'template_sets',$set_name,'templates' );
     foreach my $a (qw( archive individual )) {
+        # Give up if there are no templates that match
+        next unless eval { %{ $tmpls->{$a} } };
         foreach my $t ( keys %{ $tmpls->{$a} } ) {
             foreach
                 my $m ( keys %{ $tmpls->{$a}->{$t}->{mappings} } )
@@ -431,9 +443,11 @@ sub _set_archive_map_publish_types {
                     $tm->build_type( $map->{build_type} );
                     $tm->is_preferred( $map->{preferred} );
                     $tm->save()
-                        or MT->log(
-                            { message => "Could not update template map for template $t." }
-                        );
+                        or MT->log({
+                            level   => MT->model('log')->ERROR(),
+                            blog_id => $blog->id,
+                            message => "Could not update template map for template $t.",
+                        });
                 }
             }
         }
@@ -449,6 +463,9 @@ sub _set_index_publish_type {
         or return;
     my $tmpls = MT->app->registry( 'template_sets',$set_name,'templates' );
     
+    # Give up if there are no templates that match
+    return unless eval { %{ $tmpls->{index} } };
+
     foreach my $t ( keys %{ $tmpls->{index} } ) {
         if ( $tmpls->{index}->{$t}->{build_type} ) {
             my $tmpl = MT->model('template')->load({
@@ -458,9 +475,11 @@ sub _set_index_publish_type {
             return unless $tmpl;
             $tmpl->build_type( $tmpls->{index}->{$t}->{build_type} );
             $tmpl->save()
-                or MT->log(
-                    { message => "Could not update template map for template $t." }
-                );
+                or MT->log({
+                    level   => MT->model('log')->ERROR(),
+                    blog_id => $blog->id,
+                    message => "Could not update template map for template $t.",
+                });
         }
     }
 }
@@ -649,6 +668,19 @@ sub _install_default_content {
             install_pages_or_entries( 'entry', $blog, $struct );
         }
     }
+}
+
+sub _save_theme_meta {
+    # When a new theme is being applied, save the theme meta for easy use later.
+    my ($cb, $param ) = @_;
+    my $blog = $param->{blog} or return;
+    my $ts_id = $blog->template_set or return;
+    my $set = MT->app->registry( 'template_sets', $ts_id )
+        or return;
+
+    # Save the data to the theme_meta meta field.
+    $blog->theme_meta( prepare_theme_meta($ts_id) );
+    $blog->save;
 }
 
 sub xfrm_add_language {

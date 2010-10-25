@@ -5,13 +5,6 @@ use ConfigAssistant::Util qw( find_theme_plugin );
 # Theme Manager, we can rely on it being available.
 use Sub::Install;
 
-MT::Blog->install_meta({
-    column_defs => {
-        'template_set_language' => 'string',
-    }
-});
-
-
 sub init_app {
     # TODO - This should not have to reinstall a subroutine. It should invoke 
     #        a callback.
@@ -94,7 +87,6 @@ sub _translate {
     }
     $str;
 }
-
 
 1;
 

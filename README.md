@@ -286,7 +286,7 @@ page. Also notice that a folder is being associated with the page.
             entries:
                 welcome:
                     label: 'Welcome to my awesome theme'
-                    text: 'You just installed a great theme. Congrats!'
+                    body: 'You just installed a great theme. Congrats!'
             pages:
                 about:
                     label: 'About'

@@ -5,9 +5,12 @@ use ConfigAssistant::Util qw( find_theme_plugin );
 use ThemeManager::Util qw( theme_label theme_thumbnail_url theme_preview_url
         theme_description theme_author_name theme_author_link 
         theme_paypal_email theme_version theme_link theme_doc_link 
-        about_designer theme_docs _theme_thumb_path _theme_thumb_url );
+        theme_about_designer theme_docs _theme_thumb_path _theme_thumb_url 
+        prepare_theme_meta unserialize_theme_meta );
 use MT::Util qw(caturl dirify offset_time_list);
+use MT::Serialize;
 use MT;
+
 
 sub update_menus {
     my $app = MT->instance;
@@ -112,29 +115,57 @@ sub theme_dashboard {
     my $plugin = find_theme_plugin($ts_id);
 
     my $param = {};
-    # Build the theme dashboard links
-    $param->{theme_label}       = theme_label($ts_id, $plugin);
-    $param->{theme_description} = theme_description($ts_id, $plugin);
-    $param->{theme_author_name} = theme_author_name($ts_id, $plugin);
-    $param->{theme_author_link} = theme_author_link($ts_id, $plugin);
-    $param->{theme_link}        = theme_link($ts_id, $plugin);
-    $param->{theme_doc_link}    = theme_doc_link($ts_id, $plugin);
-    $param->{theme_version}     = theme_version($ts_id, $plugin);
-    $param->{paypal_email}      = theme_paypal_email($ts_id, $plugin);
-    $param->{about_designer}    = about_designer($ts_id, $plugin);
-    $param->{theme_docs}        = theme_docs($ts_id, $plugin);
+    my $theme_meta = {};
+
+    # In Production Mode, read the cached theme meta from the DB.
+    # In Designer Mode, load the YAML and use that.
+    my $mode = $tm->get_config_value('tm_mode', 'system');
+    if ($mode eq 'Designer and Developer Mode') {
+        # Grab the meta. This will always find *something* even if the 
+        # theme plugin has been disabled/removed. The dashboard links,
+        # below, will also construct fallback data to display, if the
+        # theme couldn't be loaded here.
+        $theme_meta = MT->app->registry( 'template_sets', $ts_id );
+    }
+    else {
+        # This is Production Mode.
+        $theme_meta = $app->blog->theme_meta;
+        # If theme meta isn't found, it wasn't set when the theme was 
+        # applied (a very likely scenario for upgraders, who likely haven't
+        # applied a new theme). Go ahead and just create the theme meta.
+        if (!$theme_meta) {
+            my $blog = $app->blog;
+            $blog->theme_meta( prepare_theme_meta($ts_id) );
+            $blog->save;
+        }
+    }
+
+    # Build the theme dashboard links.
+    # When in production mode, the data found in the keys should be good to
+    # use because it was previously sanitized through the Util methods (such
+    # as theme_label and theme_description). But if the user is in Designer
+    # Mode, we want to ensure that fallback values are used if necessary.
+    $param->{theme_label}       = theme_label($theme_meta->{label}, $plugin);
+    $param->{theme_description} = theme_description($theme_meta->{description}, $plugin);
+    $param->{theme_author_name} = theme_author_name($theme_meta->{author_name}, $plugin);
+    $param->{theme_author_link} = theme_author_link($theme_meta->{author_link}, $plugin);
+    $param->{theme_link}        = theme_link($theme_meta->{link}, $plugin);
+    $param->{theme_doc_link}    = theme_doc_link($theme_meta->{doc_link}, $plugin);
+    $param->{theme_version}     = theme_version($theme_meta->{version}, $plugin);
+    $param->{paypal_email}      = theme_paypal_email($theme_meta->{paypal_email}, $plugin);
+    $param->{about_designer}    = theme_about_designer($theme_meta->{about_designer}, $plugin);
+    $param->{theme_docs}        = theme_docs($theme_meta->{documentation}, $plugin);
     if ( $app->blog->language ne $app->blog->template_set_language ) {
         $param->{template_set_language} = $app->blog->template_set_language;
     }
 
     my $dest_path = _theme_thumb_path();
     if ( -w $dest_path ) {
-        $param->{theme_thumb_url} = _make_thumbnail($ts_id, $plugin);
+        $param->{theme_thumb_url} = _make_thumbnail($theme_meta->{preview});
     }
     else {
         $param->{theme_thumbs_path} = $dest_path;
     }
-    $param->{theme_mini} = _make_mini();
 
     # Are the templates linked? We use this to show/hide the Edit/View
     # Templates links.
@@ -188,7 +219,10 @@ sub theme_dashboard {
     return $app->listing({
         type     => 'theme',
         template => $tmpl,
-        #terms    => \@terms,
+        args     => {
+            sort      => 'ts_label',
+            direction => 'ascend',
+        },
         params   => $param,
         code     => sub {
             my ($theme, $row) = @_;
@@ -202,9 +236,16 @@ sub theme_dashboard {
                 next;
             }
             $row->{id}            = $theme->ts_id;
-            $row->{label}         = theme_label($theme->ts_id, $plugin);
-            $row->{thumbnail_url} = theme_thumbnail_url($theme->ts_id, $plugin);
             $row->{plugin_sig}    = $theme->plugin_sig;
+            $row->{label}         = theme_label($theme->ts_label, $plugin);
+
+            # Unserializing converts the gobblety-gook back into a hash.
+            my $theme_meta = unserialize_theme_meta( $theme->theme_meta );
+            
+            $row->{thumbnail_url} = theme_thumbnail_url(
+                $theme_meta->{thumbnail}, 
+                $plugin->id
+            );
 
             return $row;
         },
@@ -262,6 +303,10 @@ sub select_theme {
         type     => 'theme',
         template => $tmpl,
         terms    => \@terms,
+        args     => {
+            sort      => 'ts_label',
+            direction => 'ascend',
+        },
         params   => {
             search   => $search_terms,
             blog_ids => $blog_ids,
@@ -278,19 +323,30 @@ sub select_theme {
                 $theme->save;
                 next;
             }
+            
+            # Unserializing converts the gobblety-gook back into a hash.
+            my $theme_meta = unserialize_theme_meta( $theme->theme_meta );
+            
+            $row->{thumbnail_url} = theme_thumbnail_url(
+                $theme_meta->{thumbnail}, 
+                $plugin->id
+            );
+            $row->{preview_url} = theme_preview_url(
+                $theme_meta->{preview}, 
+                $plugin->id
+            );
+            
             $row->{id}             = $theme->ts_id;
-            $row->{label}          = theme_label($theme->ts_id, $plugin);
-            $row->{thumbnail_url}  = theme_thumbnail_url($theme->ts_id, $plugin);
-            $row->{preview_url}    = theme_preview_url($theme->ts_id, $plugin);
-            $row->{description}    = theme_description($theme->ts_id, $plugin);
-            $row->{author_name}    = theme_author_name($theme->ts_id, $plugin);
-            $row->{version}        = theme_version($theme->ts_id, $plugin);
-            $row->{theme_link}     = theme_link($theme->ts_id, $plugin);
-            $row->{theme_doc_link} = theme_doc_link($theme->ts_id, $plugin);
-            $row->{about_designer} = about_designer($theme->ts_id, $plugin);
+            $row->{label}          = theme_label($theme_meta->{label}, $plugin);
+            $row->{description}    = theme_description($theme_meta->{description}, $plugin);
+            $row->{author_name}    = theme_author_name($theme_meta->{author_name}, $plugin);
+            $row->{version}        = theme_version($theme_meta->{version}, $plugin);
+            $row->{theme_link}     = theme_link($theme_meta->{link}, $plugin);
+            $row->{theme_doc_link} = theme_doc_link($theme_meta->{doc_link}, $plugin);
+            $row->{about_designer} = theme_about_designer($theme_meta->{about_designer}, $plugin);
             $row->{plugin_sig}     = $theme->plugin_sig;
             $row->{theme_details}  = $app->load_tmpl('theme_details.mtml', $row);
-            
+
             return $row;
         },
     });
@@ -302,6 +358,12 @@ sub setup_theme {
 
     my $ts_id      = $q->param('theme_id');
     my $plugin_sig = $q->param('plugin_sig');
+    
+    # Theme data is cached so that we can load and just display as necessary.
+    my $theme = MT->model('theme')->load({
+        ts_id      => $ts_id,
+        plugin_sig => $plugin_sig,
+    });
     
     my @blog_ids;
     if ( $q->param('blog_ids') ) {
@@ -328,7 +390,10 @@ sub setup_theme {
     # fieldset, just like on the Theme Options page.
     my $plugin = $MT::Plugins{$plugin_sig}->{object};
     my $ts     = $plugin->{registry}->{'template_sets'}->{$ts_id};
-    $param->{ts_label} = theme_label($ts_id, $plugin);
+
+    # Unserializing converts the gobblety-gook back into a hash.
+    my $theme_meta = unserialize_theme_meta( $theme->theme_meta );
+    $param->{ts_label} = theme_label($theme_meta->{label}, $plugin);
 
     # Check for the widgetsets beacon. It will be set after visiting the 
     # "Save Widgets" screen. Or, we may bypass it because we don't always
@@ -347,8 +412,14 @@ sub setup_theme {
             my $cur_ts_id = $blog->template_set;
             my $cur_ts_plugin = find_theme_plugin($cur_ts_id);
             unless ($cur_ts_plugin) {
-                MT->log({ blog_id => $blog_id,
-                          message => MT->translate('Theme Manager could not find a plugin corresponding to the template set currently applied to this blog. Skipping this blog for saving widget sets.') });
+                MT->log({ 
+                    level   => MT->model('log')->ERROR(),
+                    blog_id => $blog_id,
+                    message => MT->translate('Theme Manager could not find '
+                        . 'a plugin corresponding to the template set '
+                        . 'currently applied to this blog. Skipping this '
+                        . 'blog for saving widget sets.'),
+                });
                 next;
             }
             my $cur_ts_widgetsets = 
@@ -361,7 +432,7 @@ sub setup_theme {
             foreach my $widgetset (@widgetsets) {
                 # Widget Sets from the currently-used template set need to be built.
                 my $cur_ts_widgetset = $cur_ts_widgetsets->{$widgetset->identifier}->{'widgets'};
-                my $ws_mtml;
+                my $ws_mtml = '';
                 foreach my $widget (@$cur_ts_widgetset) {
                     $ws_mtml .= '<mt:include widget="'.$widget.'">';
                 }
@@ -431,7 +502,6 @@ sub setup_theme {
             $blog->save;
         }
     }
-    
 
     # As you may guess, this applies the template set to the current blog.
     use ThemeManager::TemplateInstall;
@@ -530,12 +600,11 @@ sub setup_theme {
                         push @{ $fields->{$fs} }, $out;
                     }
                     else {
-                        MT->log(
-                            {
-                                message => 'Unknown config type encountered: '
-                                  . $field->{'type'}
-                            }
-                        );
+                        MT->log({
+                            level   => MT->model('log')->ERROR(),
+                            message => 'Unknown config type encountered: '
+                                . $field->{'type'}
+                        });
                     }
                 }
             }
@@ -618,7 +687,7 @@ sub setup_theme {
 
 sub _make_thumbnail {
     # We want a custom thumbnail to display on the Theme Options About tab.
-    my ($ts_id, $plugin) = @_;
+    my ($thumb_path) = @_;
     my $app = MT->instance;
     my $q = $app->can('query') ? $app->query : $app->param;
     
@@ -633,7 +702,7 @@ sub _make_thumbnail {
         or return $app->error( MT::FileMgr->errstr );
     if ( ($fmgr->exists($dest_path)) && (-M $dest_path <= 1) ) {
         # We've found a cached image! Now we need to check that it's usable.
-        return _check_thumbalizr_result($dest_path, $dest_url, $ts_id, $plugin);
+        return _check_thumbalizr_result($dest_path, $dest_url, $thumb_path);
     }
     else {
         # No screenshot was found, or it's too old--so create one.
@@ -652,14 +721,14 @@ sub _make_thumbnail {
         my $http_response = LWP::Simple::getstore($thumb_url, $dest_path);
         
         # Finally, check that the saved image is actually usable.
-        return _check_thumbalizr_result($dest_path, $dest_url, $ts_id, $plugin);
+        return _check_thumbalizr_result($dest_path, $dest_url, $thumb_path);
     }
 }
 
 sub _check_thumbalizr_result {
     # We need to figure out if the returned image is actually a thumbnail, or
     # if it's the "queued" or "failed" image from thumbalizr.
-    my ($dest_path, $dest_url, $ts_id, $plugin) = @_;
+    my ($dest_path, $dest_url, $thumb_path) = @_;
 
     my $fmgr = MT::FileMgr->new('Local')
         or die MT::FileMgr->errstr;
@@ -679,9 +748,17 @@ sub _check_thumbalizr_result {
             || ($md5->hexdigest eq 'ac47a999e5ce1769d480a66b0554343d') ) {
         # This is the "queued" image being displayed. Instead of this, we
         # want to show the "preview" image defined by the template set.
-        return theme_preview_url($ts_id, $plugin);
+        my $app = MT->instance;
+        my $plugin = find_theme_plugin( $app->blog->template_set );
+        # If the theme plugin was found, return the supplied preview image.
+        # If the theme plugin was *not* found, just return the generic
+        # theme preview image.
+        return $plugin
+            ? return theme_preview_url($thumb_path, $plugin->id)
+            : return theme_preview_url();
     }
     else {
+        # This is a valid thumbalizr preview image. Use it!
         return $dest_url;
     }
 }
@@ -753,6 +830,8 @@ sub unlink_templates {
 }
 
 sub theme_info {
+    # Theme info is displayed when a user clicks to select a theme (from the
+    # Change Theme tab).
     my $app = MT->instance;
     my $q = $app->can('query') ? $app->query : $app->param;
     my $param = {};
@@ -761,17 +840,25 @@ sub theme_info {
     my $plugin = $MT::Plugins{$plugin_sig}->{object};
     
     my $ts_id = $q->param('ts_id');
-    
+
+    # Theme data is cached so that we can load and just display as necessary.
+    my $theme = MT->model('theme')->load({
+        ts_id      => $ts_id,
+        plugin_sig => $plugin_sig,
+    });
+
+    # Unserializing converts the gobblety-gook back into a hash.
+    my $theme_meta = unserialize_theme_meta( $theme->theme_meta );
+
     $param->{id}             = $ts_id;
-    $param->{label}          = theme_label($ts_id, $plugin);
-    $param->{thumbnail_url}  = theme_thumbnail_url($ts_id, $plugin);
-    $param->{preview_url}    = theme_preview_url($ts_id, $plugin);
-    $param->{description}    = theme_description($ts_id, $plugin);
-    $param->{author_name}    = theme_author_name($ts_id, $plugin);
-    $param->{version}        = theme_version($ts_id, $plugin);
-    $param->{theme_link}     = theme_link($ts_id, $plugin);
-    $param->{theme_doc_link} = theme_doc_link($ts_id, $plugin);
-    $param->{about_designer} = about_designer($ts_id, $plugin);
+    $param->{label}          = theme_label($theme_meta->{label}, $plugin);
+    $param->{preview_url}    = theme_preview_url($theme_meta->{preview}, $plugin->id);
+    $param->{description}    = theme_description($theme_meta->{description}, $plugin);
+    $param->{author_name}    = theme_author_name($theme_meta->{author_name}, $plugin);
+    $param->{version}        = theme_version($theme_meta->{version}, $plugin);
+    $param->{theme_link}     = theme_link($theme_meta->{link}, $plugin);
+    $param->{theme_doc_link} = theme_doc_link($theme_meta->{doc_link}, $plugin);
+    $param->{about_designer} = theme_about_designer($theme_meta->{about_designer}, $plugin);
     $param->{plugin_sig}     = $plugin_sig;
     my $ts_count = keys %{ $plugin->{registry}->{'template_sets'} };
     $param->{plugin_label}   = $ts_count > 1 ? $plugin->label : 0;
@@ -836,27 +923,39 @@ sub _theme_check {
         my $plugin = $MT::Plugins{$sig};
         my $obj    = $MT::Plugins{$sig}{object};
         my $r      = $obj->{registry};
-        my @sets   = keys %{ $r->{'template_sets'} };
-        foreach my $set (@sets) {
-            # Has this theme already been saved?
-            use ThemeManager::Theme;
-            my $theme = ThemeManager::Theme->load({
-                    ts_id      => $set,
-                    plugin_sig => $sig,
-                });
+        my @ts_ids = keys %{ $r->{'template_sets'} };
+        foreach my $ts_id (@ts_ids) {
+            # Does this theme already exist? If so just load the record and
+            # update it.
+            my $theme = MT->model('theme')->load({
+                ts_id      => $ts_id,
+                plugin_sig => $sig,
+            });
             if (!$theme) {
-                # Not saved, so save it.
-                $theme = ThemeManager::Theme->new();
+                # Theme hasn't been previously saved, so create it.
+                $theme = MT->model('theme')->new();
                 $theme->plugin_sig( $sig );
-                $theme->ts_id( $set );
-                $theme->ts_label( theme_label($set, $obj) );
-                $theme->ts_desc(  theme_description($set, $obj) );
+                $theme->ts_id( $ts_id );
                 $theme->save;
             }
+
+            # Serialize the theme_meta so that the hash can be written to
+            # the database.
+            my $meta = prepare_theme_meta($ts_id);
+            my $serializer = MT::Serialize->new('MT');
+            my $val = $serializer->serialize(\$meta);
+
+            # Save the theme label in a separate column. We use this to
+            # sort the themes for display on the Change Theme page. Use the
+            # theme meta label that we already calculated fallbacks for.
+            $theme->ts_label( theme_label( $meta->{label}, $plugin ) );
+
+            $theme->theme_meta( $val );
+            $theme->save;
         }
     }
     # Should we delete any themes from the db?
-    my $iter = ThemeManager::Theme->load_iter({},{sort_by => 'ts_id',});
+    my $iter = MT->model('theme')->load_iter({},{sort_by => 'ts_id',});
     while (my $theme = $iter->()) {
         # Use the plugin sig to grab the plugin.
         my $plugin = $MT::Plugins{$theme->plugin_sig}->{object};
@@ -864,7 +963,6 @@ sub _theme_check {
             # This plugin couldn't be loaded! That must mean the theme has 
             # been uninstalled, so remove the entry in the table.
             $theme->remove;
-            $theme->save;
             next;
         }
         else {
@@ -872,7 +970,6 @@ sub _theme_check {
                 # This template set couldn't be loaded! That must mean the theme
                 # has been uninstalled, so remove the entry in the table.
                 $theme->remove;
-                $theme->save;
                 next;
             }
         }
