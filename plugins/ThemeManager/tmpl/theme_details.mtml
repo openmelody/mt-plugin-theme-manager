@@ -1,22 +1,22 @@
 <img src="<mt:Var name="preview_url">" width="300" height="240" class="preview" />
 
-<h3>Description</h3>
+<h3><__trans phrase="Description"></h3>
 
 <mt:If name="plugin_label">
-<p>Part of the plugin <strong><mt:Var name="plugin_label"></strong>.</p>
+<p><__trans phrase="Part of the plugin <strong></strong>" params="<mt:Var name="plugin_label">">.</p>
 </mt:If>
 
-<p><mt:Var name="description" default="No description is supplied for this theme."></p>
+<p><mt:Var name="description" default="<__trans phrase="No description is supplied for this theme.">"></p>
 <ul>
 <mt:If name="theme_link">
-    <li><a href="<mt:Var name="theme_link">" target="_blank">Theme Home</a></li>
+    <li><a href="<mt:Var name="theme_link">" target="_blank"><__trans phrase="Theme Home"></a></li>
 </mt:If>
 <mt:If name="theme_doc_link">
-    <li><a href="<mt:Var name="theme_doc_link">" target="_blank">Theme Documentation</a></li>
+    <li><a href="<mt:Var name="theme_doc_link">" target="_blank"><__trans phrase="Theme Documentation"></a></li>
 </mt:If>
-    <li>Designed by <mt:Var name="author_name" default="Unkown Artist"></li>
+    <li><__trans phrase="Designed by [_1]" params="<$mt:Var name="author_name" default="<__trans phrase="Unkown Artist">"$>"> </li>
 <mt:If name="version">
-    <li>Version <mt:Var name="version"></li>
+    <li><__trans phrase="Version [_1]" params="<mt:Var name="version">"></li>
 </mt:If>
 </ul>
 

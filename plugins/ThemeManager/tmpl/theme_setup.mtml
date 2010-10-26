@@ -61,7 +61,7 @@
 
 
 <mt:If name="fields_loop">
-    <p>The <mt:Var name="ts_label"> theme has fields that are marked <em>required</em>. Required fields must be filled-in to make the theme work as intended or publish correctly. All of the below fields are required; after setup is complete be sure to visit Theme Options to set any other fields.</p>
+    <p><__trans phrase="The [_1] theme has fields that are marked <em>required</em>. Required fields must be filled-in to make the theme work as intended or publish correctly. All of the below fields are required; after setup is complete be sure to visit Theme Options to set any other fields." params="<mt:Var name="ts_label">"></p>
     <div id="setup-required-fields">
         <mt:Var name="system_msg">
         <mt:Loop name="fields_loop">
@@ -72,7 +72,7 @@
         </mt:Loop>
     </div>
 <mt:Else>
-    <p>The theme <mt:Var name="ts_label"> has been applied to this blog. You will need to <a href="javascript:void(0);" title="Publish Site" onclick="doRebuild('<mt:Var name="blog_id">');return false;">republish</a> the blog to see the new theme on your site<mt:If name="options">, though you may want to verify all <mt:Var name="options"> are configured properly first</mt:If>.</p>
+    <p><__trans phrase="The theme [_1] has been applied to this blog. You will need to" params="<mt:Var name="ts_label">"> <a href="javascript:void(0);" title="<__trans phrase="Publish Site">" onclick="doRebuild('<mt:Var name="blog_id">');return false;">republish</a> <__trans phrase="the blog to see the new theme on your site"><mt:If name="options"><__trans phrase=", though you may want to verify all [_1] are configured properly first" params="<mt:Var name="options">"></mt:If>.</p>
 </mt:If>
     
     <mt:Loop name="leftovers">
@@ -111,7 +111,7 @@
                     type="submit"
                     class="cancel"
                     accesskey="x"
-                    title="Close (x)">Close</button>
+                    title="<__trans phrase="Close (x)">"><__trans phrase="Close"></button>
             </mt:If>
         </div>
     </div>

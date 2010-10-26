@@ -131,6 +131,7 @@ sub _create_default_templates {
     my $ts_id = shift;
     my $blog  = shift;
     my $app = MT->instance;
+    my $plugin = MT->component('ThemeManager');
     my $curr_lang = $app->current_language;
     $app->set_language($blog->language);
 
@@ -138,7 +139,7 @@ sub _create_default_templates {
     my $tmpl_list = MT::DefaultTemplates->templates( $ts_id );
     if ( !$tmpl_list || (ref($tmpl_list) ne 'ARRAY') || (!@$tmpl_list) ) {
         $app->set_language($curr_lang);
-        return $blog->error( MT->translate("No default templates were found.") );
+        return $blog->error( $plugin->translate("No default templates were found.") );
     }
 
     my $p = find_theme_plugin($ts_id);
@@ -420,6 +421,7 @@ sub _set_archive_map_publish_types {
     my $set = MT->app->registry( 'template_sets', $set_name )
         or return;
     my $tmpls = MT->app->registry( 'template_sets',$set_name,'templates' );
+    my $plugin = MT->component('ThemeManager');
     foreach my $a (qw( archive individual )) {
         # Give up if there are no templates that match
         next unless eval { %{ $tmpls->{$a} } };
@@ -446,7 +448,11 @@ sub _set_archive_map_publish_types {
                         or MT->log({
                             level   => MT->model('log')->ERROR(),
                             blog_id => $blog->id,
-                            message => "Could not update template map for template $t.",
+                            message => $plugin->translate(
+                                "Could not update template map for '
+                                . 'template [_1].", 
+                                $t
+                            ),
                         });
                 }
             }
@@ -478,7 +484,10 @@ sub _set_index_publish_type {
                 or MT->log({
                     level   => MT->model('log')->ERROR(),
                     blog_id => $blog->id,
-                    message => "Could not update template map for template $t.",
+                    message => $plugin->translate(
+                        "Could not update template map for template [_1].", 
+                        $t
+                    ),
                 });
         }
     }
@@ -494,6 +503,7 @@ sub _refresh_system_custom_fields {
     my ( $blog ) = @_;
     return unless MT->component('Commercial');
 
+    my $plugin = MT->component('ThemeManager');
     my $set_name = $blog->template_set or return;
     my $set = MT->app->registry( 'template_sets', $set_name )
         or return;
@@ -512,8 +522,9 @@ sub _refresh_system_custom_fields {
             MT->log({
                     level   => MT->model('log')->ERROR(),
                     blog_id => $field_scope,
-                    message => MT->translate(
-                        'Could not install custom field [_1]: field attribute [_2] is required',
+                    message => $plugin->translate(
+                        'Could not install custom field [_1]: field '
+                        . 'attribute [_2] is required',
                         $field_id,
                         $required,
                     ),
@@ -532,7 +543,7 @@ sub _refresh_system_custom_fields {
             MT->log({
                     level   => MT->model('log')->WARNING(),
                     blog_id => $field_scope,
-                    message => MT->translate(
+                    message => $plugin->translate(
                         'Could not install custom field [_1] on blog [_2]: '
                           .'the blog already has a field [_1] with a '
                           .'conflicting type',
@@ -543,8 +554,8 @@ sub _refresh_system_custom_fields {
         }
 
         $field_obj = MT->model('field')->new;
-        use Data::Dumper;
-        MT->log("Setting fields: " . Dumper(%field));
+        #use Data::Dumper;
+        #MT->log("Setting fields: " . Dumper(%field));
         $field_obj->set_values({
                 blog_id  => $field_scope,
                 name     => $field_name,
@@ -695,7 +706,7 @@ sub xfrm_add_language {
 <script type="text/javascript">
 $(document).ready( function() {
     // Expand upon the Template Sets dropdown with a visual chooser.
-    $('#template_set-field .field-content').append('<div class="hint">Select a theme template set to create a new blog with, or use the <a href="javascript:void(0)" onclick="return openDialog(false, \'select_theme\')">visual chooser</a>.</div>');
+    $('#template_set-field .field-content').append('<div class="hint"><__trans phrase="Select a theme template set to create a new blog with, or use the"> <a href="javascript:void(0)" onclick="return openDialog(false, \'select_theme\')"><__trans phrase="visual chooser"></a>.</div>');
     // Add an ID to the template set dropdown just to make things easier.
     $('#template_set-field select').attr('id', 'template_set');
     
@@ -715,7 +726,7 @@ $(document).ready( function() {
     // Build the blog_language field and place it after the
     // template_set dropdown.
     $('#template_set-field').after( $('<div id="template_set_language-field" class="field field-left-label pkg hidden"></div>') );
-    $('#template_set_language-field').html('<div class="field-inner"><div class="field-header"><label id="template_set_language-label" for="template_set_language">Template Set Language</label></div><div class="field-content"><select name="template_set_language"></select><div class="hint">Translate templates to the selected language.</div></div></div></div>');
+    $('#template_set_language-field').html('<div class="field-inner"><div class="field-header"><label id="template_set_language-label" for="template_set_language">Template Set Language</label></div><div class="field-content"><select name="template_set_language"></select><div class="hint"><__trans phrase="Translate templates to the selected language."></div></div></div></div>');
 
     $('#template_set-field select').click( function() {
         // By default, hide the language field for all template sets. No reason
@@ -744,7 +755,7 @@ $(document).ready( function() {
     });
     
     // Offer an explanation of what the Blog Language selection is.
-    $('#blog_language-field .field-content').append('<div class="hint">The blog language controls date and time display.</div>');
+    $('#blog_language-field .field-content').append('<div class="hint"><__trans phrase="The blog language controls date and time display.</div>">');
 });
 </script>
 HTML

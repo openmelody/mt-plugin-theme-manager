@@ -64,7 +64,7 @@
 <div id="about-tab-content">
     <mt:If name="theme_thumb_url">
         <div id="theme-thumb">
-            <img src="<mt:Var name="theme_thumb_url">" width="300" height="240" title="<mt:BlogName remove_html="1"> on <mt:BlogURL>" />
+            <img src="<mt:Var name="theme_thumb_url">" width="300" height="240" title="<mt:BlogName remove_html="1"> <__trans phrase="on"> <mt:BlogURL>" />
         </div>
     </mt:If>
 
@@ -123,7 +123,7 @@
                 <img src="https://www.paypal.com/en_US/i/btn/btn_donate_SM.gif" />
             </a>
         </div>
-        <p>Support <mt:Var name="theme_author_name"> and the <mt:Var name="theme_label"> theme by making a donation to them through PayPal:
+        <p><__trans phrase="Support"> <mt:Var name="theme_author_name"> <__trans phrase="and the"> <mt:Var name="theme_label"> <__trans phrase="theme by making a donation to them through PayPal:">
         </p>
     </mt:If>
 </div>
@@ -146,7 +146,7 @@
 <div id="customize-tab-content">
     <mt:If name="theme_thumb_url">
         <div id="theme-thumb">
-            <img src="<mt:Var name="theme_thumb_url">" width="300" height="240" title="<mt:BlogName remove_html="1"> on <mt:BlogURL>" />
+            <img src="<mt:Var name="theme_thumb_url">" width="300" height="240" title="<mt:BlogName remove_html="1"> <__trans phrase="on"> <mt:BlogURL>" />
         </div>
     </mt:If>
 
@@ -211,15 +211,15 @@
             <div class="theme-gallery-container-inner list-data-wrapper-modal list-data">
 
 <mtapp:listing type="theme" 
-    default="No themes could be found." 
-    empty_message="No themes could be found."
+    default="<__trans phrase="No themes could be found.">" 
+    empty_message="<__trans phrase="No themes could be found.">"
     hide_pager="1"
     show_actions="0">
     <div id="<mt:Var name="id">-container" class="ts-container<mt:Unless name="__counter__" op="%" value="4"> last</mt:Unless>">
         <div class="ts-container-inner">
             <h3>
                 <a href="javascript:void(0);" onclick="return openDialog(null, 'theme_info', 'ts_id=<mt:Var name="id">&amp;plugin_sig=<mt:Var name="plugin_sig">&amp;blog_id=<mt:Var name="blog_id">')">
-                    <mt:Var name="label" default="Untitled">
+                    <mt:Var name="label" default="<__trans phrase="Untitled">">
                 </a>
             </h3>
             <a href="javascript:void(0);" onclick="return openDialog(null, 'theme_info', 'ts_id=<mt:Var name="id">&amp;plugin_sig=<mt:Var name="plugin_sig">&amp;blog_id=<mt:Var name="blog_id">')">

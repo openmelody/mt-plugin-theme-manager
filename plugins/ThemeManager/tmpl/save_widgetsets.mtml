@@ -16,17 +16,17 @@
         <input type="hidden" name="save_widgetsets_beacon" value="1" />
 
 <mt:If name="if_save_widgetsets">
-        <p><strong>Widget Sets</strong> have been modified from their default on this blog. If you are re-applying this theme to upgrade, you probably <em>should</em> save the Widget Sets so your blog continues to work as expected. If you are applying a different theme it's possible your Widget Sets won't work with the new theme, and <em>should not</em> be saved.</p>
-        <p style="margin-bottom: 30px;"><input type="checkbox" name="save_widgetsets" id="save_widgetsets" value="1" checked="checked"> <label for="save_widgetsets">Save the Widget Sets in this blog.</label></p>
+        <p><__trans phrase="<strong>Widget Sets</strong> have been modified from their default on this blog. If you are re-applying this theme to upgrade, you probably <em>should</em> save the Widget Sets so your blog continues to work as expected. If you are applying a different theme it's possible your Widget Sets won't work with the new theme, and <em>should not</em> be saved."></p>
+        <p style="margin-bottom: 30px;"><input type="checkbox" name="save_widgetsets" id="save_widgetsets" value="1" checked="checked"> <label for="save_widgetsets"><__trans phrase="Save the Widget Sets in this blog."></label></p>
 </mt:If>
 <mt:If name="if_save_widgets">
-        <p><strong>Widgets</strong> have been modified from their default on this blog. If you are re-applying this theme to upgrade, you probably <em>should</em> save the Widgets so your blog continues to work as expected. If you are applying a different theme it's possible your Widgets won't work with the new theme, and <em>should not</em> be saved.</p>
-        <p><input type="checkbox" name="save_widgets" id="save_widgets" value="1" checked="checked"> <label for="save_widgets">Save the Widgets in this blog.</label></p>
+        <p><__trans phrase="<strong>Widgets</strong> have been modified from their default on this blog. If you are re-applying this theme to upgrade, you probably <em>should</em> save the Widgets so your blog continues to work as expected. If you are applying a different theme it's possible your Widgets won't work with the new theme, and <em>should not</em> be saved."></p>
+        <p><input type="checkbox" name="save_widgets" id="save_widgets" value="1" checked="checked"> <label for="save_widgets"><__trans phrase="Save the Widgets in this blog."></label></p>
 </mt:If>
 
     <div id="status">
         <div id="status-inner">
-            <p>Applying the selected theme...</p>
+            <p><__trans phrase="Applying the selected theme..."></p>
             <img src="<mt:Var name="static_uri">images/indicator.gif" width="66" height="66" border="0" />
         </div>
     </div>
