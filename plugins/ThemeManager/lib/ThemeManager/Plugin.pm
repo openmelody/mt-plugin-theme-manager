@@ -297,8 +297,8 @@ sub select_theme {
     $list_pref->{rows} = 999;
 
 
-    my $plugin = MT->component('ThemeManager');
-    my $tmpl = $plugin->load_tmpl('theme_select.mtml');
+    my $tm = MT->component('ThemeManager');
+    my $tmpl = $tm->load_tmpl('theme_select.mtml');
     return $app->listing({
         type     => 'theme',
         template => $tmpl,
@@ -355,7 +355,7 @@ sub select_theme {
 sub setup_theme {
     my $app = shift;
     my $q = $app->can('query') ? $app->query : $app->param;
-    my $plugin = MT->component('ThemeManager');
+    my $tm = MT->component('ThemeManager');
 
     my $ts_id      = $q->param('theme_id');
     my $plugin_sig = $q->param('plugin_sig');
@@ -416,7 +416,7 @@ sub setup_theme {
                 MT->log({ 
                     level   => MT->model('log')->ERROR(),
                     blog_id => $blog_id,
-                    message => $plugin->translate('Theme Manager could not '
+                    message => $tm->translate('Theme Manager could not '
                         . 'find a plugin corresponding to the template set '
                         . 'currently applied to this blog. Skipping this '
                         . 'blog for saving widget sets.'),
@@ -526,7 +526,7 @@ sub setup_theme {
             my $fieldsets = $ts->{options}->{fieldsets};
 
             $fieldsets->{__global} = {
-                label => sub { $plugin->translate("Global Options"); }
+                label => sub { $tm->translate("Global Options"); }
             };
 
             require MT::Template::Context;
@@ -603,8 +603,8 @@ sub setup_theme {
                     else {
                         MT->log({
                             level   => MT->model('log')->ERROR(),
-                            blog_id => $blog_id,
-                            message => $plugin->translate(
+                            blog_id => $blog->id,
+                            message => $tm->translate(
                                 'Unknown config type encountered: [_1]',
                                 $field->{'type'}
                             ),
@@ -1018,7 +1018,7 @@ sub _send_json_response {
 
 sub _populate_list_templates_context {
     my $app = shift;
-    my $plugin = MT->component('ThemeManager');
+    my $tm = MT->component('ThemeManager');
     my $q = $app->can('query') ? $app->query : $app->param;
     my ($params) = @_;
 #    my ($params_ref) = @_;
@@ -1088,7 +1088,7 @@ sub _populate_list_templates_context {
 
     $app->load_list_actions( 'template', $params );
     $params->{page_actions} = $app->page_actions('list_templates');
-    $params->{search_label} = $plugin->translate("Templates");
+    $params->{search_label} = $tm->translate("Templates");
     $params->{object_type} = 'template';
     $params->{blog_view} = 1;
     $params->{refreshed} = $q->param('refreshed');
@@ -1117,22 +1117,22 @@ sub _populate_list_templates_context {
             # blog template listings
             %types = ( 
                 'index' => {
-                    label => $plugin->translate("Index Templates"),
+                    label => $tm->translate("Index Templates"),
                     type => 'index',
                     order => 100,
                 },
                 'archive' => {
-                    label => $plugin->translate("Archive Templates"),
+                    label => $tm->translate("Archive Templates"),
                     type => ['archive', 'individual', 'page', 'category'],
                     order => 200,
                 },
                 'module' => {
-                    label => $plugin->translate("Template Modules"),
+                    label => $tm->translate("Template Modules"),
                     type => 'custom',
                     order => 300,
                 },
                 'system' => {
-                    label => $plugin->translate("System Templates"),
+                    label => $tm->translate("System Templates"),
                     type => [ keys %$sys_tmpl ],
                     order => 400,
                 },
@@ -1141,17 +1141,17 @@ sub _populate_list_templates_context {
             # global template listings
             %types = ( 
                 'module' => {
-                    label => $plugin->translate("Template Modules"),
+                    label => $tm->translate("Template Modules"),
                     type => 'custom',
                     order => 100,
                 },
                 'email' => {
-                    label => $plugin->translate("Email Templates"),
+                    label => $tm->translate("Email Templates"),
                     type => 'email',
                     order => 200,
                 },
                 'system' => {
-                    label => $plugin->translate("System Templates"),
+                    label => $tm->translate("System Templates"),
                     type => [ keys %$sys_tmpl ],
                     order => 300,
                 },
@@ -1161,7 +1161,7 @@ sub _populate_list_templates_context {
         # global template listings
         %types = ( 
             'backup' => {
-                label => $plugin->translate("Template Backups"),
+                label => $tm->translate("Template Backups"),
                 type => 'backup',
                 order => 100,
             },

@@ -131,7 +131,7 @@ sub _create_default_templates {
     my $ts_id = shift;
     my $blog  = shift;
     my $app = MT->instance;
-    my $plugin = MT->component('ThemeManager');
+    my $tm = MT->component('ThemeManager');
     my $curr_lang = $app->current_language;
     $app->set_language($blog->language);
 
@@ -139,7 +139,7 @@ sub _create_default_templates {
     my $tmpl_list = MT::DefaultTemplates->templates( $ts_id );
     if ( !$tmpl_list || (ref($tmpl_list) ne 'ARRAY') || (!@$tmpl_list) ) {
         $app->set_language($curr_lang);
-        return $blog->error( $plugin->translate("No default templates were found.") );
+        return $blog->error( $tm->translate("No default templates were found.") );
     }
 
     my $p = find_theme_plugin($ts_id);
@@ -421,7 +421,7 @@ sub _set_archive_map_publish_types {
     my $set = MT->app->registry( 'template_sets', $set_name )
         or return;
     my $tmpls = MT->app->registry( 'template_sets',$set_name,'templates' );
-    my $plugin = MT->component('ThemeManager');
+    my $tm = MT->component('ThemeManager');
     foreach my $a (qw( archive individual )) {
         # Give up if there are no templates that match
         next unless eval { %{ $tmpls->{$a} } };
@@ -448,7 +448,7 @@ sub _set_archive_map_publish_types {
                         or MT->log({
                             level   => MT->model('log')->ERROR(),
                             blog_id => $blog->id,
-                            message => $plugin->translate(
+                            message => $tm->translate(
                                 "Could not update template map for '
                                 . 'template [_1].", 
                                 $t
@@ -472,6 +472,8 @@ sub _set_index_publish_type {
     # Give up if there are no templates that match
     return unless eval { %{ $tmpls->{index} } };
 
+    my $tm = MT->component('ThemeManager');
+
     foreach my $t ( keys %{ $tmpls->{index} } ) {
         if ( $tmpls->{index}->{$t}->{build_type} ) {
             my $tmpl = MT->model('template')->load({
@@ -484,7 +486,7 @@ sub _set_index_publish_type {
                 or MT->log({
                     level   => MT->model('log')->ERROR(),
                     blog_id => $blog->id,
-                    message => $plugin->translate(
+                    message => $tm->translate(
                         "Could not update template map for template [_1].", 
                         $t
                     ),
@@ -503,7 +505,7 @@ sub _refresh_system_custom_fields {
     my ( $blog ) = @_;
     return unless MT->component('Commercial');
 
-    my $plugin = MT->component('ThemeManager');
+    my $tm = MT->component('ThemeManager');
     my $set_name = $blog->template_set or return;
     my $set = MT->app->registry( 'template_sets', $set_name )
         or return;
@@ -522,7 +524,7 @@ sub _refresh_system_custom_fields {
             MT->log({
                     level   => MT->model('log')->ERROR(),
                     blog_id => $field_scope,
-                    message => $plugin->translate(
+                    message => $tm->translate(
                         'Could not install custom field [_1]: field '
                         . 'attribute [_2] is required',
                         $field_id,
@@ -543,7 +545,7 @@ sub _refresh_system_custom_fields {
             MT->log({
                     level   => MT->model('log')->WARNING(),
                     blog_id => $field_scope,
-                    message => $plugin->translate(
+                    message => $tm->translate(
                         'Could not install custom field [_1] on blog [_2]: '
                           .'the blog already has a field [_1] with a '
                           .'conflicting type',
