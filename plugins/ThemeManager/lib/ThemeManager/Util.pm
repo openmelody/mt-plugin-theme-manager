@@ -32,10 +32,10 @@ sub theme_thumbnail_url {
     my ($thumb_path, $obj_id) = @_;
     my $app = MT->instance;
     return eval {$thumb_path}
-        ? $app->config('StaticWebPath').'support/plugins/'
-            .$obj_id.'/'.$thumb_path
-        : $app->config('StaticWebPath').'support/plugins/'
-            .$tm->id.'/images/default_theme_thumb-small.png';
+        ? $app->static_path . 'support/plugins/'
+            . $obj_id . '/' . $thumb_path
+        : $app->static_path . 'support/plugins/'
+            . $tm->id . '/images/default_theme_thumb-small.png';
 }
 
 sub theme_preview_url {
@@ -44,9 +44,9 @@ sub theme_preview_url {
     my ($thumb_path, $obj_id) = @_;
     my $app = MT->instance;
     return eval {$thumb_path}
-        ? $app->config('StaticWebPath').'support/plugins/'
+        ? $app->static_path . 'support/plugins/'
             .$obj_id.'/'.$thumb_path
-        : $app->config('StaticWebPath').'support/plugins/'
+        : $app->static_path . 'support/plugins/'
             .$tm->id.'/images/default_theme_thumb-large.png';
 }
 
@@ -154,7 +154,7 @@ sub _return_data {
 }
 
 sub _theme_thumb_path {
-    my @path = ($app->config('StaticFilePath'), 'support', 'plugins', $tm->id, 'theme_thumbs');
+    my @path = ($app->static_file_path, 'support', 'plugins', $tm->id, 'theme_thumbs');
     my $dest_path = File::Spec->catfile( @path );
     # If the destination directory doesn't exist, we need to create it.
     if (!-w $dest_path) {
