@@ -9,7 +9,7 @@ our @EXPORT_OK = qw( theme_label theme_thumbnail_url theme_preview_url
         theme_description theme_author_name theme_author_link 
         theme_paypal_email theme_version theme_link theme_doc_link 
         theme_about_designer theme_docs _theme_thumb_path _theme_thumb_url 
-        prepare_theme_meta unserialize_theme_meta );
+        prepare_theme_meta );
 
 my $app = MT->instance;
 my $tm  = MT->component('ThemeManager');
@@ -187,38 +187,36 @@ sub prepare_theme_meta {
     # Grab the existing theme meta
     $theme_meta = $obj->registry('template_sets', $ts_id);
 
+    # Place the final theme meta into $meta. We need to grab and save only
+    # the meta that we need, because code references will cause YAML::Tiny
+    # to fail.
+    my $meta = {};
+
     # We've grabbed the theme meta already, but we can't be sure 
     # that all fields have been filled out; fallbacks may be used.
     # Check the important fields and create fallbacks if needed.
-    $theme_meta->{label} 
+    $meta->{label} 
         = theme_label( $theme_meta->{label}, $plugin );
-    $theme_meta->{description} 
+    $meta->{description} 
         = theme_description( $theme_meta->{description}, $plugin );
-    $theme_meta->{author_name} 
+    $meta->{author_name} 
         = theme_author_name( $theme_meta->{author_name}, $plugin );
-    $theme_meta->{author_link} 
+    $meta->{author_link} 
         = theme_author_link( $theme_meta->{author_link}, $plugin );
-    $theme_meta->{paypal_email} 
+    $meta->{paypal_email} 
         = theme_paypal_email( $theme_meta->{paypal_email}, $plugin );
-    $theme_meta->{version} 
+    $meta->{version} 
         = theme_version( $theme_meta->{version}, $plugin );
-    $theme_meta->{theme_link} 
+    $meta->{theme_link} 
         = theme_link( $theme_meta->{theme_link}, $plugin );
-    $theme_meta->{theme_doc_link} 
+    $meta->{theme_doc_link} 
         = theme_doc_link( $theme_meta->{theme_doc_link}, $plugin );
-    $theme_meta->{about_designer} 
+    $meta->{thumbnail} = $theme_meta->{thumbnail};
+    $meta->{preview} = $theme_meta->{preview};
+    $meta->{documentation} = $theme_meta->{documentation};
+    $meta->{about_designer} 
         = theme_about_designer( $theme_meta->{about_designer}, $plugin );
 
-    return $theme_meta;
-}
-
-sub unserialize_theme_meta {
-    # Unserialize the theme meta. It's actually a hash, and we need
-    # it changed back into a usable form.
-    my ($theme_meta) = @_;
-    my $serializer = MT::Serialize->new('MT');
-    my $meta = $serializer->unserialize( $theme_meta );
-    $meta = $$meta;
     return $meta;
 }
 

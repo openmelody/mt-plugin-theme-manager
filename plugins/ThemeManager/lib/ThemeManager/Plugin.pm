@@ -6,9 +6,8 @@ use ThemeManager::Util qw( theme_label theme_thumbnail_url theme_preview_url
         theme_description theme_author_name theme_author_link 
         theme_paypal_email theme_version theme_link theme_doc_link 
         theme_about_designer theme_docs _theme_thumb_path _theme_thumb_url 
-        prepare_theme_meta unserialize_theme_meta );
+        prepare_theme_meta );
 use MT::Util qw(caturl dirify offset_time_list);
-use MT::Serialize;
 use MT;
 
 
@@ -129,13 +128,20 @@ sub theme_dashboard {
     }
     else {
         # This is Production Mode.
-        $theme_meta = $app->blog->theme_meta;
+        # Convert the saved YAML back into a hash.
+        my $yaml = YAML::Tiny->new;
+        $theme_meta = YAML::Tiny->read_string( $app->blog->theme_meta );
+        $theme_meta = $theme_meta->[0];
         # If theme meta isn't found, it wasn't set when the theme was 
         # applied (a very likely scenario for upgraders, who likely haven't
         # applied a new theme). Go ahead and just create the theme meta.
         if (!$theme_meta) {
             my $blog = $app->blog;
-            $blog->theme_meta( prepare_theme_meta($ts_id) );
+            my $meta = prepare_theme_meta($ts_id);
+            my $yaml = YAML::Tiny->new;
+            $yaml->[0] = $meta;
+            # Turn that YAML into a plain old string and save it.
+            $blog->theme_meta( $yaml->write_string() );
             $blog->save;
         }
     }
@@ -239,8 +245,10 @@ sub theme_dashboard {
             $row->{plugin_sig}    = $theme->plugin_sig;
             $row->{label}         = theme_label($theme->ts_label, $plugin);
 
-            # Unserializing converts the gobblety-gook back into a hash.
-            my $theme_meta = unserialize_theme_meta( $theme->theme_meta );
+            # Convert the saved YAML back into a hash.
+            my $yaml = YAML::Tiny->new;
+            my $theme_meta = YAML::Tiny->read_string( $theme->theme_meta );
+            $theme_meta = $theme_meta->[0];
             
             $row->{thumbnail_url} = theme_thumbnail_url(
                 $theme_meta->{thumbnail}, 
@@ -324,8 +332,10 @@ sub select_theme {
                 next;
             }
             
-            # Unserializing converts the gobblety-gook back into a hash.
-            my $theme_meta = unserialize_theme_meta( $theme->theme_meta );
+            # Convert the saved YAML back into a hash.
+            my $yaml = YAML::Tiny->new;
+            my $theme_meta = YAML::Tiny->read_string( $theme->theme_meta );
+            $theme_meta = $theme_meta->[0];
             
             $row->{thumbnail_url} = theme_thumbnail_url(
                 $theme_meta->{thumbnail}, 
@@ -392,8 +402,10 @@ sub setup_theme {
     my $plugin = $MT::Plugins{$plugin_sig}->{object};
     my $ts     = $plugin->{registry}->{'template_sets'}->{$ts_id};
 
-    # Unserializing converts the gobblety-gook back into a hash.
-    my $theme_meta = unserialize_theme_meta( $theme->theme_meta );
+    # Convert the saved YAML back into a hash.
+    my $yaml = YAML::Tiny->new;
+    my $theme_meta = YAML::Tiny->read_string( $theme->theme_meta );
+    $theme_meta = $theme_meta->[0];
     $param->{ts_label} = theme_label($theme_meta->{label}, $plugin);
 
     # Check for the widgetsets beacon. It will be set after visiting the 
@@ -851,8 +863,10 @@ sub theme_info {
         plugin_sig => $plugin_sig,
     });
 
-    # Unserializing converts the gobblety-gook back into a hash.
-    my $theme_meta = unserialize_theme_meta( $theme->theme_meta );
+    # Convert the saved YAML back into a hash.
+    my $yaml = YAML::Tiny->new;
+    my $theme_meta = YAML::Tiny->read_string( $theme->theme_meta );
+    $theme_meta = $theme_meta->[0];
 
     $param->{id}             = $ts_id;
     $param->{label}          = theme_label($theme_meta->{label}, $plugin);
@@ -943,18 +957,19 @@ sub _theme_check {
                 $theme->save;
             }
 
-            # Serialize the theme_meta so that the hash can be written to
+            # Prepare the theme_meta so that the hash can be written to
             # the database.
             my $meta = prepare_theme_meta($ts_id);
-            my $serializer = MT::Serialize->new('MT');
-            my $val = $serializer->serialize(\$meta);
+            my $yaml = YAML::Tiny->new;
+            $yaml->[0] = $meta;
+            # Turn that YAML into a plain old string and save it.
+            $theme->theme_meta( $yaml->write_string() );
 
             # Save the theme label in a separate column. We use this to
             # sort the themes for display on the Change Theme page. Use the
             # theme meta label that we already calculated fallbacks for.
             $theme->ts_label( theme_label( $meta->{label}, $plugin ) );
 
-            $theme->theme_meta( $val );
             $theme->save;
         }
     }

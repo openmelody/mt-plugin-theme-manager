@@ -2,7 +2,7 @@ package ThemeManager::DashboardWidget;
 
 use ThemeManager::Util qw( theme_label theme_description theme_author_name 
         theme_author_link theme_version theme_link theme_doc_link theme_docs 
-        unserialize_theme_meta );
+    );
 
 use strict;
 use MT;
@@ -19,8 +19,10 @@ sub widget {
                 use ConfigAssistant::Util;
                 my $plugin = ConfigAssistant::Util::find_theme_plugin($ts_id);
 
-                # Unserializing converts the gobblety-gook back into a hash.
-                my $theme_meta = unserialize_theme_meta( $app->blog->theme_meta );
+                # Convert the saved YAML back into a hash.
+                my $yaml = YAML::Tiny->new;
+                my $theme_meta = YAML::Tiny->read_string( $app->blog->theme_meta );
+                $theme_meta = $theme_meta->[0];
 
                 $param->{theme_label}       = theme_label($theme_meta->{label}, $plugin);
                 $param->{theme_description} = theme_description($theme_meta->{description}, $plugin);
