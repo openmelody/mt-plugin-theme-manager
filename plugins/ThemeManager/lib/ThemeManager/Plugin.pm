@@ -161,6 +161,10 @@ sub theme_dashboard {
     $param->{paypal_email}      = theme_paypal_email($theme_meta->{paypal_email}, $plugin);
     $param->{about_designer}    = theme_about_designer($theme_meta->{about_designer}, $plugin);
     $param->{theme_docs}        = theme_docs($theme_meta->{documentation}, $plugin);
+
+    # Grab the template set language, or fall back to the blog language.
+    my $template_set_language = $app->blog->template_set_language 
+        || $app->blog->language;
     if ( $app->blog->language ne $app->blog->template_set_language ) {
         $param->{template_set_language} = $app->blog->template_set_language;
     }
