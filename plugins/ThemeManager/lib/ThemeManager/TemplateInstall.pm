@@ -225,6 +225,8 @@ sub _create_default_templates {
 sub template_filter {
     my ($cb, $templates) = @_;
     my $app = MT->instance;
+    # TODO Determine whether this SHOULD actually be running for non MT::Apps
+    return unless $app->isa('MT::App');
     my $q = $app->can('query') ? $app->query : $app->param;
 
     # If a new blog is being created/saved, we don't want to run this callback.
@@ -311,7 +313,7 @@ sub template_set_change {
     # for theme creators using Designer Mode, but for now the only one is
     # that templates are linked by default.
     my $tm   = MT->component('ThemeManager');
-    my $mode = $tm->get_config_value('tm_mode', 'system');
+    my $mode = $tm->get_config_value('tm_mode', 'system') || '';
     if ($mode eq 'Designer and Developer Mode') {
         # Link installed templates to theme files
         _link_templates(@_);
@@ -332,7 +334,8 @@ sub _new_blog_template_set_language {
     # Only run when a new blog is being created.
     my $app = MT->instance;
     my $q = $app->can('query') ? $app->query : $app->param;
-    return unless ( ($q->param('__mode') eq 'save') && ($q->param('_type') eq 'blog') );
+    return unless ( ( ($q->param('__mode')||'') eq 'save') 
+                  && (($q->param('_type') ||'') eq 'blog') );
 
     my ($cb, $param) = @_;
     my $ts_id = $param->{blog}->template_set;
