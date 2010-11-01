@@ -729,10 +729,6 @@ sub _make_thumbnail {
         # No screenshot was found, or it's too old--so create one.
         # First, create the destination directory, if necessary.
         my $dir = _theme_thumb_path();
-        if (!-d $dir) {
-            $fmgr->mkpath($dir)
-                or return $app->error( MT::FileMgr->errstr );
-        }
         # Now build and cache the thumbnail URL
         # This is done with thumbalizr.com, a free online screenshot service.
         # Their API is completely http based, so this is all we need to do to

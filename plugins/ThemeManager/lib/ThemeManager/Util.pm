@@ -157,8 +157,11 @@ sub _theme_thumb_path {
     my @path = ($app->static_file_path, 'support', 'plugins', $tm->id, 'theme_thumbs');
     my $dest_path = File::Spec->catfile( @path );
     # If the destination directory doesn't exist, we need to create it.
-    if (!-w $dest_path) {
-        mkdir $dest_path;
+    if (!-d $dir) {
+        my $fmgr = MT::FileMgr->new('Local')
+            or return $app->error( MT::FileMgr->errstr );
+        $fmgr->mkpath($dir)
+            or return $app->error( MT::FileMgr->errstr );
     }
     return $dest_path;
 }
