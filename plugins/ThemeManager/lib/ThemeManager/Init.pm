@@ -8,7 +8,9 @@ use Sub::Install;
 sub init_app {
     my ($cb, $app) = @_;
     # TODO Determine whether this SHOULD actually be running for non MT::Apps
-    return unless eval { $app->isa('MT::App') };
+    return unless $app->isa('MT::App')
+               && ( $app->can('query') || $app->can('param') );
+
     # TODO - This should not have to reinstall a subroutine. It should invoke 
     #        a callback.
     Sub::Install::reinstall_sub( {

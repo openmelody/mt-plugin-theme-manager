@@ -4,7 +4,7 @@ key: ThemeManager
 author_link: http://endevver.com/
 author_name: Endevver
 description: 'A comprehensive theme management plugin!'
-version: 0.9.27
+version: 0.9.28
 schema_version: 4
 static_version: 4
 l10n_class: ThemeManager::L10N
