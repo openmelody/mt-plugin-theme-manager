@@ -786,17 +786,35 @@ sub _make_mini {
     my $tm = MT->component('ThemeManager');
 
     use File::Spec;
-    my $dest_path = File::Spec->catfile( _theme_thumb_path(), $app->blog->id.'-mini.jpg' );
-    my $dest_url = caturl($app->static_path,'support','plugins',$tm->id,'theme_thumbs',
-            $app->blog->id.'-mini.jpg');
+    my $dest_path = File::Spec->catfile(
+        _theme_thumb_path(), 
+        $app->blog->id.'-mini.jpg' 
+    );
+    my $dest_url = caturl(
+        $app->static_path, 
+        'support', 
+        'plugins', 
+        $tm->id, 
+        'theme_thumbs', 
+        $app->blog->id.'-mini.jpg'
+    );
     # Decide if we need to create a new mini or not.
     my $fmgr = MT::FileMgr->new('Local')
         or return MT::FileMgr->errstr;
     unless ( ($fmgr->exists($dest_path)) && (-M $dest_path <= 1) ) {
-        my $source_path = File::Spec->catfile( _theme_thumb_path(), $app->blog->id.'.jpg' );
+        my $source_path = File::Spec->catfile( 
+            _theme_thumb_path(), 
+            $app->blog->id.'.jpg' 
+        );
+        # Look for the source image. If there is no source image, we can't
+        # make a mini, and therefore should just give up.
+        return unless $fmgr->exists($source_path);
         use MT::Image;
         my $img = MT::Image->new( Filename => $source_path )
-            or return 0;
+            or return;
+        # If no width has been defined, this is an invalid image; just give 
+        # up. This may happen if the $source_path image is corrupt. 
+        return unless defined $img->{'width'};
         my $resized_img = $img->scale( Width => 138 );
         $fmgr->put_data($resized_img, $dest_path)
             or return MT::FileMgr->errstr;
