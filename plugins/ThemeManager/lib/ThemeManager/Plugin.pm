@@ -22,10 +22,15 @@ sub update_menus {
     # denying access is probably not best.
     my $blog_id = $q->param('blog_id');
     if ($blog_id) {
+        # FIXME This should be done in a pre_run or init_request callback like so:
+        #           my $a = $app->registry('menus');
+        #           delete $a->{'design:template'};
+        #       but don't do that here or else you'll get into a loop
         my $core = MT->component('Core');
         delete $core->{registry}->{applications}->{cms}->{menus}->{'design:template'};
     }
     # Now just add the Theme Dashboard menu item.
+    # TODO Move to config.yaml
     return {
         'design:theme_dashboard' => {
             label      => 'Theme Dashboard',
@@ -42,11 +47,18 @@ sub update_page_actions {
     my $q = $app->can('query') ? $app->query : $app->param;
     my $blog_id = $q->param('blog_id');
     if ($blog_id) {
+        # FIXME This should be done in a pre_run or init_request callback like so:
+        #       and it should just be:
+        #           my $a = $app->registry('page_actions', 'list_templates');
+        #           delete $a->{refresh_all_blog_templates};
+        #       but don't do that here or else you'll get into a loop
         my $core = MT->component('Core');
         # Delete the Refresh Blog Templates page action because we don't want
         # people to use this page action--they can apply a theme, instead.
         delete $core->{registry}->{applications}->{cms}->{page_actions}->{list_templates}->{refresh_all_blog_templates};
     }
+
+    # TODO Move these to the config.yaml but break out the perl code into methods
     return {
         list_templates => {
             refresh_fields => {
@@ -101,16 +113,14 @@ sub update_page_actions {
 }
 
 sub theme_dashboard {
-    my $app = MT->instance;
-    return unless $app->isa('MT::App');
-    my $q = $app->can('query') ? $app->query : $app->param;
+    my $app  = shift;
+    my $q    = $app->can('query') ? $app->query : $app->param;
     # Since there is no Theme Dashboard at the system level, capture and
     # redirect to the System Dashboard, if necessary.
-    if ( !eval {$app->blog->id} && ($q->param('__mode') eq 'theme_dashboard') ) {
-        $app->redirect( $app->uri.'?__mode=dashboard&blog_id=0' );
-    }
+    my $blog = $app->blog
+        or $app->redirect( $app->uri.'?__mode=dashboard&blog_id=0' );
 
-    my $ts_id  = $app->blog->template_set;
+    my $ts_id  = $blog->template_set;
     my $tm     = MT->component('ThemeManager');
     my $plugin = find_theme_plugin($ts_id);
 
@@ -125,19 +135,18 @@ sub theme_dashboard {
         # theme plugin has been disabled/removed. The dashboard links,
         # below, will also construct fallback data to display, if the
         # theme couldn't be loaded here.
-        $theme_meta = MT->app->registry( 'template_sets', $ts_id );
+        $theme_meta = $app->registry( 'template_sets', $ts_id );
     }
     else {
         # This is Production Mode.
-        # Convert the saved YAML back into a hash.
-        my $yaml = YAML::Tiny->new;
-        $theme_meta = YAML::Tiny->read_string( $app->blog->theme_meta );
-        $theme_meta = $theme_meta->[0];
+        # If the blog has theme_meta, convert the saved YAML back into a hash.
+        $theme_meta
+            = eval { YAML::Tiny->read_string( $blog->theme_meta )->[0] };
+        
         # If theme meta isn't found, it wasn't set when the theme was 
         # applied (a very likely scenario for upgraders, who likely haven't
         # applied a new theme). Go ahead and just create the theme meta.
         if (!$theme_meta) {
-            my $blog = $app->blog;
             my $meta = prepare_theme_meta($ts_id);
             my $yaml = YAML::Tiny->new;
             $yaml->[0] = $meta;
@@ -152,6 +161,7 @@ sub theme_dashboard {
     # use because it was previously sanitized through the Util methods (such
     # as theme_label and theme_description). But if the user is in Designer
     # Mode, we want to ensure that fallback values are used if necessary.
+    # TODO Refactor this into a single method call where you pass in $theme_meta and get out a parameter hash ref.
     $param->{theme_label}       = theme_label($theme_meta->{label}, $plugin);
     $param->{theme_description} = theme_description($theme_meta->{description}, $plugin);
     $param->{theme_author_name} = theme_author_name($theme_meta->{author_name}, $plugin);
@@ -164,10 +174,11 @@ sub theme_dashboard {
     $param->{theme_docs}        = theme_docs($theme_meta->{documentation}, $plugin);
 
     # Grab the template set language, or fall back to the blog language.
-    my $template_set_language = $app->blog->template_set_language 
-        || $app->blog->language;
-    if ( $app->blog->language ne $app->blog->template_set_language ) {
-        $param->{template_set_language} = $app->blog->template_set_language;
+    # FIXME Below looks like an inadvertent error: You assign to a variable and never use it but instead continue using the $blog->template_set_language
+    my $template_set_language = $blog->template_set_language 
+                             || $blog->language;
+    if ( $blog->language ne $blog->template_set_language ) {
+        $param->{template_set_language} = $blog->template_set_language;
     }
 
     my $dest_path = _theme_thumb_path();
@@ -180,7 +191,8 @@ sub theme_dashboard {
 
     # Are the templates linked? We use this to show/hide the Edit/View
     # Templates links.
-    my $linked = MT->model('template')->load({ blog_id     => $app->blog->id,
+    # FIXME If this is simply a boolean test, use count() not load()!!
+    my $linked = MT->model('template')->load({ blog_id     => $blog->id,
                                                linked_file => '*', });
     if ($linked) {
         # These templates *are* linked.
@@ -194,10 +206,11 @@ sub theme_dashboard {
         # So, first grab templates in the current blog that are not 
         # backups and that have had modifications made (modified_on col).
         my $iter = MT->model('template')->load_iter({
-                blog_id     => $app->blog->id,
+                blog_id     => $blog->id,
                 type        => {not_like => 'backup'},
                 modified_on => {not_null => 1},
             });
+            # FIXME Why not_like instead of not? It's slower and you aren't using any metacharacters
         while ( my $tmpl = $iter->() ) { 
             if ($tmpl->modified_on > $tmpl->created_on) {
                 $param->{templates_modified} = 1;
@@ -209,6 +222,7 @@ sub theme_dashboard {
     }
     $param->{new_theme} = $q->param('new_theme');
 
+    # TODO This kind of construct indicates that we need to be our own app class
     _populate_list_templates_context( $app, $param );
 
     
@@ -238,6 +252,7 @@ sub theme_dashboard {
         code     => sub {
             my ($theme, $row) = @_;
             # Use the plugin sig to grab the plugin.
+            # FIXME $app->component($theme->plugin_sig) ???
             my $plugin = $MT::Plugins{$theme->plugin_sig}->{object};
             if (!$plugin) {
                 # This plugin couldn't be loaded! That must mean the theme has 
@@ -251,7 +266,6 @@ sub theme_dashboard {
             $row->{label}         = theme_label($theme->ts_label, $plugin);
 
             # Convert the saved YAML back into a hash.
-            my $yaml = YAML::Tiny->new;
             my $theme_meta = YAML::Tiny->read_string( $theme->theme_meta );
             $theme_meta = $theme_meta->[0];
             
@@ -266,14 +280,14 @@ sub theme_dashboard {
 }
 
 sub select_theme {
+    my $app = shift;
+    my $q   = $app->can('query') ? $app->query : $app->param;
+
     # The user probably wants to apply a new theme; we start by browsing the
     # available themes.
     # Save themes to the theme table, so that we can build a listing screen from them.
     _theme_check();
 
-    my $app = shift;
-    my $q = $app->can('query') ? $app->query : $app->param;
-    
     # If the user is applying a theme to many blogs, they've come from a list 
     # action, and the ID parameter is full of blog IDs. Pass these along to
     # the template.
@@ -369,8 +383,8 @@ sub select_theme {
 
 sub setup_theme {
     my $app = shift;
-    my $q = $app->can('query') ? $app->query : $app->param;
-    my $tm = MT->component('ThemeManager');
+    my $q   = $app->can('query') ? $app->query : $app->param;
+    my $tm  = MT->component('ThemeManager');
 
     my $ts_id      = $q->param('theme_id');
     my $plugin_sig = $q->param('plugin_sig');
@@ -404,13 +418,14 @@ sub setup_theme {
     # set up. If there are, we want them to look good (including being sorted)
     # into alphabeticized fieldsets and to be ordered correctly with in each
     # fieldset, just like on the Theme Options page.
-    my $plugin = $MT::Plugins{$plugin_sig}->{object};
+    # FIXME Use MT->component
+    my $plugin = $MT::Plugins{$plugin_sig}->{object}; 
+    # FIXME Use $plugin->registry('template_sets', $ts_id);
     my $ts     = $plugin->{registry}->{'template_sets'}->{$ts_id};
 
     # Convert the saved YAML back into a hash.
-    my $yaml = YAML::Tiny->new;
-    my $theme_meta = YAML::Tiny->read_string( $theme->theme_meta );
-    $theme_meta = $theme_meta->[0];
+    my $theme_meta
+        = eval { YAML::Tiny->read_string( $theme->theme_meta )->[0] };
     $param->{ts_label} = theme_label($theme_meta->{label}, $plugin);
 
     # Check for the widgetsets beacon. It will be set after visiting the 
@@ -823,13 +838,13 @@ sub _make_mini {
 }
 
 sub paypal_donate {
+    my $app = shift;
+    my $q   = $app->can('query') ? $app->query : $app->param;
     # Donating through PayPal requires a pop-up dialog so that we can break 
     # out of MT and the normal button handling. (That is, clicking a PayPal
     # button on Theme Options causes MT to try to save Theme Options, not 
     # launch the PayPal link. Creating a dialog breaks out of that
     # requirement.)
-    my $app = MT->instance;
-    my $q = $app->can('query') ? $app->query : $app->param;
     my $param = {};
     $param->{theme_label}  = $q->param('theme_label');
     $param->{paypal_email} = $q->param('paypal_email');
@@ -837,18 +852,18 @@ sub paypal_donate {
 }
 
 sub edit_templates {
-    # Pop up the warning dialog about what it really means to "edit templates."
     my $app = shift;
-    my $q = $app->can('query') ? $app->query : $app->param;
+    my $q   = $app->can('query') ? $app->query : $app->param;
+    # Pop up the warning dialog about what it really means to "edit templates."
     my $param = {};
     $param->{blog_id} = $q->param('blog_id');
     return $app->load_tmpl( 'edit_templates.mtml', $param );
 }
 
 sub unlink_templates {
-    # Unlink all templates.
     my $app = shift;
-    my $q = $app->can('query') ? $app->query : $app->param;
+    my $q   = $app->can('query') ? $app->query : $app->param;
+    # Unlink all templates.
     my $blog_id = $q->param('blog_id');
     my $iter = MT->model('template')->load_iter({ blog_id     => $blog_id,
                                                   linked_file => '*', });
@@ -865,10 +880,10 @@ sub unlink_templates {
 }
 
 sub theme_info {
+    my $app = shift;
+    my $q   = $app->can('query') ? $app->query : $app->param;
     # Theme info is displayed when a user clicks to select a theme (from the
     # Change Theme tab).
-    my $app = MT->instance;
-    my $q = $app->can('query') ? $app->query : $app->param;
     my $param = {};
     
     my $plugin_sig = $q->param('plugin_sig');
@@ -1015,8 +1030,8 @@ sub _theme_check {
 }
 
 sub rebuild_tmpl {
-    my $app = shift;
-    my $q = $app->can('query') ? $app->query : $app->param;
+    my $app  = shift;
+    my $q    = $app->can('query') ? $app->query : $app->param;
     my $blog = $app->blog;
     my $return_val = {
         success => 0

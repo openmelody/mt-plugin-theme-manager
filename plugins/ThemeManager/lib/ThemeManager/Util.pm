@@ -157,7 +157,8 @@ sub _theme_thumb_path {
     my @path = ($app->static_file_path, 'support', 'plugins', $tm->id, 'theme_thumbs');
     my $dest_path = File::Spec->catfile( @path );
     # If the destination directory doesn't exist, we need to create it.
-    if (!-d $dir) {
+    if ( ! -d $dir ) {
+        # FIXME There are hidden bugs here!!!!  This method returns undef on error but the return value isn't checked for that in most places I found.  It's much better to die from a Util method and use eval in the caller
         my $fmgr = MT::FileMgr->new('Local')
             or return $app->error( MT::FileMgr->errstr );
         $fmgr->mkpath($dir)
