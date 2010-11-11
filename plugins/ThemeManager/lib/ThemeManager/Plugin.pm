@@ -5,7 +5,7 @@ use ConfigAssistant::Util qw( find_theme_plugin );
 use ThemeManager::Util qw( theme_label theme_thumbnail_url theme_preview_url
   theme_description theme_author_name theme_author_link
   theme_paypal_email theme_version theme_link theme_doc_link
-  theme_about_designer theme_docs _theme_thumb_path _theme_thumb_url
+  theme_about_designer theme_docs theme_thumb_path theme_thumb_url
   prepare_theme_meta );
 use MT::Util qw(caturl dirify offset_time_list);
 use MT;
@@ -97,10 +97,10 @@ sub update_page_actions {
                     my $ts_id = MT->instance->blog->template_set;
                     return 0 if !$ts_id;
                     my $app = MT::App->instance;
-                    return 1 if eval {
-                              $app->registry('template_sets')->{$ts_id}
-                                ->{options};
-                    };
+                    return 1
+                      if eval {
+                        $app->registry('template_sets')->{$ts_id}->{options};
+                      };
                     return 0;
                 },
             },
@@ -114,10 +114,11 @@ sub update_page_actions {
                     my $ts_id = MT->instance->blog->template_set;
                     return 0 if !$ts_id;
                     my $app = MT::App->instance;
-                    return 1 if eval {
-                              $app->registry( 'template_sets', $ts_id,
-                                              'templates',     'widgetset' );
-                    };
+                    return 1
+                      if eval {
+                        $app->registry( 'template_sets', $ts_id,
+                                        'templates',     'widgetset' );
+                      };
                     return 0;
                 },
             },
@@ -163,9 +164,9 @@ sub theme_dashboard {
         # applied (a very likely scenario for upgraders, who likely haven't
         # applied a new theme). Go ahead and just create the theme meta.
         if ( !$theme_meta ) {
-            my $meta = prepare_theme_meta($ts_id);
+            $theme_meta = prepare_theme_meta($ts_id);
             my $yaml = YAML::Tiny->new;
-            $yaml->[0] = $meta;
+            $yaml->[0] = $theme_meta;
 
             # Turn that YAML into a plain old string and save it.
             $blog->theme_meta( $yaml->write_string() );
@@ -206,9 +207,9 @@ sub theme_dashboard {
         $param->{template_set_language} = $blog->template_set_language;
     }
 
-    my $dest_path = _theme_thumb_path();
+    my $dest_path = theme_thumb_path();
     if ( -w $dest_path ) {
-        $param->{theme_thumb_url} = _make_thumbnail( $theme_meta->{preview} );
+        $param->{theme_thumb_url} = theme_thumb_url();
     }
     else {
         $param->{theme_thumbs_path} = $dest_path;
@@ -769,10 +770,11 @@ sub setup_theme {
         my @options;
         push @options, 'Theme Options'
           if eval { $app->registry('template_sets')->{$ts_id}->{options} };
-        push @options, 'Widgets' if eval {
-                  $app->registry( 'template_sets', $ts_id,
-                                  'templates',     'widgetset' );
-        };
+        push @options, 'Widgets'
+          if eval {
+            $app->registry( 'template_sets', $ts_id,
+                            'templates',     'widgetset' );
+          };
         $param->{options} = join( ' and ', @options );
     }
 
@@ -787,91 +789,143 @@ sub setup_theme {
     $app->load_tmpl( 'theme_setup.mtml', $param );
 } ## end sub setup_theme
 
-sub _make_thumbnail {
+sub site_preview_image {
 
-    # We want a custom thumbnail to display on the Theme Options About tab.
-    my ($thumb_path) = @_;
-    my $app = MT->instance;
-    my $q = $app->can('query') ? $app->query : $app->param;
-
-    # Craft the destination path and URL.
+    # We want a custom thumbnail to display on the Theme Dashboard "About this Theme" tab.
+    my $tm = MT->component('ThemeManager');
     use File::Spec;
-    my $dest_path
-      = File::Spec->catfile( _theme_thumb_path(), $app->blog->id . '.jpg' );
-    my $dest_url = _theme_thumb_url();
+    use LWP::Simple;
 
-    # Check if the thumbnail is cached (exists) and is less than 1 day old.
-    # If it's older, we want a new thumb to be created.
-    my $fmgr = MT::FileMgr->new('Local')
-      or return $app->error( MT::FileMgr->errstr );
-    if ( ( $fmgr->exists($dest_path) ) && ( -M $dest_path <= 1 ) ) {
+    # Grab all blogs, then build previews for each.
+    my $iter = MT->model('blog')->load_iter();
+    while ( my $blog = $iter->() ) {
 
-        # We've found a cached image! Now we need to check that it's usable.
-        return _check_thumbalizr_result( $dest_path, $dest_url, $thumb_path );
+        # Craft the destination path.
+        my $dest_path
+          = File::Spec->catfile( theme_thumb_path(), $blog->id . '.jpg' );
+
+        # If this blog is running on localhost Thumbalizr isn't going to
+        # be able to make a thumbnail of this site, so no need to make it
+        # try. Return the theme-supplied preview.
+        if ( $blog->site_url =~ m/localhost/ ) {
+            my $preview_url = _get_local_preview($blog);
+
+            # Now that we have the preview URL, save it to the $dest_path,
+            # so it's available for display.
+            my $http_response
+              = LWP::Simple::getstore( $preview_url, $dest_path );
+            if ( $http_response != 200 ) {
+                MT->log( {
+                           level   => MT->model('log')->ERROR(),
+                           blog_id => $blog->id,
+                           message =>
+                             $tm->translate(
+                                 'Theme Manager could not save the Theme '
+                                   . 'Dashboard preview image. Source: [_1], '
+                                   . 'Destination: [_2]',
+                                 $preview_url,
+                                 $dest_path
+                             ),
+                         }
+                );
+            }
+        } ## end if ( $blog->site_url =~...)
+
+        # This blog is not on localhost. Use Thumbalizr to grab a screenshot
+        # of the current blog with the theme applied.
+        else {
+
+            # Now build and cache the thumbnail URL. This is done with
+            # thumbalizr.com, a free online screenshot service. Their API is
+            # completely http based, so this is all we need to do to get an
+            # image from them.
+            my $preview_url
+              = 'http://api.thumbalizr.com/?url='
+              . $blog->site_url
+              . '&width=300';
+
+            # Save the resulting thumbnail for display.
+            my $http_response
+              = LWP::Simple::getstore( $preview_url, $dest_path );
+
+            # If the thumbalizr preview was successfully retrieved and saved,
+            # then check it to be sure it's a "real" preview. No point in
+            # showing the "Failed" or "Queued" image on the Theme Dashboard.
+            if ( $http_response == 200 ) {
+                my $fmgr    = $blog->file_mgr;
+                my $content = $fmgr->get_data($dest_path);
+
+                # Create an MD5 hash of the content. This provides us with
+                # something unique to compare against.
+                use Digest::MD5;
+                my $md5 = Digest::MD5->new;
+                $md5->add($content);
+
+                # The "unreachable" image has an MD5 hash of:
+                # f43e0452d20ecfc12a3bd785e6b9c831
+                # The "queued" image has an MD5 hash of:
+                # eb433ad65b8aa50047e6f2de1530d6cf
+                # The "failed" image has an MD5 hash of:
+                # ac47a999e5ce1769d480a66b0554343d
+                # If it matches either, use the local preview.
+                if ( ( $md5->hexdigest eq 'f43e0452d20ecfc12a3bd785e6b9c831' )
+                     || ( $md5->hexdigest eq
+                          'eb433ad65b8aa50047e6f2de1530d6cf' )
+                     || ( $md5->hexdigest eq
+                          'ac47a999e5ce1769d480a66b0554343d' ) )
+                {
+                    $preview_url = _get_local_preview($blog);
+                    LWP::Simple::getstore( $preview_url, $dest_path );
+                }
+            } ## end if ( $http_response ==...)
+
+            # If $http_response isn't 200 (Success), we need to fall back to
+            # something else: either the theme-supplied preview or Theme
+            # Manager's default preview.
+            else {
+                $http_response
+                  = LWP::Simple::getstore( $preview_url, $dest_path );
+                if ( $http_response != 200 ) {
+                    MT->log( {
+                            level   => MT->model('log')->ERROR(),
+                            blog_id => $blog->id,
+                            message =>
+                              $tm->translate(
+                                 'Theme Manager could not save the Theme '
+                                   . 'Dashboard preview image. Source: [_1], '
+                                   . 'Destination: [_2]',
+                                 $preview_url,
+                                 $dest_path
+                              ),
+                          }
+                    );
+                }
+            }
+        } ## end else [ if ( $blog->site_url =~...)]
+    } ## end while ( my $blog = $iter->...)
+} ## end sub site_preview_image
+
+sub _get_local_preview {
+    my ($blog) = @_;
+
+    # Grab the theme's plugin assigned to this blog.
+    my $plugin = find_theme_plugin( $blog->template_set );
+
+    # If the theme's plugin was found, look up the theme meta to
+    # grab the theme-supplied preview. If no plugin, just use the
+    # Theme Manager default.
+    if ($plugin) {
+
+        # Convert the saved YAML back into a hash.
+        my $yaml       = YAML::Tiny->new;
+        my $theme_meta = YAML::Tiny->read_string( $blog->theme_meta );
+        $theme_meta = $theme_meta->[0];
+        return theme_preview_url( $theme_meta->{preview}, $plugin->id );
     }
     else {
-
-        # No screenshot was found, or it's too old--so create one.
-        # First, create the destination directory, if necessary.
-        my $dir = _theme_thumb_path();
-
-        # Now build and cache the thumbnail URL
-        # This is done with thumbalizr.com, a free online screenshot service.
-        # Their API is completely http based, so this is all we need to do to
-        # get an image from them.
-        my $thumb_url
-          = 'http://api.thumbalizr.com/?url='
-          . $app->blog->site_url
-          . '&width=300';
-        use LWP::Simple;
-        my $http_response = LWP::Simple::getstore( $thumb_url, $dest_path );
-
-        # Finally, check that the saved image is actually usable.
-        return _check_thumbalizr_result( $dest_path, $dest_url, $thumb_path );
-    } ## end else [ if ( ( $fmgr->exists($dest_path...)))]
-} ## end sub _make_thumbnail
-
-sub _check_thumbalizr_result {
-
-    # We need to figure out if the returned image is actually a thumbnail, or
-    # if it's the "queued" or "failed" image from thumbalizr.
-    my ( $dest_path, $dest_url, $thumb_path ) = @_;
-
-    my $fmgr = MT::FileMgr->new('Local') or die MT::FileMgr->errstr;
-    my $content = $fmgr->get_data($dest_path);
-
-    # Create an MD5 hash of the content. This provides us with
-    # something unique to compare against.
-    use Digest::MD5;
-    my $md5 = Digest::MD5->new;
-    $md5->add($content);
-
-    # The "queued" image has an MD5 hash of:
-    # eb433ad65b8aa50047e6f2de1530d6cf
-    # The "failed" image has an MD5 hash of:
-    # ac47a999e5ce1769d480a66b0554343d
-    if (    ( $md5->hexdigest eq 'eb433ad65b8aa50047e6f2de1530d6cf' )
-         || ( $md5->hexdigest eq 'ac47a999e5ce1769d480a66b0554343d' ) )
-    {
-
-        # This is the "queued" image being displayed. Instead of this, we
-        # want to show the "preview" image defined by the template set.
-        my $app    = MT->instance;
-        my $plugin = find_theme_plugin( $app->blog->template_set );
-
-        # If the theme plugin was found, return the supplied preview image.
-        # If the theme plugin was *not* found, just return the generic
-        # theme preview image.
-        return $plugin
-          ? return theme_preview_url( $thumb_path, $plugin->id )
-          : return theme_preview_url();
+        return theme_preview_url();
     }
-    else {
-
-        # This is a valid thumbalizr preview image. Use it!
-        return $dest_url;
-    }
-} ## end sub _check_thumbalizr_result
+} ## end sub _get_local_preview
 
 sub _make_mini {
     my $app = MT->instance;
@@ -879,7 +933,7 @@ sub _make_mini {
     my $tm  = MT->component('ThemeManager');
 
     use File::Spec;
-    my $dest_path = File::Spec->catfile( _theme_thumb_path(),
+    my $dest_path = File::Spec->catfile( theme_thumb_path(),
                                          $app->blog->id . '-mini.jpg' );
     my $dest_url = caturl( $app->static_path, 'support', 'plugins', $tm->id,
                            'theme_thumbs', $app->blog->id . '-mini.jpg' );
@@ -887,7 +941,7 @@ sub _make_mini {
     # Decide if we need to create a new mini or not.
     my $fmgr = MT::FileMgr->new('Local') or return MT::FileMgr->errstr;
     unless ( ( $fmgr->exists($dest_path) ) && ( -M $dest_path <= 1 ) ) {
-        my $source_path = File::Spec->catfile( _theme_thumb_path(),
+        my $source_path = File::Spec->catfile( theme_thumb_path(),
                                                $app->blog->id . '.jpg' );
 
         # Look for the source image. If there is no source image, we can't

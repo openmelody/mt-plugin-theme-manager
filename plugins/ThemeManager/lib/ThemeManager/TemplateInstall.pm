@@ -125,7 +125,7 @@ sub _refresh_all_templates {
         # when the user visits the dashboard.
         my $tm = MT->component('ThemeManager');
         my $thumb_path
-          = File::Spec->catfile( _theme_thumb_path(), $blog_id . '.jpg' );
+          = File::Spec->catfile( theme_thumb_path(), $blog_id . '.jpg' );
         my $fmgr = MT->model('filemgr')->new('Local');
         if ( $fmgr->exists($thumb_path) ) {
             unlink $thumb_path;

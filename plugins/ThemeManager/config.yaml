@@ -4,7 +4,7 @@ key: ThemeManager
 author_link: http://endevver.com/
 author_name: Endevver
 description: 'A comprehensive theme management plugin!'
-version: 0.9.31
+version: 0.9.32
 schema_version: 5
 static_version: 4
 l10n_class: ThemeManager::L10N
@@ -72,3 +72,10 @@ options:
         tag: ThemeManagerMode
         scope: system
         fieldset: mode_overview
+
+tasks:
+    site_preview_image:
+        label: 'Create a site preview image for the Theme Dashboard'
+        frequency: 1
+        code: $ThemeManager::ThemeManager::Plugin::site_preview_image
+

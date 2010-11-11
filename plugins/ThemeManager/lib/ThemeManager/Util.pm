@@ -8,7 +8,7 @@ use base 'Exporter';
 our @EXPORT_OK = qw( theme_label theme_thumbnail_url theme_preview_url
   theme_description theme_author_name theme_author_link
   theme_paypal_email theme_version theme_link theme_doc_link
-  theme_about_designer theme_docs _theme_thumb_path _theme_thumb_url
+  theme_about_designer theme_docs theme_thumb_path theme_thumb_url
   prepare_theme_meta );
 
 my $app = MT->instance;
@@ -182,7 +182,7 @@ sub _return_data {
     }
 } ## end sub _return_data
 
-sub _theme_thumb_path {
+sub theme_thumb_path {
     my @path = (
                  $app->static_file_path, 'support', 'plugins', $tm->id,
                  'theme_thumbs'
@@ -201,10 +201,18 @@ sub _theme_thumb_path {
     return $dest_path;
 }
 
-sub _theme_thumb_url {
-    return
-      caturl( $app->static_path, 'support', 'plugins', $tm->id,
-              'theme_thumbs', $app->blog->id . '.jpg' );
+sub theme_thumb_url {
+    my $blog = $app->blog;
+    my $url  = caturl( $app->static_path, 'support', 'plugins', $tm->id,
+                      'theme_thumbs', $blog->id . '.jpg' );
+    my $fmgr = $blog->file_mgr;
+
+    # Check that the image exists at $url. If not, return the generic preview.
+    if ( $fmgr->exists($url) ) {
+        $url = caturl( $app->static_path, 'support/plugins/', $tm->id,
+                       '/images/default_theme_thumb-large.png' );
+    }
+    return $url;
 }
 
 sub prepare_theme_meta {
