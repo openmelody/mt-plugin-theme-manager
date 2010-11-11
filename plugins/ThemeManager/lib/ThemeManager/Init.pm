@@ -1,6 +1,7 @@
 package ThemeManager::Init;
 
 use ConfigAssistant::Util qw( find_theme_plugin );
+
 # Sub::Install is included with Config Assistant. Since CA is required for
 # Theme Manager, we can rely on it being available.
 use Sub::Install;
@@ -12,20 +13,20 @@ use Sub::Install;
 # FIXME Overriding the core translate function of pretty much every component is overkill and I'm not sure why the individual plugins own L10N handles won't work perfectly. What's more, the handles are stored in the MT->request object and can be modified before and after the internal methods if nothing else.
 
 sub init_app {
-    my ($cb, $app) = @_;
-    return unless $app->isa('MT::App')
-               && ( $app->can('query') || $app->can('param') );
+    my ( $cb, $app ) = @_;
+    return
+      unless $app->isa('MT::App')
+          && ( $app->can('query') || $app->can('param') );
 
-    # TODO - This should not have to reinstall a subroutine. It should invoke 
+    # TODO - This should not have to reinstall a subroutine. It should invoke
     #        a callback.
-    Sub::Install::reinstall_sub( {
-        code => \&_translate,
-        into => 'MT::Component',
-        as   => 'translate',
-    });
+    Sub::Install::reinstall_sub(
+         { code => \&_translate, into => 'MT::Component', as => 'translate', }
+    );
 }
 
 sub _translate {
+
     # This is basically lifted right from MT::CMS::Template (from Movable Type
     # version 4.261), with some necessary changes to work with Theme Manager.
     my $c       = shift;
@@ -51,24 +52,30 @@ sub _translate {
     # translations.
     my $app = MT->instance;
     my $q = $app->can('query') ? $app->query : $app->param;
-    if ( eval{$q} && $q->param('__mode') ) {
+    if ( eval {$q} && $q->param('__mode') ) {
         if ( $q->param('__mode') eq 'setup_theme' ) {
+
             # The user is applying a new theme.
             $c = find_theme_plugin( $q->param('theme_id') );
-            my $template_set_language = $q->param('language') || $app->user->preferred_language;
+            my $template_set_language = $q->param('language')
+              || $app->user->preferred_language;
             if ( eval "require " . $c->l10n_class . ";" ) {
-                $h = $c->l10n_class->get_handle( $template_set_language );
+                $h = $c->l10n_class->get_handle($template_set_language);
             }
         }
-        elsif ( $q->param('__mode') eq 'save' && $q->param('_type') eq 'blog' ) {
+        elsif (    $q->param('__mode') eq 'save'
+                && $q->param('_type') eq 'blog' )
+        {
+
             # The user is creating a new blog.
             $c = find_theme_plugin( $q->param('template_set') );
-            my $template_set_language = $q->param('template_set_language') || $app->user->preferred_language;
+            my $template_set_language = $q->param('template_set_language')
+              || $app->user->preferred_language;
             if ( $c && eval "require " . $c->l10n_class . ";" ) {
-                $h = $c->l10n_class->get_handle( $template_set_language );
+                $h = $c->l10n_class->get_handle($template_set_language);
             }
         }
-    }
+    } ## end if ( eval {$q} && $q->param...)
 
     my ( $format, @args ) = @_;
     foreach (@args) {
@@ -84,9 +91,12 @@ sub _translate {
             $str = MT::I18N::encode_text(
                 $h->maketext(
                     $format,
-                    map { MT::I18N::encode_text( $_, $enc, 'utf-8' ) } @args
+                    map {
+                        MT::I18N::encode_text( $_, $enc, 'utf-8' )
+                      } @args
                 ),
-                'utf-8', $enc
+                'utf-8',
+                $enc
             );
         }
     }
@@ -94,7 +104,7 @@ sub _translate {
         $str = MT->translate(@_);
     }
     $str;
-}
+} ## end sub _translate
 
 1;
 
