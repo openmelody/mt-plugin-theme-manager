@@ -106,6 +106,13 @@ TC.attachLoadEvent(init);
 </script>
 </mt:setvarblock>
 <mt:setvarblock name="system_msg">
+    <mt:if name="profile_updated">
+        <mtapp:statusmsg
+            id="profile-updated"
+            class="success">
+            <__trans phrase="You have successfully updated your publishing profile.">
+        </mtapp:statusmsg>
+    </mt:if>
     <mt:if name="saved_deleted">
         <mtapp:statusmsg
             id="saved-deleted"

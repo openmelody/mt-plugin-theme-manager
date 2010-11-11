@@ -1301,6 +1301,7 @@ sub _populate_list_templates_context {
     $params->{published}     = $q->param('published');
     $params->{saved_copied}  = $q->param('saved_copied');
     $params->{saved_deleted} = $q->param('saved_deleted');
+    $params->{profile_updated} = $q->param('profile_updated');
     $params->{saved}         = $q->param('saved');
 
     # determine list of system template types:
