@@ -173,13 +173,11 @@ sub _return_data {
     }
     return $data->( $obj, @_ ) if ref $data eq 'CODE';
     if ( $data =~ /\.html$/ ) {
-
         # Ends with .html so this must be a filename/template.
-        return eval { $obj->load_tmpl($data) };
+        eval { my $tmpl = $obj->load_tmpl($data); $data = $tmpl->output };
+         # TODO - error message
     }
-    else {
-        return $data;
-    }
+    return $data;
 } ## end sub _return_data
 
 sub theme_thumb_path {
