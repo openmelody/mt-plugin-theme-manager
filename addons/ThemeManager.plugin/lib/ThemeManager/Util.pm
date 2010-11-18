@@ -176,8 +176,7 @@ sub _return_data {
 
         # Ends with .html so this must be a filename/template.
         eval { my $tmpl = $obj->load_tmpl($data); $data = $tmpl->output };
-
-        # TODO - error message
+        $@ and warn $@; # TODO - error message
     }
     return $data;
 } ## end sub _return_data
