@@ -173,9 +173,11 @@ sub _return_data {
     }
     return $data->( $obj, @_ ) if ref $data eq 'CODE';
     if ( $data =~ /\.html$/ ) {
+
         # Ends with .html so this must be a filename/template.
         eval { my $tmpl = $obj->load_tmpl($data); $data = $tmpl->output };
-         # TODO - error message
+
+        # TODO - error message
     }
     return $data;
 } ## end sub _return_data
