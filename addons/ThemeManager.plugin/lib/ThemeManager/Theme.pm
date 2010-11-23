@@ -9,7 +9,7 @@ __PACKAGE__->install_properties( {
                                     'id' => 'integer not null auto_increment',
                                     'plugin_sig' => 'string(255)',
                                     'ts_id'      => 'string(255)',
-                                    'ts_label'   => 'text',
+                                    'ts_label'   => 'string(255)',
                                     'theme_meta' => 'blob',
                                },
                                indexes    => { plugin_sig => 1, ts_id => 1, },
