@@ -1,30 +1,20 @@
 $(document).ready( function() {
-    var active = $('#content-nav ul li.active a').attr('id');
-    $('#' + active + '-content').show();
-
     $('h2#page-title span').html( $('#content-nav ul li.active a b').html() );
-
     $('#fieldsets input, #fieldsets select, #fieldsets textarea').change( function () {
         var changed = $(this).parent().parent().parent().attr('id');
         $('#content-nav ul li.'+changed).addClass('changed');
     });
     $('#content-nav ul li a').click( function() {
-        var newactive = $(this).attr('id');
+        var active    = $(this).parents('ul').find('li.active a').attr('id').replace(/-tab$/,'');
+        var newactive = $(this).attr('id').replace(/-tab$/,'');
         $('#content-nav li.active').removeClass('active');
-        $('#' + active + '-content').hide();
-        $('#content-nav li.' + newactive).addClass('active');
-        $('#' + newactive + '-content').show();
-        if ( newactive == 'apply-theme-tab' ) {
-            // Display only "Apply a new Theme" if the user clicks for the chooser
-            $('h2#page-title').html( $('#content-nav ul li.'+newactive+' a b').html() );
-        }
-        else {
-            // Display the theme name and the tab name for any other tab.
-            $('h2#page-title').html( $('#theme-label').html() + ': ' + $('#content-nav ul li.'+newactive+' a b').html() );
-        }
-        active = newactive;
+        $('#' + active + '-tab-content').hide();
+        $('#content-nav li.' + newactive+'-tab').addClass('active');
+        $('#' + newactive + '-tab-content').show();
+        $('h2#page-title').html( $(this).attr('title') );
+        document.title = $(this).attr('title');
+        window.location.hash = newactive;
     });
-
     $('.field-type-radio-image li input:checked').each( function() {
         $(this).parent().addClass('selected');
     });
@@ -78,13 +68,8 @@ $(document).ready( function() {
             }
         });
     });
-    if ( $('#content-nav ul li a').length > 0) {
-        var myFile = document.location.toString();
-        if (myFile.match('#')) { // the URL contains an anchor
-            // click the navigation item corresponding to the anchor
-            var myAnchor = myFile.split('#')[1];
-            var sel = "#content-nav ul li."+myAnchor+" a";
-            $(sel).click();
-        }
-    };
+    $.history.init(function(hash){
+        if (hash == "") hash = "about";
+        $('#content-nav ul li.'+hash+'-tab a').click();
+    });
 });

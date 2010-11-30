@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="<mt:PluginStaticWebPath component="ThemeManager">css/docs.css" type="text/css" />
     <script src="<mt:PluginStaticWebPath component="ThemeManager">js/jquery-1.4.2.min.js" type="text/javascript"></script>
     <script src="<mt:PluginStaticWebPath component="ThemeManager">js/jquery.qtip-1.0.min.js" type="text/javascript"></script>
+    <script src="<mt:PluginStaticWebPath component="ThemeManager">js/jquery.history.js" type="text/javascript"></script>
     <script src="<mt:PluginStaticWebPath component="ThemeManager">js/app.js" type="text/javascript"></script>
     <script type="text/javascript">
       PluginStaticURI = '<$mt:PluginStaticWebPath component="ThemeManager"$>';
@@ -44,13 +45,13 @@
 
 <mt:SetVarBlock name="content_nav">
     <ul>
-        <li class="about-tab active"><a href="javascript:void(0);" id="about-tab"><b><__trans phrase="About this Theme"></b></a></li>
+        <li class="about-tab active"><a href="javascript:void(0);" id="about-tab" title="<__trans phrase="About">: <$mt:var name="theme_label" encode_html="1"$>"><b><__trans phrase="About Theme"></b></a></li>
     <mt:If name="theme_docs">
-        <li class="docs-tab"><a href="javascript:void(0);" id="docs-tab"><b><__trans phrase="Documentation"></b></a></li>
+        <li class="docs-tab"><a href="javascript:void(0);" id="docs-tab" title="<__trans phrase="Documentation">: <$mt:var name="theme_label" encode_html="1"$>"><b><__trans phrase="Documentation"></b></a></li>
     </mt:If>
-        <li class="customize-tab"><a href="javascript:void(0);" id="customize-tab"><b><__trans phrase="Customization"></b></a></li>
-        <li class="templates-tab"><a href="javascript:void(0);" id="templates-tab"><b><__trans phrase="Templates"></b></a></li>
-        <li class="apply-theme-tab"><a href="javascript:void(0);" id="apply-theme-tab"><b><__trans phrase="Change Theme"></b></a></li>
+        <li class="customize-tab"><a href="javascript:void(0);" id="customize-tab" title="<__trans phrase="Customize">: <$mt:var name="theme_label" encode_html="1"$>"><b><__trans phrase="Customization"></b></a></li>
+        <li class="templates-tab"><a href="javascript:void(0);" id="templates-tab" title="<__trans phrase="Templates">: <$mt:var name="theme_label" encode_html="1"$>"><b><__trans phrase="Templates"></b></a></li>
+        <li class="apply-theme-tab"><a href="javascript:void(0);" id="apply-theme-tab" title="<__trans phrase="Change Theme">"><b><__trans phrase="Change Theme"></b></a></li>
     </ul>
 </mt:SetVarBlock>
 
@@ -68,7 +69,7 @@
         </div>
     </mt:If>
 
-    <h3>About this Theme</h3>
+    <h3>About Theme</h3>
 
         <p id="theme-label">
             <mt:Var name="theme_label"><mt:If name="theme_version">,
@@ -152,7 +153,7 @@
 
 <mt:loop name="theme_dashboard_page_actions">
     <mt:If name="__first__">
-        <h3><__trans phrase="Customize this Theme"></h3>
+        <h3><__trans phrase="Customize Theme"></h3>
         <ul>
     </mt:If>
     <mt:If name="link">
