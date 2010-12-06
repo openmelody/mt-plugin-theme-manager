@@ -79,7 +79,7 @@ sub update_page_actions {
                     my ($app) = @_;
                     $app->validate_magic or return;
                     my $blog = $app->blog;
-                    _refresh_system_custom_fields($blog);
+                    ThemeManager::TemplateInstall::_refresh_system_custom_fields($blog);
                     $app->add_return_arg( fields_refreshed => 1 );
                     $app->call_return;
                 },
