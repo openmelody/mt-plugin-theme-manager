@@ -36,13 +36,35 @@ sub update_menus {
     # Now just add the Theme Dashboard menu item.
     # TODO Move to config.yaml
     return {
-             'design:theme_dashboard' => {
-                                           label      => 'Theme Dashboard',
-                                           order      => 1,
-                                           mode       => 'theme_dashboard',
-                                           view       => 'blog',
-                                           permission => 'edit_templates',
-             },
+        'design:theme_dashboard' => {
+                                      label      => 'Theme Dashboard',
+                                      order      => 1,
+                                      mode       => 'theme_dashboard',
+                                      view       => 'blog',
+                                      permission => 'edit_templates',
+        },
+
+        # Add the new template menu option, which is actually a link to the
+        # Theme Dashboard > Templates screen.
+        'design:templates' => {
+            label      => 'Templates',
+            order      => 1000,
+            view       => 'blog',
+            permission => 'edit_templates',
+            link       => sub {
+
+                # @_ contains... something. It's not an $app
+                # reference, and doesn't appear to directly have
+                # a blog object or the blog ID available. So, grab
+                # a new instance.
+                my $app = MT->instance;
+                return
+                  $app->uri(
+                             mode => 'theme_dashboard',
+                             args => { blog_id => $app->blog->id, },
+                  ) . '#templates';    # Go to Manage Templates.
+            },
+        },
     };
 } ## end sub update_menus
 
@@ -79,7 +101,8 @@ sub update_page_actions {
                     my ($app) = @_;
                     $app->validate_magic or return;
                     my $blog = $app->blog;
-                    ThemeManager::TemplateInstall::_refresh_system_custom_fields($blog);
+                    ThemeManager::TemplateInstall::_refresh_system_custom_fields(
+                                                                       $blog);
                     $app->add_return_arg( custom_fields_refreshed => 1 );
                     $app->call_return;
                 },
@@ -271,7 +294,7 @@ sub theme_dashboard {
     $param->{theme_dashboard_page_actions}
       = $app->page_actions('theme_dashboard');
     $param->{template_page_actions} = $app->page_actions('list_templates');
-    
+
     $param->{custom_fields_refreshed} = $q->param('custom_fields_refreshed');
 
     my $tmpl = $tm->load_tmpl('theme_dashboard.mtml');
