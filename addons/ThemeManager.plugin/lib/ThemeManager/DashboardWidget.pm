@@ -11,8 +11,6 @@ sub widget {
     return {
         theme_manager => {
             label => 'Theme Dashboard Widget',
-
-#            plugin   => $ThemeManager,
             handler => sub {
                 my ( $app, $tmpl, $param ) = @_;
 
@@ -45,7 +43,7 @@ sub widget {
             template  => 'dashboard_widget.mtml',
             condition => sub {
                 my ( $page, $scope ) = @_;
-                return 1 if ( $scope ne 'system' );
+                return 1 if ( $scope !~ /system/ );
             },
             singular => 1,
         },
