@@ -80,7 +80,7 @@ sub update_page_actions {
                     $app->validate_magic or return;
                     my $blog = $app->blog;
                     ThemeManager::TemplateInstall::_refresh_system_custom_fields($blog);
-                    $app->add_return_arg( fields_refreshed => 1 );
+                    $app->add_return_arg( custom_fields_refreshed => 1 );
                     $app->call_return;
                 },
             },
@@ -271,6 +271,8 @@ sub theme_dashboard {
     $param->{theme_dashboard_page_actions}
       = $app->page_actions('theme_dashboard');
     $param->{template_page_actions} = $app->page_actions('list_templates');
+    
+    $param->{custom_fields_refreshed} = $q->param('custom_fields_refreshed');
 
     my $tmpl = $tm->load_tmpl('theme_dashboard.mtml');
     return $app->listing( {

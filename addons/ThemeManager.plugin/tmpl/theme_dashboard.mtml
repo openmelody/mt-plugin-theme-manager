@@ -41,6 +41,13 @@
             <__trans phrase="The directory for storing theme thumbnails is not writable. In order to display a preview of the current theme on your site, please make the following directory writable by your web server: [_1]" params="<mt:Var name="theme_thumbs_path">">
         </mtapp:statusmsg>
     </mt:If>
+    <mt:If name="custom_fields_refreshed">
+        <mtapp:statusmsg
+            id="custom_fields_refreshed"
+            class="success">
+            <__trans phrase="System and blog custom fields have been refreshed.">
+        </mtapp:statusmsg>
+    </mt:If>
 </mt:SetVarBlock>
 
 <mt:SetVarBlock name="content_nav">
@@ -156,20 +163,18 @@
         <h3><__trans phrase="Customize Theme"></h3>
         <ul>
     </mt:If>
-    <mt:If name="link">
             <li class="icon-mini-left icon-mini-settings">
+    <mt:If name="link">
                 <a href="<mt:var name="script_url" escape="html">?__mode=<mt:var name="mode">&amp;blog_id=<mt:Var name="blog_id">&amp;magic_token=<mt:Var name="magic_token">"
                     <mt:If name="continue_prompt"> onclick="return confirm('<mt:var name="continue_prompt" escape="js">');"</mt:If>>
                         <mt:Var name="label">
                 </a>
-            </li>
     <mt:Else name="dialog">
-            <li class="icon-mini-left icon-mini-settings">
                 <a href="javascript:void(0)" onclick="<mt:if name="continue_prompt">if(!confirm('<mt:var name="continue_prompt" escape="js">'))return false;</mt:if>return openDialog(false, '<mt:var name="dialog">', '<mt:if name="dialog_args"><mt:var name="dialog_args" escape="url"></mt:if><mt:if name="id">&amp;id=<mt:var name="id"></mt:if>&amp;blog_id=<mt:var name="blog_id">&amp;magic_token=<mt:Var name="magic_token">')">
                     <mt:var name="label">
                 </a>
-            </li>
     </mt:If>
+            </li>
     <mt:If name="__last__">
         </ul>
     </mt:If>
@@ -179,20 +184,22 @@
         <h3><__trans phrase="Advanced Options"></h3>
         <ul>
     </mt:If>
-    <mt:If name="link">
             <li class="icon-mini-left icon-mini-settings">
+    <mt:If name="page">
+                <a href="<mt:Var name="page" escape="html"><mt:If name="page_has_params"></mt:If><mt:If name="id">&amp;id=<mt:Var name="id"></mt:If><mt:If name="blog_id">&amp;blog_id=<mt:Var name="blog_id"></mt:If>&amp;magic_token=<mt:Var name="magic_token">&amp;return_args=<mt:Var name="return_args" escape="url">#customize"<mt:If name="continue_prompt"> onclick="return confirm('<mt:Var name="continue_prompt" escape="js">');"</mt:If>>
+                    <mt:Var name="label">
+                </a>
+    <mt:Else name="link">
                 <a href="<mt:var name="script_url" escape="html">?__mode=<mt:var name="mode">&amp;blog_id=<mt:Var name="blog_id">&amp;magic_token=<mt:Var name="magic_token">"
                     <mt:If name="continue_prompt"> onclick="return confirm('<mt:var name="continue_prompt" escape="js">');"</mt:If>>
                         <mt:Var name="label">
                 </a>
-            </li>
     <mt:Else name="dialog">
-            <li class="icon-mini-left icon-mini-settings">
                 <a href="javascript:void(0)" onclick="<mt:if name="continue_prompt">if(!confirm('<mt:var name="continue_prompt" escape="js">'))return false;</mt:if>return openDialog(false, '<mt:var name="dialog">', '<mt:if name="dialog_args"><mt:var name="dialog_args" escape="url"></mt:if><mt:if name="id">&amp;id=<mt:var name="id"></mt:if>&amp;blog_id=<mt:var name="blog_id">&amp;magic_token=<mt:Var name="magic_token">')">
                     <mt:var name="label">
                 </a>
-            </li>
     </mt:If>
+            </li>
     <mt:If name="__last__">
         </ul>
     </mt:If>

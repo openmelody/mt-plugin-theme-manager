@@ -251,6 +251,63 @@ Dashboard, too, by specifying the additions as Page Actions targeted to the
 Of course, the code, mode or dialog being added needs to be created, but 
 that's beyond the scope of this document.
 
+## Designers: Create Custom Fields
+
+Many sites require the use of the Movable Type Commercial Pack's custom fields (part of MT Pro). If fields are specified in your theme's `config.yaml` they can be automatically created when you deploy your theme. Fields can also be "refreshed" from the Theme Dashboard's Customization tab.
+
+The following example shows how to add a text custom field for Entries to the theme we're building.
+
+    template_sets:
+        my_awesome_theme:
+            label: 'My Awesome Theme'
+            fields:
+                entry_extra_text_field:
+                    label: 'Extra Text Field'
+                    description: 'This is a text custom field.'
+                    default: 'Replace this default text with any value.'
+                    required: 1
+                    obj_type: entry
+                    type: text
+                    tag: EntryExtraTextField
+
+The key `entry_extra_text_field` is the basename of this field.
+
+The `description`, `required` and `default` keys are optional.
+
+The key `obj_type` is the type of object this field targets; `entry`, `page`, `category`, `folder`, and `author` are valid. These correlate to the System Object field in the GUI, of course.
+
+The key `type` is the type of field to be created. Note that this is the key name of the field, not the public-facing name you see in the GUI. The Commercial Pack defines the following types of fields with these keys:
+
+* Text: `text`
+* Multi-Line Text: `textarea`
+* Checkbox: `checkbox`
+* URL: `url`
+* Date and Time: `datetime`
+* Drop Down Menu: `select`
+* Radio Buttons: `radio`
+* Embed Object: `embed`
+* Post Type: `post_type`
+* Asset: `asset`
+* Audio: `asset.audio`
+* Image: `asset.image`
+* Video: `asset.video`
+
+If you have other custom fields available they may also be specified in your theme's `config.yaml`; you just need to specify the key correctly.
+
+To create a system-level custom field (necessary is you use the `author` object type), include the `scope` key:
+
+    template_sets:
+        my_awesome_theme:
+            label: 'My Awesome Theme'
+            fields:
+                author_bio:
+                    label: 'Author Bio'
+                    obj_type: author
+                    type: textarea
+                    tag: AuthorBio
+                    scope: system
+
+
 ## Designers: Specifying Default Content
 
 Theme Manager allows you to prepopulate a new web site using a theme with
@@ -266,31 +323,32 @@ config.yaml structure. Here is an example config.yaml file that specifies
 three default categories, a default folder, a default entry, and an about 
 page. Also notice that a folder is being associated with the page.
 
-    my_blog:
-        base_path: templates/blog
-        label: 'My Awesome Theme'
-        thumbnail: thumb.png
-        preview: preview.png
-        description: 'This theme is awesome.'
-        content:
-            categories:
-                announcements:
-                    label: 'Announcements'
-                events:
-                    label: 'Events'
-                news:
-                    label: 'News'
-            folders:
-                our_company:
-                    label: 'Our Company'
-            entries:
-                welcome:
-                    label: 'Welcome to my awesome theme'
-                    body: 'You just installed a great theme. Congrats!'
-            pages:
-                about:
-                    label: 'About'
-                    folder: our_company
+    template_sets:
+        my_awesome_theme:
+            base_path: templates/blog
+            label: 'My Awesome Theme'
+            thumbnail: thumb.png
+            preview: preview.png
+            description: 'This theme is awesome.'
+            content:
+                categories:
+                    announcements:
+                        label: 'Announcements'
+                    events:
+                        label: 'Events'
+                    news:
+                        label: 'News'
+                folders:
+                    our_company:
+                        label: 'Our Company'
+                entries:
+                    welcome:
+                        label: 'Welcome to my awesome theme'
+                        body: 'You just installed a great theme. Congrats!'
+                pages:
+                    about:
+                        label: 'About'
+                        folder: our_company
 
 ### Nested Categories and Folders
 

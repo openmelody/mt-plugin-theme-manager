@@ -552,7 +552,13 @@ sub _refresh_system_custom_fields {
     my $tm       = MT->component('ThemeManager');
     my $set_name = $blog->template_set or return;
     my $set      = MT->app->registry( 'template_sets', $set_name ) or return;
-    my $fields   = $set->{sys_fields} or return;
+    
+    # In order to refresh both the blog-level and system-level custom fields,
+    # merge each of those hashes. We don't have to worry about those hashes
+    # not having unique keys, because the keys are the custom field basenames
+    # and cusotm field basenames must be unique regardless of whether they 
+    # are for the blog or system.
+    my $fields = ($set->{sys_fields}, $set->{fields}) or return;
 
   FIELD: while ( my ( $field_id, $field_data ) = each %$fields ) {
         next if UNIVERSAL::isa( $field_data, 'MT::Component' );    # plugin

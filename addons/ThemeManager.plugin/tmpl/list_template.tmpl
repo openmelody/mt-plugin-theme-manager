@@ -148,6 +148,13 @@ TC.attachLoadEvent(init);
             <__trans phrase="Selected template(s) has been copied.">
         </mtapp:statusmsg>
     </mt:if>
+    <mt:If name="custom_fields_refreshed">
+        <mtapp:statusmsg
+            id="custom_fields_refreshed"
+            class="success">
+            <__trans phrase="System and blog custom fields have been refreshed.">
+        </mtapp:statusmsg>
+    </mt:If>
 </mt:setvarblock>
 
 <mt:include name="include/header.tmpl">
