@@ -14,15 +14,14 @@ Using Theme Manager as an end user is known as "Production Mode."
 
 ## What Theme Manager Does for Designers
 
-Designers can speed theme creation with the "Designer and Developer Mode." 
-Currently, the advantages of this mode are small (see the next section, 
-Eliminate Burdensome "Template Refreshing")
+Designers can speed theme creation with the "Designer Mode." Currently, the 
+advantages of this mode are small (see the next section, Eliminate 
+Burdensome "Template Refreshing").
 
-Use the Designer and Developer Mode system-wide by visiting System > 
-Plugins > Theme Manager > Settings and selecting Designer and Developer 
-Mode.
+When a theme is applied to a blog the user is presented with the ability to 
+apply the theme in Production or Designer Mode.
 
-### Eliminate Burdensome "Template Refreshing"
+### Eliminate Burdensome "Template Refreshing" and Use Your Preferred Editor
 
 Designers who have built sites on Movable Type are all too familiar with the
 workflow to see a simple change actually appear on a web site. It goes something
@@ -95,14 +94,19 @@ disruption the live/production web site. Then, when a set of changes are
 ready, simply re-apply the theme to live site and presto, your changes
 are live.
 
+
 # Prerequisites
 
-* Movable Type 4.1 or higher
+* Movable Type 4.1 or higher 
 * Config Assistant 1.8 or higher
+
+Theme Manager is a core component to Melody, as is Config Assistant.
+
 
 # Installation
 
 This plugin is installed [just like any other Movable Type Plugin](http://www.majordojo.com/2008/12/the-ultimate-guide-to-installing-movable-type-plugins.php).
+
 
 # Reference and Documentation
 
@@ -111,8 +115,8 @@ their current theme or apply a new theme. The Theme Dashboard is populated with
 information about the current theme and links to work with the theme, all of 
 which can be specified by the theme designer.
 
-Apply a new theme by visiting the Theme Dashboard and clicking the "Apply a 
-New Theme" link to get started. A paginated view of the installed themes 
+Apply a new theme by visiting the Theme Dashboard and clicking the "Change 
+Theme" link to get started. A thumbnail view of the installed themes 
 appears. Here the user can see more detail about the theme (click the 
 thumbnail) and select a theme to apply. After selecting a theme the user 
 will be required to fill-in any fields marked "required" by the theme 
@@ -123,6 +127,19 @@ the Apply Theme list action.)
 
 Keep reading for details on creating a theme that takes full advantage of all 
 that Theme Manager offers!
+
+## Production Mode or Designer Mode?
+
+When applying a new theme to a blog one of the options presented is the 
+choice of deploying in Production Mode or Designer Mode.
+
+Production Mode is aimed at running a live site. It is most analogous to 
+how Movable Type runs out-of-the-box.
+
+Designer Mode is aimed at speeding development of a theme. The additional 
+capabilities that Designer Mode offers are currently limited to just one: 
+linking the installed template and the source file, making it easy to use 
+your preferred text editor to build a template.
 
 ## Designers: Specifying Your Theme's Details
 
@@ -455,8 +472,12 @@ language) need to be defined within your plugin. You'll need to specify an
 
 Note that Production Mode *must* be used to deploy your theme with 
 localization support. Templates are translated when they are installed. 
-When templates are linked (as in Designer and Developer Mode), however, 
-this translation does not occur.
+
+Note also that Designer Mode loses the ability to link templates if your 
+theme is built with localization support. Again, templates are translated 
+when they are installed. If a template is linked, when resynced to the 
+source template on the filesystem it will be overwritten with the 
+translated template.
 
 ### Example of Additional Template Settings
 

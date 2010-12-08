@@ -4,8 +4,8 @@ key: ThemeManager
 author_link: http://endevver.com/
 author_name: Endevver
 description: 'A comprehensive theme management plugin!'
-version: 0.10.3
-schema_version: 6
+version: 0.10.4
+schema_version: 7
 static_version: 5
 l10n_class: ThemeManager::L10N
 
@@ -35,7 +35,6 @@ list_actions:
             permission: edit_templates
 
 callbacks:
-    template_source.edit_template: $ThemeManager::ThemeManager::Plugin::xfrm_disable_tmpl_link
     template_source:               $ThemeManager::ThemeManager::Plugin::xfrm_add_thumb
     blog_template_set_change:      $ThemeManager::ThemeManager::TemplateInstall::template_set_change
     DefaultTemplateFilter:         $ThemeManager::ThemeManager::TemplateInstall::template_filter
@@ -49,6 +48,7 @@ object_types:
     blog:
         template_set_language: string meta
         theme_meta: vblob meta
+        theme_mode: string meta
 
 skip_static:
     - .psd

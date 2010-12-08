@@ -8,6 +8,7 @@ use MT;
 
 sub _refresh_all_templates {
 
+    # This sub is responsible for applying the new theme's templates.
     # This is basically lifted right from MT::CMS::Template (from Movable Type
     # version 4.261), with some necessary changes to work with Theme Manager.
     my ( $ts_id, $blog_id, $app ) = @_;
@@ -351,9 +352,9 @@ sub template_set_change {
     # is used to speed development. Eventually there will be many advantages
     # for theme creators using Designer Mode, but for now the only one is
     # that templates are linked by default.
-    my $tm = MT->component('ThemeManager');
-    my $mode = $tm->get_config_value( 'tm_mode', 'system' ) || '';
-    if ( $mode eq 'Designer and Developer Mode' ) {
+    my ( $cb, $param ) = @_;
+    my $theme_mode = $param->{blog}->theme_mode || 'production';
+    if ( $theme_mode eq 'designer' ) {
 
         # Link installed templates to theme files
         _link_templates(@_);
@@ -382,6 +383,8 @@ sub _new_blog_template_set_language {
     my ( $cb, $param ) = @_;
     my $ts_id = $param->{blog}->template_set;
 
+    # Set the template's language. If the theme has defined languages, then
+    # this may be different from the user preferred language.
     my $template_set_language = $q->param('template_set_language')
       || $app->user->preferred_language;
     my $blog = $param->{blog};
@@ -396,6 +399,12 @@ sub _link_templates {
     my $ts_id   = $param->{blog}->template_set;
 
     my $cur_ts_plugin = find_theme_plugin($ts_id);
+
+    # If translations are offered for this theme, just give up. We don't
+    # want to try to link a theme that has translations because the
+    # linking process will throw away the "__trans phrase" wrappers.
+    return if eval { $cur_ts_plugin->registry('l10n_class') };
+
     my $cur_ts_widgets =
       $cur_ts_plugin->registry( 'template_sets', $ts_id,
                                 'templates',     'widget' );
@@ -404,6 +413,7 @@ sub _link_templates {
     # should be able to edit (drag-drop) those all the time.
     my $iter = MT->model('template')
       ->load_iter( { blog_id => $blog_id, type => { not => 'backup' }, } );
+
     while ( my $tmpl = $iter->() ) {
         if (
              ( ( $tmpl->type ne 'widgetset' ) && ( $tmpl->type ne 'widget' ) )
@@ -411,16 +421,102 @@ sub _link_templates {
                   && ( $cur_ts_widgets->{ $tmpl->identifier } ) )
           )
         {
-            $tmpl->linked_file('*');
-        }
+
+            # Link the template to the source file in the theme. This has to
+            # be crafted from several pieces.
+
+            # The base_path is specified in the theme.
+            my $base_path = $cur_ts_plugin->registry( 'template_sets', $ts_id,
+                                                      'base_path' );
+
+            # The $tmpl->type needs to be fixed. Within the DB, "template
+            # modules" have the template type of "custom," not "module" as
+            # you might expect. Similarly, all of the system templates have
+            # unique identifiers. We need to use the type that config.yaml
+            # supplies so that the template identifier can be properly
+            # looked-up, and therefore the correct path can be crafted.
+            my $config_yaml_tmpl_type;
+
+            # If this is a template module ("custom" in the DB)...
+            if ( $tmpl->type eq 'custom' ) {
+                $config_yaml_tmpl_type = 'module';
+            }
+
+            # If this isn't a normal template type, it must be a system
+            # template. (System templates each have a unique $tmpl->type.)
+            elsif (    ( $tmpl->type ne 'custom' )
+                    || ( $tmpl->type ne 'index' )
+                    || ( $tmpl->type ne 'archive' )
+                    || ( $tmpl->type ne 'individual' )
+                    || ( $tmpl->type ne 'widget' )
+                    || ( $tmpl->type ne 'widgetset' ) )
+            {
+                $config_yaml_tmpl_type = 'system';
+            }
+
+            # This is just a normal defined template type (basically, any
+            # of those listed above). So just use the saved type.
+            else {
+                $config_yaml_tmpl_type = $tmpl->type;
+            }
+
+            # Get the filename of the template. We need to check if the
+            # "filename" key was used in the theme YAML and use that, or
+            # just make up the filename based on identifier.
+            my $tmpl_filename;
+            if (
+                 $cur_ts_plugin->registry(
+                                    'template_sets',   $ts_id,
+                                    'templates',       $config_yaml_tmpl_type,
+                                    $tmpl->identifier, 'filename'
+                 )
+              )
+            {
+                $tmpl_filename =
+                  $cur_ts_plugin->registry( 'template_sets', $ts_id,
+                       'templates', $config_yaml_tmpl_type, $tmpl->identifier,
+                       'filename' );
+            }
+            else {
+                $tmpl_filename = $tmpl->identifier . '.mtml';
+            }
+
+            # Assemble the path to the source template.
+            my $path = File::Spec->catfile( $cur_ts_plugin->path, $base_path,
+                                            $tmpl_filename, );
+
+            # Try to set the linked file to the source template path. First,
+            # check to see if the path is writable. If not, complain in the
+            # Activity Log.
+            if ( -w $path ) {
+                $tmpl->linked_file($path);
+            }
+            else {
+                my $tm = MT->component('ThemeManager');
+                MT->log( {
+                       level   => MT->model('log')->ERROR(),
+                       blog_id => $blog_id,
+                       message =>
+                         $tm->translate(
+                           "The template [_1] could not be linked to the "
+                             . "source template. Check permissions for [_2].",
+                           $tmpl->name,
+                           $path
+                         ),
+                    }
+                );
+            }
+        } ## end if ( ( ( $tmpl->type ne...)))
         else {
 
             # Just in case Widget Sets were previously linked,
             # now forcefully unlink!
             $tmpl->linked_file(undef);
         }
+
+        # Lastly, save the linked (or unlinked) template.
         $tmpl->save;
-    }
+    } ## end while ( my $tmpl = $iter->...)
 } ## end sub _link_templates
 
 sub _override_publishing_settings {
@@ -552,13 +648,25 @@ sub _refresh_system_custom_fields {
     my $tm       = MT->component('ThemeManager');
     my $set_name = $blog->template_set or return;
     my $set      = MT->app->registry( 'template_sets', $set_name ) or return;
-    
+
     # In order to refresh both the blog-level and system-level custom fields,
     # merge each of those hashes. We don't have to worry about those hashes
     # not having unique keys, because the keys are the custom field basenames
-    # and cusotm field basenames must be unique regardless of whether they 
+    # and cusotm field basenames must be unique regardless of whether they
     # are for the blog or system.
-    my $fields = ($set->{sys_fields}, $set->{fields}) or return;
+    my $fields = {};
+
+    # Any fields under the "sys_fields" key should be created/updated
+    # As should any key under the "fields" key. I'm not sure why/when both
+    # of these types were created/introduced. It makes sense that maybe
+    # "sys_fields" is for system custom fields and "fields" is for blog level
+    # custom fields, however the scope key means that they can be used
+    # interchangeably.
+    @$fields{ keys %{ $set->{sys_fields} } } = values %{ $set->{sys_fields} };
+    @$fields{ keys %{ $set->{fields} } }     = values %{ $set->{fields} };
+
+    # Give up if there are no custom fields to install.
+    return unless $fields;
 
   FIELD: while ( my ( $field_id, $field_data ) = each %$fields ) {
         next if UNIVERSAL::isa( $field_data, 'MT::Component' );    # plugin

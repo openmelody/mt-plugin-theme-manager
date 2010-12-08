@@ -13,9 +13,18 @@
         <input type="hidden" name="blog_id" value="<mt:Var name="blog_id">" />
         <input type="hidden" name="theme_id" value="<mt:Var name="ts_id">" />
         <input type="hidden" name="plugin_sig" value="<mt:Var name="plugin_sig">" />
+        <input type="hidden" name="theme_mode" value="<mt:Var name="theme_mode">" />
         <input type="hidden" name="save_widgetsets_beacon" value="1" />
 
 <p><__trans phrase="This template set has been translated into several languages. Select a language to be applied for the installation of this theme&rsquo;s template set."></p>
+
+<mt:If name="designer_mode_warning">
+    <mtapp:Statusmsg
+        id="designer_mode_warning"
+        class="alert">
+        <__trans phrase="You&rsquo;ve chosen to use Designer Mode with this theme, which also supports several languages. One of the features of Designer Mode is linked templates (allowing you to quickly edit from the filesystem or the administrative interface). However, themes that offer language support will not be linked because translated templates will overwrite source template files.">
+    </mtapp:Statusmsg>
+</mt:If>
 
 <select name="language">
 <mt:Loop name="languages">

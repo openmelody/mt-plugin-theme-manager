@@ -167,8 +167,7 @@ sub theme_dashboard {
 
     # In Production Mode, read the cached theme meta from the DB.
     # In Designer Mode, load the YAML and use that.
-    my $mode = $tm->get_config_value( 'tm_mode', 'system' );
-    if ( $mode eq 'Designer and Developer Mode' ) {
+    if ( $blog->theme_mode && $blog->theme_mode eq 'designer' ) {
 
         # Grab the meta. This will always find *something* even if the
         # theme plugin has been disabled/removed. The dashboard links,
@@ -179,6 +178,11 @@ sub theme_dashboard {
     else {
 
         # This is Production Mode.
+        # By "else"-ing to Production Mode, we aren't relying upon the
+        # theme_mode meta field to be set, which may be true for those who
+        # have upgraded an existing site built without a theme, or when a
+        # theme hasn't been re-selected.
+
         # If the blog has theme_meta, convert the saved YAML back into a hash.
         $theme_meta
           = eval { YAML::Tiny->read_string( $blog->theme_meta )->[0] };
@@ -193,9 +197,12 @@ sub theme_dashboard {
 
             # Turn that YAML into a plain old string and save it.
             $blog->theme_meta( $yaml->write_string() );
+            
+            # Upgraders likely also don't have the theme_mode switch set
+            $blog->theme_mode('production');
             $blog->save;
         }
-    } ## end else [ if ( $mode eq 'Designer and Developer Mode')]
+    } ## end else [ if ( $blog->theme_mode...)]
 
     # Build the theme dashboard links.
     # When in production mode, the data found in the keys should be good to
@@ -238,42 +245,6 @@ sub theme_dashboard {
         $param->{theme_thumbs_path} = $dest_path;
     }
 
-    # Are the templates linked? We use this to show/hide the Edit/View
-    # Templates links.
-    # FIXME If this is simply a boolean test, use count() not load()!!
-    my $linked = MT->model('template')
-      ->load( { blog_id => $blog->id, linked_file => '*', } );
-    if ($linked) {
-
-        # These templates *are* linked.
-        $param->{linked_theme} = 1;
-    }
-    else {
-
-        # These templates are *not* linked. Because they are not linked,
-        # it's possible the user has edited them. Return a message saying
-        # that. We can figure out which templates are edited by comparing
-        # the created_on and modified_on dates.
-        # So, first grab templates in the current blog that are not
-        # backups and that have had modifications made (modified_on col).
-        my $iter = MT->model('template')->load_iter( {
-                                            blog_id => $blog->id,
-                                            type => { not_like => 'backup' },
-                                            modified_on => { not_null => 1 },
-                                          }
-        );
-
-        # FIXME Why not_like instead of not? It's slower and you aren't using any metacharacters
-        while ( my $tmpl = $iter->() ) {
-            if ( $tmpl->modified_on > $tmpl->created_on ) {
-                $param->{templates_modified} = 1;
-
-                # Once a single modified template has been found there's
-                # no reason to search anymore.
-                last;
-            }
-        }
-    } ## end else [ if ($linked) ]
     $param->{new_theme} = $q->param('new_theme');
 
     # TODO This kind of construct indicates that we need to be our own app class
@@ -445,6 +416,8 @@ sub select_theme {
 } ## end sub select_theme
 
 sub setup_theme {
+
+    # The user has selected a theme and wants to apply it to the current blog.
     my $app = shift;
     my $q   = $app->can('query') ? $app->query : $app->param;
     my $tm  = MT->component('ThemeManager');
@@ -489,6 +462,24 @@ sub setup_theme {
     my $theme_meta
       = eval { YAML::Tiny->read_string( $theme->theme_meta )->[0] };
     $param->{ts_label} = theme_label( $theme_meta->{label}, $plugin );
+
+    # We need to give the user a chance to install the theme in either
+    # Production Mode or Designer Mode.
+    $param->{theme_mode} = $q->param('theme_mode');
+    if ( $q->param('theme_mode') ) {
+
+        # Save the theme mode selection
+        foreach my $blog_id (@blog_ids) {
+            my $blog = MT->model('blog')->load($blog_id);
+            $blog->theme_mode( $q->param('theme_mode') );
+            $blog->save;
+        }
+    }
+    else {
+
+        # The desired theme mode hasn't been selected yet.
+        return $app->load_tmpl( 'theme_mode.mtml', $param );
+    }
 
     # Check for the widgetsets beacon. It will be set after visiting the
     # "Save Widgets" screen. Or, we may bypass it because we don't always
@@ -581,6 +572,21 @@ sub setup_theme {
     # during installation.
     my @languages = _find_supported_languages($ts_id);
     if ( !$q->param('language') && ( scalar @languages > 1 ) ) {
+
+        # Languages and Designer Mode don't play too well together. Designer
+        # Mode will link templates, making it easy to edit templates from the
+        # filesystem (or GUI). When a template is installed, it is translated
+        # into the requested language. After the template is installed it is
+        # re-synced to the filesystem; this writes the translated template
+        # over the source template, effectively deleting all "__trans phrase"
+        # wrappers. We get around this by not linking templates for any theme
+        # that provides languages. But, if the user has seleted Designer Mode
+        # *and* if Languages are available, we should warn them about this
+        # limitation.
+        if ( $q->param('theme_mode') eq 'designer' ) {
+            $param->{designer_mode_warning} = 1;
+        }
+
         my @param_langs;
 
         # Load the specified plugin/theme.
@@ -595,8 +601,9 @@ sub setup_theme {
 
         }
         $param->{languages} = \@param_langs;
+
         return $app->load_tmpl( 'select_language.mtml', $param );
-    }
+    } ## end if ( !$q->param('language'...))
     else {
 
         # Either a language has been set, or there is only one language: english.
@@ -1077,30 +1084,6 @@ sub theme_info {
 
     return $app->load_tmpl( 'theme_info.mtml', $param );
 } ## end sub theme_info
-
-sub xfrm_disable_tmpl_link {
-
-    # If templates are linked, we don't want users to be able to simply unlink
-    # them, because that "breaks the seal" and lets them modify the template,
-    # so upgrades are no longer easy.
-    my ( $cb, $app, $tmpl ) = @_;
-    my $q = $app->can('query') ? $app->query : $app->param;
-    my $linked = MT->model('template')
-      ->load( { id => $q->param('id'), linked_file => '*', } );
-    if ($linked) {
-        my $old = 'name="linked_file"';
-        my $new = 'name="linked_file" disabled="disabled"';
-        $$tmpl =~ s/$old/$new/mgi;
-
-        $old = 'name="outfile"';
-        $new = 'name="outfile" disabled="disabled"';
-        $$tmpl =~ s/$old/$new/mgi;
-
-        $old = 'name="identifier"';
-        $new = 'name="identifier" disabled="disabled"';
-        $$tmpl =~ s/$old/$new/mgi;
-    }
-} ## end sub xfrm_disable_tmpl_link
 
 sub xfrm_add_thumb {
 

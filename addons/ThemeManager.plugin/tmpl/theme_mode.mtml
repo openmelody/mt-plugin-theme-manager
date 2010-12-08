@@ -7,23 +7,21 @@
 <mt:include name="dialog/header.tmpl">
 
 <div id="theme-info">
-    <form method="post" action="<mt:Var name="script_url">" name="setup_theme">
+    <form method="post" action="<mt:Var name="script_url">" name="select_theme">
         <input type="hidden" name="__mode" value="setup_theme" />
         <input type="hidden" name="_type" value="theme" />
         <input type="hidden" name="blog_id" value="<mt:Var name="blog_id">" />
         <input type="hidden" name="theme_id" value="<mt:Var name="ts_id">" />
         <input type="hidden" name="plugin_sig" value="<mt:Var name="plugin_sig">" />
-        <input type="hidden" name="theme_mode" value="<mt:Var name="theme_mode">" />
-        <input type="hidden" name="save_widgetsets_beacon" value="1" />
 
-<mt:If name="if_save_widgetsets">
-        <p><__trans phrase="<strong>Widget Sets</strong> have been modified from their default on this blog. If you are re-applying this theme to upgrade, you probably <em>should</em> save the Widget Sets so your blog continues to work as expected. If you are applying a different theme it's possible your Widget Sets won't work with the new theme, and <em>should not</em> be saved."></p>
-        <p style="margin-bottom: 30px;"><input type="checkbox" name="save_widgetsets" id="save_widgetsets" value="1" checked="checked"> <label for="save_widgetsets"><__trans phrase="Save the Widget Sets in this blog."></label></p>
-</mt:If>
-<mt:If name="if_save_widgets">
-        <p><__trans phrase="<strong>Widgets</strong> have been modified from their default on this blog. If you are re-applying this theme to upgrade, you probably <em>should</em> save the Widgets so your blog continues to work as expected. If you are applying a different theme it's possible your Widgets won't work with the new theme, and <em>should not</em> be saved."></p>
-        <p><input type="checkbox" name="save_widgets" id="save_widgets" value="1" checked="checked"> <label for="save_widgets"><__trans phrase="Save the Widgets in this blog."></label></p>
-</mt:If>
+    <p><__trans phrase="Theme Manager can deploy this theme in one of two modes: Production Mode and Designer Mode. Production Mode is used for live, production sites; Designer Mode speeds theme creation. Refer to the Theme Manager documentation for more details on the difference between these options. Select a mode for this theme on this blog below; if you&rsquo;re unsure which mode to use, select Production."></p>
+
+    <div>
+        <label><input type="radio" name="theme_mode" value="production" checked="checked" /> <__trans phrase="Production Mode"></label>
+    </div>
+    <div>
+         <label><input type="radio" name="theme_mode" value="designer" /> <__trans phrase="Designer Mode"></label>
+    </div>
 
     <div id="status">
         <div id="status-inner">
