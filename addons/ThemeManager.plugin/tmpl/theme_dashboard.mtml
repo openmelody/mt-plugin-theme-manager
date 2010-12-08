@@ -24,6 +24,13 @@
       }
       TC.attachLoadEvent(init);
     </script>
+    <mt:If name="mt_product_name" like="Movable Type">
+    <style type="text/css">
+        .listing-screen .content-nav #content-inner {
+            background:url('<mt:StaticWebPath>images/content-inner-tw.gif') no-repeat 175px 0;
+        }
+    </style>
+    </mt:If>
 </mt:SetVarBlock>
 
 <mt:SetVarBlock name="system_msg">

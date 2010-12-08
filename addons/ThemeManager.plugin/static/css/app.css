@@ -73,10 +73,11 @@ div#theme-label { display: none; }
 
 .theme-gallery-container { margin-left: 3px; }
 
+/* The melody restyling means this isn't necessary for Melody. MT still needs it however. Conditionally display it on the Theme Dashboard.
 .listing-screen .content-nav #content-inner {
     background:url('../images/content-inner-tw.gif') no-repeat 175px 0;
 }
-
+*/
 .ts-container {
     float: left;
     margin: 0 6px 15px;
