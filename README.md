@@ -74,7 +74,7 @@ should be easy and obvious. Theme Manager makes that happen. Here's how:
 Upgrading a theme should be something every user should not only be able
 to do, but something they feel comfortable and safe in doing. Sadly, that
 is not often the case. Frequently, the thought of upgrading a theme is 
-frought with anxiety because upgrading may end up breaking your web site. 
+fraught with anxiety because upgrading may end up breaking your web site. 
 And who in their right mind wants that?
 
 Theme Manager prevents this by allowing themes to operate in two modes:
@@ -105,7 +105,9 @@ Theme Manager is a core component to Melody, as is Config Assistant.
 
 # Installation
 
-This plugin is installed [just like any other Movable Type Plugin](http://www.majordojo.com/2008/12/the-ultimate-guide-to-installing-movable-type-plugins.php).
+As a core component of Melody, Theme Manager is automatically installed in the `addons` folder when Melody is installed.  
+
+Prior to version 0.9.36, Theme Manager was installed in the `plugins` folder of Movable Type. As of v0.9.36, it should be installed in the `addons` folder and any copy of Theme Manager in the `plugins` folder should be removed.  For more on the plugin installation process, see [this guide on installing plugins in Melody and Movable Type](http://www.majordojo.com/2008/12/the-ultimate-guide-to-installing-movable-type-plugins.php). Again, the one variation from the Ultimate Guide's instructions is that the Theme Manager plugin should now be installed in the `addons` folder.
 
 
 # Reference and Documentation
@@ -327,11 +329,11 @@ To create a system-level custom field (necessary is you use the `author` object 
 
 ## Designers: Specifying Default Content
 
-Theme Manager allows you to prepopulate a new web site using a theme with
+Theme Manager allows you to preload a new web site using a theme with
 default content. This is very useful when a theme requires a certain set of 
 folders, categories, pages and/or entries to be in place to function 
 properly. It is also extremely helpful in providing a better "out-of-the-box"
-end user experience. That way when a user installs and applys a theme, and
+end user experience. That way when a user installs and applies a theme, and
 then views their web site for the first time there will be content there,
 as opposed to a big empty screen. 
 
@@ -369,7 +371,7 @@ page. Also notice that a folder is being associated with the page.
 
 ### Nested Categories and Folders
 
-You can easily build category and folder heirarchies with multiple
+You can easily build category and folder hierarchies with multiple
 levels like so:
 
     content:
@@ -475,7 +477,7 @@ localization support. Templates are translated when they are installed.
 
 Note also that Designer Mode loses the ability to link templates if your 
 theme is built with localization support. Again, templates are translated 
-when they are installed. If a template is linked, when resynced to the 
+when they are installed. If a template is linked, when re-synced to the 
 source template on the filesystem it will be overwritten with the 
 translated template.
 
@@ -525,7 +527,7 @@ translated template.
 
 # Acknowledgements
 
-This plugin was commissioned by Endevver to Dan Wolfgang of [uiNNOVATIONS](http://uinnovations.com/). 
+This plugin was commissioned by Endevver from Dan Wolfgang of [uiNNOVATIONS](http://uinnovations.com/). 
 Endevver is proud to be partners with uiNNOVATIONS.
 
 # License
