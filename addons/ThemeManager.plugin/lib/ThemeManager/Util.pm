@@ -175,7 +175,10 @@ sub _return_data {
     if ( $data =~ /\.html$/ ) {
 
         # Ends with .html so this must be a filename/template.
-        eval { my $tmpl = $obj->load_tmpl($data); $data = $tmpl->output };
+        eval {
+            my $tmpl = $obj->load_tmpl($data);
+            $data    = $app->build_page($tmpl)
+        };
         $@ and warn $@; # TODO - error message
     }
     return $data;

@@ -30,7 +30,7 @@ sub _refresh_all_templates {
             $blog = MT->model('blog')->load($blog_id);
             next BLOG unless $blog;
         }
-
+        
         if ( !$can_refresh_system )
         {    # system refreshers can refresh all blogs
             my $perms = MT->model('permission')
@@ -45,7 +45,6 @@ sub _refresh_all_templates {
                 next BLOG;
             }
         }
-
         my $tmpl_list;
 
         # the user wants to back up all templates and
@@ -82,7 +81,7 @@ sub _refresh_all_templates {
             if (
                     $q->param('save_widgets')
                  && ( $tmpl->type eq 'widget' )
-                 && ( ( $tmpl->linked_file ne '*' )
+                 && ( ( $tmpl->linked_file && $tmpl->linked_file ne '*' )
                       || !defined( $tmpl->linked_file ) )
               )
             {
@@ -114,6 +113,7 @@ sub _refresh_all_templates {
 
             $blog->template_set($ts_id);
             $blog->save;
+
             $app->run_callbacks( 'blog_template_set_change',
                                  { blog => $blog } );
 
@@ -167,11 +167,29 @@ sub _create_default_templates {
     my @arch_tmpl;
     for my $val (@$tmpl_list) {
         next if $val->{global};
-        my $obj = MT::Template->new;
-
+        my $obj = MT->model('template')->new;
         local $val->{name}
           = $val->{name};    # name field is translated in "templates" call
-        local $val->{text} = $p->translate_templatized( $val->{text} );
+        # This code was added by Byrne because the localization of the $val->{text} 
+        # variable within the context of the eval block was resulting in the 
+        # translated text not to be saved to the variable.
+        my $trans = $val->{text};
+        eval {
+            $trans = $p->translate_templatized( $trans ); 
+            1
+        } or do {
+            MT->log(
+                level   => MT->model('log')->ERROR(),
+                blog_id => $blog ? $blog->id : 0,
+                message =>
+                $tm->translate(
+                    "There was an error translating the template '[_1].' Error: [_2]",
+                    $val->{name},
+                    $@
+                )
+                );
+        };
+        local $val->{text} = $trans;
 
         $obj->build_dynamic(0);
         foreach my $v ( keys %$val ) {
@@ -674,7 +692,7 @@ sub _refresh_system_custom_fields {
         delete @field{qw( blog_id basename )};
         my $field_name = delete $field{label};
         my $field_scope
-          = ( delete $field{scope} eq 'system' ? 0 : $blog->id );
+          = ( $field{scope} && delete $field{scope} eq 'system' ? 0 : $blog->id );
         $field_name = $field_name->() if 'CODE' eq ref $field_name;
 
       REQUIRED: for my $required (qw( obj_type tag )) {
