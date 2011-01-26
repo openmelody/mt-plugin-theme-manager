@@ -467,7 +467,6 @@ sub setup_theme {
     # Production Mode or Designer Mode.
     $param->{theme_mode} = $q->param('theme_mode');
     if ( $q->param('theme_mode') ) {
-
         # Save the theme mode selection
         foreach my $blog_id (@blog_ids) {
             my $blog = MT->model('blog')->load($blog_id);
@@ -476,7 +475,6 @@ sub setup_theme {
         }
     }
     else {
-
         # The desired theme mode hasn't been selected yet.
         return $app->load_tmpl( 'theme_mode.mtml', $param );
     }
@@ -550,7 +548,7 @@ sub setup_theme {
             # We're looking for any widgets that aren't linked (not "*") _or_
             # is NULL. (There's no way to do a null test during the object load.)
             foreach my $widget (@widgets) {
-                if ( ( $widget->linked_file ne '*' )
+                if ( ( $widget->linked_file && $widget->linked_file ne '*' )
                      || !defined( $widget->linked_file ) )
                 {
                     $param->{if_save_widgets} = 1;
@@ -570,6 +568,7 @@ sub setup_theme {
     # If there is more than one language supplied for the theme, we want to
     # offer the opportunity to select a language to apply to the templates
     # during installation.
+
     my @languages = _find_supported_languages($ts_id);
     if ( !$q->param('language') && ( scalar @languages > 1 ) ) {
 
@@ -583,6 +582,7 @@ sub setup_theme {
         # that provides languages. But, if the user has seleted Designer Mode
         # *and* if Languages are available, we should warn them about this
         # limitation.
+
         if ( $q->param('theme_mode') eq 'designer' ) {
             $param->{designer_mode_warning} = 1;
         }
@@ -605,7 +605,6 @@ sub setup_theme {
         return $app->load_tmpl( 'select_language.mtml', $param );
     } ## end if ( !$q->param('language'...))
     else {
-
         # Either a language has been set, or there is only one language: english.
         my $selected_lang
           = $q->param('language') ? $q->param('language') : $languages[0];
@@ -624,7 +623,6 @@ sub setup_theme {
         ThemeManager::TemplateInstall::_refresh_all_templates( $ts_id,
                                                              $blog_id, $app );
     }
-
 
     my @loop;
 
