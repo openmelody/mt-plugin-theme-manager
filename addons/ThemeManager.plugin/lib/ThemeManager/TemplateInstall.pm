@@ -170,8 +170,12 @@ sub _create_default_templates {
         my $obj = MT->model('template')->new;
         local $val->{name}
           = $val->{name};    # name field is translated in "templates" call
+        # This code was added by Byrne because the localization of the $val->{text} 
+        # variable within the context of the eval block was resulting in the 
+        # translated text not to be saved to the variable.
+        my $trans = $val->{text};
         eval {
-            local $val->{text} = $p->translate_templatized( $val->{text} ); 
+            $trans = $p->translate_templatized( $trans ); 
             1
         } or do {
             MT->log(
@@ -185,6 +189,7 @@ sub _create_default_templates {
                 )
                 );
         };
+        local $val->{text} = $trans;
 
         $obj->build_dynamic(0);
         foreach my $v ( keys %$val ) {
