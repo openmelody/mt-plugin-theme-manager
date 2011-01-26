@@ -76,6 +76,6 @@ options:
 tasks:
     site_preview_image:
         label: 'Create a site preview image for the Theme Dashboard'
-        frequency: 1
+        frequency: 86400
         code: $ThemeManager::ThemeManager::Plugin::site_preview_image
 
