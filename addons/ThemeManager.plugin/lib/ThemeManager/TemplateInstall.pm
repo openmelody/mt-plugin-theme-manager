@@ -897,7 +897,9 @@ sub xfrm_add_language {
 
     my $old = q{<mt:setvarblock name="html_head" append="1">};
     my $add = <<'HTML';
+<mt:unless tag="ProductName" eq="Melody">
 <script src="<mt:Var name="static_uri">jquery/jquery.js" type="text/javascript"></script>
+</mt:unless>
 <script type="text/javascript">
 $(document).ready( function() {
     // Expand upon the Template Sets dropdown with a visual chooser.

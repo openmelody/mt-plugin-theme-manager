@@ -36,7 +36,9 @@
 </mt:setvarblock>
 <mt:setvarblock name="html_head" append="1">
 <link rel="stylesheet" href="<mt:PluginStaticWebPath component="ThemeManager">css/app.css" type="text/css" />
+<mt:unless tag="ProductName" eq="Melody">
 <script type="text/javascript" src="<mt:Var name="static_uri">jquery/jquery.js"></script>
+</mt:unless>
 <script type="text/javascript">
 
 $(document).ready( function() {
