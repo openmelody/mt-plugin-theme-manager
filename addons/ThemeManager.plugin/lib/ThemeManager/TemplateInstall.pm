@@ -901,7 +901,7 @@ sub xfrm_add_language {
 <script src="<mt:Var name="static_uri">jquery/jquery.js" type="text/javascript"></script>
 </mt:unless>
 <script type="text/javascript">
-$(document).ready( function() {
+jQuery(document).ready( function($) {
     // Expand upon the Template Sets dropdown with a visual chooser.
     $('#template_set-field .field-content').append('<div class="hint"><__trans phrase="Select a theme template set to create a new blog with, or use the"> <a href="javascript:void(0)" onclick="return openDialog(false, \'select_theme\')"><__trans phrase="visual chooser"></a>.</div>');
     // Add an ID to the template set dropdown just to make things easier.
