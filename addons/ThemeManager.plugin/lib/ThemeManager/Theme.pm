@@ -13,7 +13,7 @@ __PACKAGE__->install_properties( {
                                     'theme_meta' => 'blob',
                                },
                                indexes    => { plugin_sig => 1, ts_id => 1, },
-                               datasource => 'theme',
+                               datasource => 'tm_theme',
                                primary_key => 'id',
                              }
 );
