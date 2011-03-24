@@ -1,4 +1,4 @@
-$(document).ready( function() {
+jQuery(document).ready( function($) {
     $('h2#page-title span').html( $('#content-nav ul li.active a b').html() );
     $('#fieldsets input, #fieldsets select, #fieldsets textarea').change( function () {
         var changed = $(this).parent().parent().parent().attr('id');

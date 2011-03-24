@@ -41,7 +41,7 @@
 </mt:unless>
 <script type="text/javascript">
 
-$(document).ready( function() {
+jQuery(document).ready( function($) {
   $('td.status a').click( function() {
     var id = $(this).parents('tr').find('.cb input').val();
     var link = $(this);
