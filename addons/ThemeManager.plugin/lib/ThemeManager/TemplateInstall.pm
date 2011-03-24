@@ -197,6 +197,8 @@ sub _create_default_templates {
         }
         $obj->blog_id( $blog->id );
         if ( my $pub_opts = $val->{publishing} ) {
+            print STDERR "Processing template of type '".$obj->type.":' ".$obj->name." (include: ".
+                $pub_opts->{include_with_ssi}.")\n";
             $obj->include_with_ssi(1) if $pub_opts->{include_with_ssi};
         }
         if ( ( 'widgetset' eq $val->{type} ) && ( exists $val->{widgets} ) ) {
@@ -205,6 +207,7 @@ sub _create_default_templates {
                  MT::Template->widgets_to_modulesets( $modulesets, $blog->id )
             );
         }
+        print STDERR "Saving template '".$obj->name."' with include_with_ssi=".$obj->include_with_ssi."\n";
         $obj->save;
 
         if ( $val->{mappings} ) {
@@ -567,9 +570,9 @@ sub _set_module_caching_prefs {
                         $tmpl->$var($val);
                     }
                 }
-                foreach (qw( include_with_ssi )) {
-                    $tmpl->$_( $tmpls->{$t}->{$m}->{cache}->{$_} );
-                }
+#                foreach (qw( include_with_ssi )) {
+#                    $tmpl->$_( $tmpls->{$t}->{$m}->{cache}->{$_} );
+#                }
                 $tmpl->save;
             }
         }
