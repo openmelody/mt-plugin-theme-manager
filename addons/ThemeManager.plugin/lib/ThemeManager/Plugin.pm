@@ -46,7 +46,7 @@ sub update_menus {
 
         # Add the new template menu option, which is actually a link to the
         # Theme Dashboard > Templates screen.
-        'design:template' => {
+        'design:templates' => {
             label      => 'Templates',
             order      => 1000,
             view       => 'blog',
