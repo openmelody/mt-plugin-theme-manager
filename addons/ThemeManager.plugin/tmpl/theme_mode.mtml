@@ -10,7 +10,11 @@
     <form method="post" action="<mt:Var name="script_url">" name="select_theme">
         <input type="hidden" name="__mode" value="setup_theme" />
         <input type="hidden" name="_type" value="theme" />
+    <mt:If name="blog_ids">
+        <input type="hidden" name="blog_ids" value="<mt:Var name="blog_ids">" />
+    <mt:Else>
         <input type="hidden" name="blog_id" value="<mt:Var name="blog_id">" />
+    </mt:If>
         <input type="hidden" name="theme_id" value="<mt:Var name="ts_id">" />
         <input type="hidden" name="plugin_sig" value="<mt:Var name="plugin_sig">" />
 
