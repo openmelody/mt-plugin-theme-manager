@@ -670,12 +670,12 @@ sub _refresh_system_custom_fields {
     # In order to refresh both the blog-level and system-level custom fields,
     # merge each of those hashes. We don't have to worry about those hashes
     # not having unique keys, because the keys are the custom field basenames
-    # and cusotm field basenames must be unique regardless of whether they
+    # and custom field basenames must be unique regardless of whether they
     # are for the blog or system.
     my $fields = {};
 
     # Any fields under the "sys_fields" key should be created/updated
-    # As should any key under the "fields" key. I'm not sure why/when both
+    # as should any key under the "fields" key. I'm not sure why/when both
     # of these types were created/introduced. It makes sense that maybe
     # "sys_fields" is for system custom fields and "fields" is for blog level
     # custom fields, however the scope key means that they can be used
@@ -723,22 +723,27 @@ sub _refresh_system_custom_fields {
         if ($field_obj) {
 
             # Warn if the type is different.
-            MT->log( {
-                     level   => MT->model('log')->WARNING(),
-                     blog_id => $field_scope,
-                     message =>
-                       $tm->translate(
-                          'Could not install custom field [_1] on blog [_2]: '
-                            . 'the blog already has a field [_1] with a '
-                            . 'conflicting type',
-                          $field_id,
-                       ),
-                   }
-            ) if $field_obj->type ne $field_data->{type};
-            next FIELD;
+            if ($field_obj->type ne $field_data->{type}) {
+                MT->log( {
+                         level   => MT->model('log')->WARNING(),
+                         blog_id => $field_scope,
+                         message =>
+                           $tm->translate(
+                              'Could not install custom field [_1] on blog [_2]: '
+                                . 'the blog already has a field [_1] with a '
+                                . 'conflicting type',
+                              $field_id,
+                           ),
+                       }
+                );
+                next FIELD;
+            }
         }
-
-        $field_obj = MT->model('field')->new;
+        else {
+            
+            # This field doesn't exist yet.
+            $field_obj = MT->model('field')->new;
+        }
 
         #use Data::Dumper;
         #MT->log("Setting fields: " . Dumper(%field));
