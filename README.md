@@ -1,22 +1,23 @@
 # About the Theme Manager plugin for Movable Type and Melody
 
-Theme Manager is a plugin for Movable Type and Melody created for designers and 
-users with an express goal of making it much easier to both build and use themes
-on the Movable Type and Melody platforms.
+Theme Manager is a plugin for Movable Type and Melody created for designers
+and users with an express goal of making it much easier to both build and use
+themes on the Movable Type and Melody platforms.
 
 ## What Theme Manager Does for End Users
 
-Theme Manager provides a much more intuitive administrative interface for end 
-users allowing them to more easily apply and customize a theme. Furthermore, it
-virtually eliminates the need for end users to edit or worry about templates.
+Theme Manager provides a much more intuitive administrative interface for end
+users allowing them to more easily apply and customize a theme. Furthermore,
+it virtually eliminates the need for end users to edit or worry about
+templates.
 
 Using Theme Manager as an end user is known as "Production Mode."
 
 ## What Theme Manager Does for Designers
 
-Designers can speed theme creation with the "Designer Mode." Currently, the 
-advantages of this mode are small (see the next section, Eliminate 
-Burdensome "Template Refreshing").
+Designers can speed theme creation with the "Designer Mode." Currently, the
+advantages of this mode are small (see the next section, Eliminate Burdensome
+"Template Refreshing").
 
 When a theme is applied to a blog the user is presented with the ability to 
 apply the theme in Production or Designer Mode.
@@ -24,8 +25,8 @@ apply the theme in Production or Designer Mode.
 ### Eliminate Burdensome "Template Refreshing" and Use Your Preferred Editor
 
 Designers who have built sites on Movable Type are all too familiar with the
-workflow to see a simple change actually appear on a web site. It goes something
-like this:
+workflow to see a simple change actually appear on a web site. It goes
+something like this:
 
 1. Edit template on file system.
 2. Go into MT, refresh template to pull in changes.
@@ -40,10 +41,6 @@ Theme Manager installed, when you edit a theme on the filesystem, the
 theme is immediately updated in Movable Type. Then republishing that file
 is as simple as clicking a rebuild icon next to the template or content
 you would like refreshed. 
-
-*Coming soon: see your changes in real time. In a future version of Theme
-Manager changes made to a theme will be reflected on the live site
-immediately. No refreshing and no republishing required.*
 
 ### Create Better Products
 
@@ -71,28 +68,21 @@ should be easy and obvious. Theme Manager makes that happen. Here's how:
 
 ## Don't Let Upgrades Break Your Theme
 
-Upgrading a theme should be something every user should not only be able
-to do, but something they feel comfortable and safe in doing. Sadly, that
-is not often the case. Frequently, the thought of upgrading a theme is 
-fraught with anxiety because upgrading may end up breaking your web site. 
-And who in their right mind wants that?
+Upgrading a theme should be something every user should not only be able to
+do, but something they feel comfortable and safe in doing. Sadly, that is not
+often the case. Frequently, the thought of upgrading a theme is fraught with
+anxiety because upgrading may end up breaking your web site. And who in their
+right mind wants that?
 
 Theme Manager prevents this by allowing themes to operate in two modes:
-developer mode and production mode. 
+developer mode and production mode.
 
-In developer mode, a theme in the CMS is linked directly to the theme's 
-source files on the file system. When the theme changes on the file 
-system, it changes in the CMS. This helps make iterating through 
-changes to your web site much faster and more enjoyable. 
+In developer mode, a theme in the CMS is linked directly to the theme's source
+files on the file system. When the theme changes on the file system, it
+changes in the CMS. This helps make iterating through changes to your web site
+much faster and more enjoyable.
 
-When a theme is in production mode, then the link between
-the CMS and theme's source files are broken, such that changes to the 
-theme on the filesystem will not automatically appear on the live site.
-This allows for designers to work within the CMS on changes to a theme
-without fear of those changes they are iterating on and testing
-disruption the live/production web site. Then, when a set of changes are
-ready, simply re-apply the theme to live site and presto, your changes
-are live.
+When a theme is in production mode, then the link between the CMS and theme's source files are broken, such that changes to the theme on the filesystem will not automatically appear on the live site. This allows for designers to work within the CMS on changes to a theme without fear of those changes they are iterating on and testing disruption the live/production web site. Then, when a set of changes are ready, simply re-apply the theme to live site and presto, your changes are live.
 
 
 # Prerequisites
@@ -105,24 +95,32 @@ Theme Manager is a core component to Melody, as is Config Assistant.
 
 # Installation
 
-As a core component of Melody, Theme Manager is automatically installed in the `addons` folder when Melody is installed.  
+As a core component of Melody, Theme Manager is automatically installed in the
+`addons` folder when Melody is installed.
 
-Prior to version 0.9.36, Theme Manager was installed in the `plugins` folder of Movable Type. As of v0.9.36, it should be installed in the `addons` folder and any copy of Theme Manager in the `plugins` folder should be removed.  For more on the plugin installation process, see [this guide on installing plugins in Melody and Movable Type](http://www.majordojo.com/2008/12/the-ultimate-guide-to-installing-movable-type-plugins.php). Again, the one variation from the Ultimate Guide's instructions is that the Theme Manager plugin should now be installed in the `addons` folder.
+Prior to version 0.9.36, Theme Manager was installed in the `plugins` folder
+of Movable Type. As of v0.9.36, it should be installed in the `addons` folder
+and any copy of Theme Manager in the `plugins` folder should be removed. For
+more on the plugin installation process, see the [Easy Plugin Installation
+Guide](https://github.com/openmelody/melody/wiki/install-EasyPluginInstallGuide).
+Again, the one variation from the Easy Plugin Installation Guide's
+instructions is that the Theme Manager plugin should now be installed in the
+`addons` folder.
 
 
 # Reference and Documentation
 
-A user can visit the Design menu and choose Theme Dashboard to interact with 
-their current theme or apply a new theme. The Theme Dashboard is populated with 
-information about the current theme and links to work with the theme, all of 
-which can be specified by the theme designer.
+A user can visit the Design menu and choose Theme Dashboard to interact with
+their current theme or apply a new theme. The Theme Dashboard is populated
+with information about the current theme and links to work with the theme, all
+of which can be specified by the theme designer.
 
-Apply a new theme by visiting the Theme Dashboard and clicking the "Change 
-Theme" link to get started. A thumbnail view of the installed themes 
-appears. Here the user can see more detail about the theme (click the 
-thumbnail) and select a theme to apply. After selecting a theme the user 
-will be required to fill-in any fields marked "required" by the theme 
-designer to finish the process.
+Apply a new theme by visiting the Theme Dashboard and clicking the "Change
+Theme" link to get started. A thumbnail view of the installed themes appears.
+Here the user can see more detail about the theme (click the thumbnail) and
+select a theme to apply. After selecting a theme the user will be required to
+fill-in any fields marked "required" by the theme designer to finish the
+process.
 
 (Need to apply a theme to many blogs? Visit System Overview > Blogs and use 
 the Apply Theme list action.)
@@ -132,26 +130,26 @@ that Theme Manager offers!
 
 ## Production Mode or Designer Mode?
 
-When applying a new theme to a blog one of the options presented is the 
-choice of deploying in Production Mode or Designer Mode.
+When applying a new theme to a blog one of the options presented is the choice
+of deploying in Production Mode or Designer Mode.
 
-Production Mode is aimed at running a live site. It is most analogous to 
-how Movable Type runs out-of-the-box.
+Production Mode is aimed at running a live site. It is most analogous to how
+Movable Type runs out-of-the-box.
 
-Designer Mode is aimed at speeding development of a theme. The additional 
-capabilities that Designer Mode offers are currently limited to just one: 
-linking the installed template and the source file, making it easy to use 
-your preferred text editor to build a template.
+Designer Mode is aimed at speeding development of a theme. The additional
+capabilities that Designer Mode offers are currently limited to just one:
+linking the installed template and the source file, making it easy to use your
+preferred text editor to build a template.
 
 ## Designers: Specifying Your Theme's Details
 
-First, you'll need to build a theme. A theme is a combination of images, 
-Javascript, CSS, and templates -- all of which are packaged into a plugin and 
-organized by a `config.yaml` file. Theme Manager adds several keys to the 
-`config.yaml` of your theme to  help you populate the Theme Dashboard.
+First, you'll need to build a theme. A theme is a combination of images,
+Javascript, CSS, and templates -- all of which are packaged into a plugin and
+organized by a `config.yaml` file. Theme Manager adds several keys to the
+`config.yaml` of your theme to help you populate the Theme Dashboard.
 
-Tip: use Config Assistant to add user-fillable fields to your theme, as well 
-as for the static file copy feature, negating the need to include an 
+Tip: use Config Assistant to add user-fillable fields to your theme, as well
+as for the static file copy feature, negating the need to include an
 `mt-static` folder with your theme distribution!
 
 The following keys are available:
@@ -170,18 +168,19 @@ The following keys are available:
   documentation is displayed.
 * `description` - A description of your theme. If unspecified, this falls back
   to the plugin's `description` value, if specified.
-* `version` - The version number of your theme. If unspecified, this falls back
-  to the plugin's `version` value, if specified.
+* `version` - The version number of your theme. If unspecified, this falls
+  back to the plugin's `version` value, if specified.
 * `paypal_email` - A valid email address that users can donate through PayPal
-  to you. If unspecified, this falls back to the root key `paypal_email` value.
+  to you. If unspecified, this falls back to the root key `paypal_email`
+  value.
 * `about_designer` - A description of you! If unspecified, this falls back
-    to the plugin's `about_designer` value, if specified.
+  to the plugin's `about_designer` value, if specified.
 
-Notice that each value has a fallback value that is defined by your plugin. The
-real benefit of this is that you can have multiple template sets in your theme.
-Each template set may have its own `version` and `description`, but may fall 
-back to the plugin-level `doc_link` for both themes, for example. See their use
-in the example below.
+Notice that each value has a fallback value that is defined by your plugin.
+The real benefit of this is that you can have multiple template sets in your
+theme. Each template set may have its own `version` and `description`, but may
+fall back to the plugin-level `doc_link` for both themes, for example. See
+their use in the example below.
 
 The `description`, `documentation` and `about_designer` keys are special, in 
 that you can supply text to them in a variety of ways. This gives you the 
@@ -204,14 +203,14 @@ opportunity to include simple or complex HTML along with inline CSS. Examples:
 Additionally, the Theme Chooser will display images to help the user select a 
 theme.
 
-* `thumbnail` - a thumbnail image of your theme, measuring 175 x 140 pixels. This 
-  image is displayed in the Theme Chooser selection grid. A generic theme image 
-  will be displayed if none is supplied.
-* `preview` - a larger thumbnail image of your theme, measuring 300 x 240 pixels.
-  This image is displayed in the "details" of the Theme Chooser. A generic theme 
+* `thumbnail` - a thumbnail image of your theme, measuring 175 x 140 pixels.
+  This image is displayed in the Theme Chooser selection grid. A generic theme
   image will be displayed if none is supplied.
-* Any option marked with the `required: 1` key:value pair will be displayed after
-  the user has selected a theme.
+* `preview` - a larger thumbnail image of your theme, measuring 300 x 240
+  pixels. This image is displayed in the "details" of the Theme Chooser. A
+  generic theme image will be displayed if none is supplied.
+* Any option marked with the `required: 1` key:value pair will be displayed
+  after the user has selected a theme.
 
 In the below `config.yaml` example, notice that within the template set ID 
 (`my_awesome_theme`), the above keys are used. Also note the `options` and 
@@ -220,7 +219,6 @@ Config Assistant. Notice that the last key is `required: 1`: that marks this
 field as "required" for this theme. When a user selects this theme with the 
 Theme Chooser, they will need to populate this field in order to complete the 
 theme installation.
-
 
     name: Awesomeness
     version: 1.0
@@ -252,7 +250,6 @@ theme installation.
                       sub { return 1; }
                     required: 1
 
-
 The Theme Dashboard can display links to customize the current theme, if the 
 theme has been created with such flexibility:
 
@@ -272,9 +269,13 @@ that's beyond the scope of this document.
 
 ## Designers: Create Custom Fields
 
-Many sites require the use of the Movable Type Commercial Pack's Custom Fields (part of MT Pro). If fields are specified in your theme's `config.yaml` they can be automatically created when you deploy your theme. Fields can also be "refreshed" from the Theme Dashboard's Customization tab.
+Many sites require the use of the Movable Type Commercial Pack's Custom Fields
+(part of MT Pro). If fields are specified in your theme's `config.yaml` they
+can be automatically created when you deploy your theme. Fields can also be
+"refreshed" from the Theme Dashboard's Customization tab.
 
-The following example shows how to add a text custom field for Entries to the theme we're building.
+The following example shows how to add a text custom field for Entries to the
+theme we're building.
 
     template_sets:
         my_awesome_theme:
@@ -295,9 +296,13 @@ The key `entry_extra_text_field` is the basename of this field.
 
 The `description`, `required` and `default` keys are optional.
 
-The key `obj_type` is the type of object this field targets; `entry`, `page`, `category`, `folder`, and `author` are valid. These correlate to the System Object field in the GUI, of course.
+The key `obj_type` is the type of object this field targets; `entry`, `page`,
+`category`, `folder`, and `author` are valid. These correlate to the System
+Object field in the GUI, of course.
 
-The key `type` is the type of field to be created. Note that this is the key name of the field, not the public-facing name you see in the GUI. The Commercial Pack defines the following types of fields with these keys:
+The key `type` is the type of field to be created. Note that this is the key
+name of the field, not the public-facing name you see in the GUI. The
+Commercial Pack defines the following types of fields with these keys:
 
 * Text: `text`
 * Multi-Line Text: `textarea`
@@ -313,9 +318,11 @@ The key `type` is the type of field to be created. Note that this is the key nam
 * Image: `asset.image`
 * Video: `asset.video`
 
-If you have other custom fields available they may also be specified in your theme's `config.yaml`; you just need to specify the key correctly.
+If you have other custom fields available they may also be specified in your
+theme's `config.yaml`; you just need to specify the key correctly.
 
-To create a system-level custom field (necessary is you use the `author` object type), include the `scope` key:
+To create a system-level custom field (necessary is you use the `author`
+object type), include the `scope` key:
 
     template_sets:
         my_awesome_theme:
@@ -747,17 +754,17 @@ That is, in YAML you may specify an undefined value with `~`.
 
 ## Designers: Specifying Default Content
 
-Theme Manager allows you to preload a new web site using a theme with
-default content. This is very useful when a theme requires a certain set of 
-folders, categories, pages and/or entries to be in place to function 
-properly. It is also extremely helpful in providing a better "out-of-the-box"
-end user experience. That way when a user installs and applies a theme, and
-then views their web site for the first time there will be content there,
-as opposed to a big empty screen. 
+Theme Manager allows you to preload a new web site using a theme with default
+content. This is very useful when a theme requires a certain set of folders,
+categories, pages and/or entries to be in place to function properly. It is
+also extremely helpful in providing a better "out-of-the-box" end user
+experience. That way when a user installs and applies a theme, and then views
+their web site for the first time there will be content there, as opposed to a
+big empty screen.
 
 To specify default content, utilize the `content` property in your theme's
 config.yaml structure. Here is an example config.yaml file that specifies
-three default categories, a default folder, a default entry, and an about 
+three default categories, a default folder, a default entry, and an about
 page. Also notice that a folder is being associated with the page.
 
     template_sets:
@@ -833,12 +840,12 @@ to use these keys.
 
 ### Efficient Publishing
 
-`build_type` - the build type (or publishing method) can be specified 
-for both index and archive templates. Specifying the `build_type` of 
-templates is a great way to control what is republished when; look at the 
-Publishing Profiles (in Design > Templates) for inspiration about the 
-benefits of specifying this option for each template. Numerals 0-4 are valid 
-`build_type` values, corresponding to the options listed below:
+`build_type` - the build type (or publishing method) can be specified for both
+index and archive templates. Specifying the `build_type` of templates is a
+great way to control what is republished when; look at the Publishing Profiles
+(in Design > Templates) for inspiration about the benefits of specifying this
+option for each template. Numerals 0-4 are valid `build_type` values,
+corresponding to the options listed below:
 
     * 0: Do Not Publish
     * 1: Static (the default method)
