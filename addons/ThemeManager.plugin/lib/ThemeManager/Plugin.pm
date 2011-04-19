@@ -92,7 +92,7 @@ sub update_page_actions {
         list_templates => {
             refresh_fields => {
                 label      => "Refresh Custom Fields",
-                order      => 1010,
+                order      => 1,
                 permission => 'edit_templates',
                 condition  => sub {
                     MT->component('Commercial') && MT->app->blog;
@@ -104,6 +104,22 @@ sub update_page_actions {
                     ThemeManager::TemplateInstall::_refresh_system_custom_fields(
                                                                        $blog);
                     $app->add_return_arg( custom_fields_refreshed => 1 );
+                    $app->call_return;
+                },
+            },
+            refresh_fd_fields => {
+                label      => "Refresh Field Day fields",
+                order      => 2,
+                permission => 'edit_templates',
+                condition  => sub {
+                    MT->component('FieldDay') && MT->app->blog;
+                },
+                code => sub {
+                    my ($app) = @_;
+                    $app->validate_magic or return;
+                    my $blog = $app->blog;
+                    ThemeManager::TemplateInstall::_refresh_fd_fields($blog);
+                    $app->add_return_arg( fd_fields_refreshed => 1 );
                     $app->call_return;
                 },
             },
@@ -267,6 +283,7 @@ sub theme_dashboard {
     $param->{template_page_actions} = $app->page_actions('list_templates');
 
     $param->{custom_fields_refreshed} = $q->param('custom_fields_refreshed');
+    $param->{fd_fields_refreshed}     = $q->param('fd_fields_refreshed');
 
     my $tmpl = $tm->load_tmpl('theme_dashboard.mtml');
     return $app->listing( {

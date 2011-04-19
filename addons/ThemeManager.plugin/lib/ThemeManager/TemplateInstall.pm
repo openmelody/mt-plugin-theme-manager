@@ -656,7 +656,8 @@ sub _set_index_publish_type {
 sub _install_template_set_fields {
     my ( $cb, $param ) = @_;
     my $blog = $param->{blog} or return;
-    return _refresh_system_custom_fields($blog);
+    _refresh_system_custom_fields($blog);
+    _refresh_fd_fields($blog);
 }
 
 sub _refresh_system_custom_fields {
@@ -757,6 +758,88 @@ sub _refresh_system_custom_fields {
         $field_obj->save() or die $field_obj->errstr();
     } ## end while ( my ( $field_id, $field_data...))
 } ## end sub _refresh_system_custom_fields
+
+sub _refresh_fd_fields {
+    my ($blog) = @_;
+    return unless MT->component('FieldDay');
+
+    my $tm       = MT->component('ThemeManager');
+    my $set_name = $blog->template_set or return;
+    my $set      = MT->app->registry( 'template_sets', $set_name ) or return;
+    
+    # Field Day fields are all defined under the fd_fields key.
+  FIELD: while ( my ( $field_id, $field_data ) = each %{$set->{fd_fields}} ) {
+        next if UNIVERSAL::isa( $field_data, 'MT::Component' );    # plugin
+        my %field = %$field_data;
+        delete @field{qw( blog_id basename )};
+        my $field_scope
+          = ( $field{scope} && delete $field{scope} eq 'system' ? 0 : $blog->id );
+
+      REQUIRED: for my $required (qw( obj_type type )) {
+            next REQUIRED if $field{$required};
+            MT->log( {
+                       level   => MT->model('log')->ERROR(),
+                       blog_id => $field_scope,
+                       message =>
+                         $tm->translate(
+                                 'Could not install Field Day field [_1]: field '
+                                   . 'attribute [_2] is required',
+                                 $field_id,
+                                 $required,
+                         ),
+                     }
+            );
+            next FIELD;
+        }
+
+        # Does the blog have a field with this basename?
+        my $field_obj = MT->model('fdsetting')->load( {
+                                  blog_id     => $field_scope,
+                                  name        => $field_id,
+                                  object_type => $field_data->{obj_type} || q{},
+                                }
+        );
+
+        if ($field_obj) {
+
+            # Warn if the type is different.
+            if ($field_obj->type ne $field_data->{type}) {
+                MT->log( {
+                         level   => MT->model('log')->WARNING(),
+                         blog_id => $field_scope,
+                         message =>
+                           $tm->translate(
+                              'Could not install Field Day field [_1] on blog [_2]: '
+                                . 'the blog already has a field [_1] with a '
+                                . 'conflicting type',
+                              $field_id,
+                           ),
+                       }
+                );
+                next FIELD;
+            }
+        }
+        else {
+            
+            # This field doesn't exist yet.
+            $field_obj = MT->model('fdsetting')->new;
+        }
+
+        # The label field needs to be dereferenced.
+        $field_data->{data}->{label} = &{$field_data->{data}->{label}};
+
+        $field_obj->set_values( {
+                                  blog_id     => $field_scope,
+                                  name        => $field_id,
+                                  object_type => $field_data->{obj_type},
+                                  order       => $field_data->{order},
+                                  type        => $field_data->{type},
+                                  data        => $field_data->{data},
+                                }
+        );
+        $field_obj->save() or die $field_obj->errstr();
+    } ## end while ( my ( $field_id, $field_data...))
+} ## end sub _refresh_fd_fields
 
 sub _install_categories {
     return _install_containers( 'category', 'categories', @_ );

@@ -272,7 +272,7 @@ that's beyond the scope of this document.
 
 ## Designers: Create Custom Fields
 
-Many sites require the use of the Movable Type Commercial Pack's custom fields (part of MT Pro). If fields are specified in your theme's `config.yaml` they can be automatically created when you deploy your theme. Fields can also be "refreshed" from the Theme Dashboard's Customization tab.
+Many sites require the use of the Movable Type Commercial Pack's Custom Fields (part of MT Pro). If fields are specified in your theme's `config.yaml` they can be automatically created when you deploy your theme. Fields can also be "refreshed" from the Theme Dashboard's Customization tab.
 
 The following example shows how to add a text custom field for Entries to the theme we're building.
 
@@ -288,6 +288,8 @@ The following example shows how to add a text custom field for Entries to the th
                     obj_type: entry
                     type: text
                     tag: EntryExtraTextField
+
+Custom Field definitions appear beneath the key `fields`.
 
 The key `entry_extra_text_field` is the basename of this field.
 
@@ -325,6 +327,422 @@ To create a system-level custom field (necessary is you use the `author` object 
                     type: textarea
                     tag: AuthorBio
                     scope: system
+
+## Designers: Create Field Day Fields
+
+Another tool for creating additional fields is [Field Day](https://github.com/movabletype/mt-plugin-field-day). As with the
+Commercial Pack's Custom Fields, Field Day fields can be specified in your
+theme's `config.yaml` and will be automatically created when you deploy your
+theme. Fields can also be "refreshed" from the Theme Dashboard's Customization
+tab.
+
+Field Day field definitions are sufficiently complex and varied that writing 
+YAML from scratch for them is likely to be a very frustrating exercise. A much 
+easier approach is to create the fields within the Field Day interface, then 
+use the [Theme Exporter](https://github.com/openmelody/mt-plugin-theme-export) 
+plugin to generate the YAML for you, which can then be copy-pasted into your 
+theme.
+
+Field Day fields are defined differently from Custom Fields, and the YAML 
+mirrors that difference. The following example shows how to add a textarea 
+Field Day field for Entries to the theme we're building.
+
+    template_sets:
+        my_awesome_theme:
+            label: 'My Awesome Theme'
+            fd_fields:
+                entry_extra_text_field:
+                    obj_type: entry
+                    type: field
+                    order: 1
+                    data:
+                        label: 'Extra Text Field'
+                        type: TextArea
+                        group: 0
+                        options:
+                            width: 400
+                            label_display: left
+
+Field Day field definitions appear beneath the `fd_fields` key.
+
+The key `entry_extra_text_field` is the basename of this field. Within the
+Field Day interface, this field is referred to as the "Field."
+
+The key `obj_type` is the type of object this field targets Valid object
+types:
+
+* `asset`
+* `blog`
+* `category`
+* `comment`
+* `entry`
+* `folder`
+* `page`
+* `system`
+* `template`
+* `user`
+
+The key `type` refers to whether you're creating a `field` or a `group`. The
+key `order` determines the order that fields are displayed in on the editing
+screen.
+
+Beneath the `data` key you'll find four keys. The `label` key is the
+user-facing name for this field.
+
+Use the `type` field to define the type of field to be created. Valid field
+types are:
+
+* `Checkbox`
+* `ChoiceList`
+* `Date`
+* `File`
+* `LinkedAsset`
+* `LinkedBlog`
+* `LinkedCategory`
+* `LinkedEntry`
+* `LinkedFolder`
+* `LinkedPage`
+* `LinkedTemplate`
+* `LinkedUser`
+* `RadioButtons`
+* `SelectMenu`
+* `StarRating`
+* `Text`
+* `TextArea`
+
+The `group` key refers to a Group ID to determine what Group a field belongs
+to. `0` means the field does not belong to a Group. Theme Manager currently
+does not support setting the Group through `config.yaml`.
+
+A lot of metadata is defined beneath the `options` key. The contents of this
+key vary *significantly* for each field type. For each field type you're
+using, the easiest approach is to create the field in the Field Day interface
+then use Theme Exporter to generate the YAML for you. Fields are also
+recreated below in Field Day Field Examples as reference.
+
+### Field Day Field Examples
+
+Each Field Day `type` is shown below for reference. Because of the variety and
+complexity in defining a Field Day field, the recommended approach is to
+create the field in the Field Day interface then use Theme EXporter to
+generate the YAML for you.
+
+In the examples shown here, note that any key with the value `~` is undefined.
+That is, in YAML you may specify an undefined value with `~`.
+
+#### Checkbox
+
+    checkbox:
+      data:
+        group: 0
+        label: Checkbox
+        options:
+          label_display: left
+          read_only: ~
+        type: Checkbox
+      obj_type: entry
+      order: 1
+      type: field
+
+#### Date
+
+    date:
+      data:
+        group: 0
+        label: Date
+        options:
+          ampm: on
+          ampm_default: pm
+          date_order: mdy
+          default_year: on
+          label_display: left
+          minutes: 5
+          read_only: ~
+          show_hms: ~
+          text_entry: on
+          time: hhmm
+          y_end: 2010
+          y_start: 2008
+        type: Date
+      obj_type: entry
+      order: 2
+      type: field
+
+#### File
+
+    file:
+      data:
+        group: 0
+        label: File
+        options:
+          filenames: dirify
+          label_display: left
+          overwrite: ~
+          read_only: ~
+          upload_path: ''
+          url_path: ''
+        type: File
+      obj_type: entry
+      order: 3
+      type: field
+
+#### Linked Asset
+
+    linked_asset:
+      data:
+        group: 0
+        label: 'Linked Asset'
+        options:
+          allow_create: on
+          asset_type: ''
+          autocomplete: on
+          autocomplete_fields: ~
+          create_fields: ''
+          label_display: left
+          linked_blog_id: ''
+          overwrite: ~
+          read_only: ~
+          required_fields: ~
+          show_autocomplete_values: ~
+          unique_fields: ~
+          upload_path: ''
+          upload_path_relative: on
+          url_path: ''
+          url_path_relative: on
+        type: LinkedAsset
+      obj_type: entry
+      order: 4
+      type: field
+
+#### Linked Blog
+
+    linked_blog:
+      data:
+        group: 0
+        label: 'Linked Blog'
+        options:
+          allow_create: ~
+          autocomplete: on
+          autocomplete_fields: ''
+          create_fields: ~
+          label_display: left
+          limit_fields: ''
+          read_only: ~
+          required_fields: ~
+          show_autocomplete_values: ~
+          unique_fields: ~
+        type: LinkedBlog
+      obj_type: entry
+      order: 5
+      type: field
+
+#### Linked Category
+
+    linked_category:
+      data:
+        group: 0
+        label: 'Linked Category'
+        options:
+          category_ids: ''
+          label_display: left
+          linked_blog_id: ''
+          read_only: ~
+          subcats: ~
+        type: LinkedCategory
+      obj_type: entry
+      order: 6
+      type: field
+
+#### Linked Entry
+
+    linked_entry:
+      data:
+        group: 0
+        label: 'Linked Entry'
+        options:
+          allow_create: on
+          autocomplete: on
+          autocomplete_fields: ''
+          category_ids: ''
+          create_fields: ''
+          label_display: left
+          lastn: ''
+          linked_blog_id: ''
+          published: on
+          read_only: ~
+          required_fields: ''
+          search: ~
+          show_autocomplete_values: ~
+          subcats: ~
+          unique_fields: ''
+        type: LinkedEntry
+      obj_type: entry
+      order: 7
+      type: field
+
+#### Linked Folder
+
+    linked_folder:
+      data:
+        group: 0
+        label: 'Linked Folder'
+        options:
+          category_ids: ''
+          label_display: left
+          linked_blog_id: ''
+          read_only: ~
+          subcats: ~
+        type: LinkedFolder
+      obj_type: entry
+      order: 8
+      type: field
+
+#### Linked Page
+
+    linked_page:
+      data:
+        group: 0
+        label: 'Linked Page'
+        options:
+          allow_create: on
+          autocomplete: on
+          autocomplete_fields: ''
+          category_ids: ''
+          create_fields: ''
+          label_display: left
+          lastn: ''
+          linked_blog_id: ''
+          published: on
+          read_only: ~
+          required_fields: ''
+          search: ~
+          show_autocomplete_values: ~
+          subcats: ~
+          unique_fields: ''
+        type: LinkedPage
+      obj_type: entry
+      order: 9
+      type: field
+
+#### Linked Template
+
+    linked_template:
+      data:
+        group: 0
+        label: 'Linked Template'
+        options:
+          label_display: left
+          linked_blog_id: ''
+          read_only: ~
+        type: LinkedTemplate
+      obj_type: entry
+      order: 10
+      type: field
+
+#### Linked User
+
+    linked_user:
+      data:
+        group: 0
+        label: 'Linked User'
+        options:
+          active: on
+          allow_create: ~
+          autocomplete: on
+          autocomplete_fields: ''
+          create_fields: ~
+          label_display: left
+          read_only: ~
+          required_fields: ~
+          show_autocomplete_values: ~
+          unique_fields: ~
+        type: LinkedUser
+      obj_type: entry
+      order: 11
+      type: field
+
+#### Radio Buttons
+
+    radio_buttons:
+      data:
+        group: 0
+        label: 'Radio Buttons'
+        options:
+          choices: ''
+          label_display: left
+          read_only: ~
+        type: RadioButtons
+      obj_type: entry
+      order: 12
+      type: field
+
+#### Select Menu
+
+    select_menu:
+      data:
+        group: 0
+        label: 'Select Menu'
+        options:
+          choices: ''
+          label_display: left
+          read_only: ~
+        type: SelectMenu
+      obj_type: entry
+      order: 13
+      type: field
+
+#### Star Rating
+
+    star_rating:
+      data:
+        group: 0
+        label: 'Star Rating'
+        options:
+          average_field: ''
+          average_object_type: ''
+          half_url: ''
+          is_average: ~
+          label_display: left
+          off_url: ''
+          on_url: ''
+          read_only: ~
+          stars: 5
+        type: StarRating
+      obj_type: entry
+      order: 14
+      type: field
+
+#### Text (single-line)
+
+    text:
+      data:
+        group: 0
+        label: Text
+        options:
+          label_display: left
+          length: ''
+          read_only: ~
+          width: 400
+        type: Text
+      obj_type: entry
+      order: 15
+      type: field
+
+#### Text Area
+
+    text_area:
+      data:
+        group: 0
+        label: 'Text Area'
+        options:
+          height: 200
+          label_display: left
+          read_only: ~
+          width: ''
+        type: TextArea
+      obj_type: entry
+      order: 16
+      type: field
 
 
 ## Designers: Specifying Default Content
