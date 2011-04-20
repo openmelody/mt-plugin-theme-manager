@@ -11,6 +11,7 @@ our @EXPORT_OK = qw( theme_label theme_thumbnail_url theme_preview_url
   theme_about_designer theme_docs theme_thumb_path theme_thumb_url
   prepare_theme_meta );
 
+# TODO - this looks very broken to me. NO global variables.
 my $app = MT->instance;
 my $tm  = MT->component('ThemeManager');
 
@@ -173,13 +174,23 @@ sub _return_data {
     }
     return $data->( $obj, @_ ) if ref $data eq 'CODE';
     if ( $data =~ /\.html$/ ) {
-
         # Ends with .html so this must be a filename/template.
         eval {
-            my $tmpl = $obj->load_tmpl($data);
-            $data    = $app->build_page($tmpl)
+            my $tmpl   = $obj->load_tmpl($data)
+                or die $obj->errstr;
+            $data      = $tmpl->output();
         };
-        $@ and warn $@; # TODO - error message
+        if ($@) {
+            $@ and warn $@; # TODO - error message
+            MT->log( {
+                level   => MT->model('log')->ERROR(),
+                blog_id => MT->instance->blog->id,
+                message =>
+                    $tm->translate(
+                                   'Theme Manager could not load the documentation for this theme: '.$@
+                                   ),
+            });
+        }
     }
     return $data;
 } ## end sub _return_data
