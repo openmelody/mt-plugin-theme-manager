@@ -1365,12 +1365,32 @@ sub _populate_list_templates_context {
                                 type  => 'custom',
                                 order => 300,
                   },
-                  'system' => {
-                                label => $tm->translate("System Templates"),
-                                type  => [ keys %$sys_tmpl ],
-                                order => 400,
-                  },
             );
+
+            # If any email templates are part of this theme, display them under
+            # an "Email Templates" template area. Only show this area if a 
+            # theme requires it, because email templates can't be manually
+            # created anyway.
+            if ( MT->registry('template_sets', $set, 'templates', 'email') ) {
+                $types{'email'} = {
+                              label => $tm->translate("Email Templates"),
+                              type  => 'email',
+                              order => 400,
+                  };
+            }
+
+            # If any system templates are part of this theme, display them 
+            # under a "System Templates" template area. Only show this area if
+            # a theme requires it, because system templates can't be manually
+            # created anyway.
+            if ( MT->registry('template_sets', $set, 'templates', 'system') ) {
+                $types{'system'} = {
+                              label => $tm->translate("System Templates"),
+                              type  => [ keys %$sys_tmpl ],
+                              order => 401,
+                  };
+            }
+
         } ## end if ($blog)
         else {
 
