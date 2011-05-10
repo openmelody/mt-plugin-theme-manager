@@ -267,6 +267,184 @@ Dashboard, too, by specifying the additions as Page Actions targeted to the
 Of course, the code, mode or dialog being added needs to be created, but 
 that's beyond the scope of this document.
 
+## Designers: Specify Your Theme's Templates
+
+The heart of your theme is the templates, of course. Theme Manager will look for a `templates` key and install any templates specified there in the familiar YAML syntax. In the following example, an index template and template module are added to our example theme.
+
+    template_sets:
+        my_awesome_theme:
+            label: 'My Awesome Theme'
+            templates:
+                index:
+                    main_index:
+                        label: 'Main Index'
+                        outfile: index.html
+                module:
+                    entry_summary:
+                        label: 'Entry Summary'
+
+In addition to Index Templates and Template Modules, other template types can be specified here as well, following this same format. Examples:
+
+    template_sets:
+        my_awesome_theme:
+            label: 'My Awesome Theme'
+            templates:
+                archive:
+                    category_entry_listing:
+                        label: 'Category Entry Listing'
+                        mappings:
+                            category:
+                                archive_type: Category
+                                preferred: 1
+                    monthly_entry_listing:
+                        label: 'Monthly Entry Listing'
+                        mappings:
+                            monthly:
+                                archive_type: Monthly
+                                file_template: '%y/%m/%i'
+                                preferred: 1
+                individual:
+                    entry:
+                        label: 'Entry'
+                        mappings:
+                            individual:
+                                archive_type: Individual
+                                file_template: '%-c/%-b/%i'
+                                preferred: 1
+                page:
+                    page:
+                        label: 'Page'
+                        mappings:
+                            page:
+                                archive_type: Page
+                                preferred: 1
+                email:
+                    entry-notify:
+                        label: 'Entry Notify'
+                system:
+                    comment_preview:
+                        label: 'Comment Preview'
+
+### Additional Template Settings
+
+Theme Manager allows you to specify some additional keys for templates: 
+providing the ability to specify the publishing type, caching preferences for 
+modules, and better handling of custom fields. Refer to the example YAML below 
+to use these keys.
+
+#### Efficient Publishing
+
+`build_type` - the build type (or publishing method) can be specified for both
+index and archive templates. Specifying the `build_type` of templates is a
+great way to control what is republished when; look at the Publishing Profiles
+(in Design > Templates) for inspiration about the benefits of specifying this
+option for each template. Numerals 0-4 are valid `build_type` values,
+corresponding to the options listed below:
+
+    * 0: Do Not Publish
+    * 1: Static (the default method)
+    * 2: Manually
+    * 3: Dynamically
+    * 4: Publish Queue
+
+#### Set Caching and Include Options
+
+Caching options can also be specified for Template Modules and Widgets with 
+the following keys (if you've used the UI to set caching, these options should 
+all be familiar). Module Caching must be enabled at the blog level (check this 
+in Preferences > Publishing).
+
+* `cache` - the parent key to the below options
+* `expire_type` - 
+    * 0: No caching (the default method)
+    * 1: time-based expiration ("Expire after *x* minutes")
+    * 2: event-based expiration ("Expire upon creation or modification of 
+      object")
+* `expire_interval` - This key is used only if `expire_type: 1` is used. 
+  Specify a time to expire in minutes.
+* `expire_event` - This key is used only if `expire_type: 2` is used. Specify
+  a valid object to cause expiration. Valid objects are as follows:
+    * asset
+    * author
+    * category
+    * comment
+    * entry
+    * folder
+    * page
+    * tbping
+
+Another import aspect to caching is using "includes." The key 
+`include_with_ssi` allows the specified module or widget to be included as an 
+external file, saving server resources and making it easy to keep content 
+updated site-wide. Possible values are `1` and `0` (the default). Within the 
+UI, this option corresponds to the "Process as [SSI method] include" option 
+found when editing Template Modules and Widgets.
+
+Server Side Includes must be enabled at the blog level (enable this in 
+Preferences > Publishing). A great way to enable this feature automatically
+is to use the AutoPrefs plugin.
+
+#### Localized Template Support
+
+An advanced feature that Theme Manager supports is installing localized 
+templates. Localized templates (that is, templates translated to another 
+language) need to be defined within your plugin. You'll need to specify an 
+`l10n_class` and the accompanying translations in your plugin.
+
+Note that Production Mode *must* be used to deploy your theme with 
+localization support. Templates are translated when they are installed. 
+
+Note also that Designer Mode loses the ability to link templates if your 
+theme is built with localization support. Again, templates are translated 
+when they are installed. If a template is linked, when re-synced to the 
+source template on the filesystem it will be overwritten with the 
+translated template.
+
+#### Example of Additional Template Settings
+
+    name: Awesomeness
+    version: 1.0
+    l10n_class: 'Awesomeness::L10N'
+    template_sets:
+        my_awesome_theme:
+            base_path: 'templates'
+            label: 'My Awesome Theme'
+            languages:
+                - en-us
+                - fr
+                - es
+            templates:
+                index:
+                    main_index:
+                        main_index:
+                            label: 'Main Index'
+                            outfile: index.html
+                            rebuild_me: 1
+                            build_type: 1
+                archive:
+                    category_archive:
+                        label: 'Category Archive'
+                        mappings:
+                            category:
+                                archive_type: Category
+                                file_template: %c/%f
+                                preferred: 1
+                                build_type: 4
+                module:
+                    recent_entries:
+                        label: 'Recent Entries'
+                        cache:
+                            expire_type: 2
+                            expire_event: entry
+                widget:
+                    awesomeness_factor:
+                        label: 'My Awesomeness Factor'
+                        cache:
+                            expire_type: 1
+                            expire_interval: 30
+                            include_with_ssi: 1
+
+
 ## Designers: Create Custom Fields
 
 Many sites require the use of the Movable Type Commercial Pack's Custom Fields
@@ -830,125 +1008,6 @@ called "Press Kits" which will have two tags: `@nav` and `press`:
           tags: 
             - '@nav'
             - 'press'
-
-## Designers: Additional Template Settings
-
-Theme Manager allows you to specify some additional keys for templates: 
-providing the ability to specify the publishing type, caching preferences for 
-modules, and better handling of custom fields. Refer to the example YAML below 
-to use these keys.
-
-### Efficient Publishing
-
-`build_type` - the build type (or publishing method) can be specified for both
-index and archive templates. Specifying the `build_type` of templates is a
-great way to control what is republished when; look at the Publishing Profiles
-(in Design > Templates) for inspiration about the benefits of specifying this
-option for each template. Numerals 0-4 are valid `build_type` values,
-corresponding to the options listed below:
-
-    * 0: Do Not Publish
-    * 1: Static (the default method)
-    * 2: Manually
-    * 3: Dynamically
-    * 4: Publish Queue
-
-### Set Caching and Include Options
-
-Caching options can also be specified for Template Modules and Widgets with 
-the following keys (if you've used the UI to set caching, these options should 
-all be familiar). Module Caching must be enabled at the blog level (check this 
-in Preferences > Publishing).
-
-* `cache` - the parent key to the below options
-* `expire_type` - 
-    * 0: No caching (the default method)
-    * 1: time-based expiration ("Expire after *x* minutes")
-    * 2: event-based expiration ("Expire upon creation or modification of 
-      object")
-* `expire_interval` - This key is used only if `expire_type: 1` is used. 
-  Specify a time to expire in minutes.
-* `expire_event` - This key is used only if `expire_type: 2` is used. Specify
-  a valid object to cause expiration. Valid objects are as follows:
-    * asset
-    * author
-    * category
-    * comment
-    * entry
-    * folder
-    * page
-    * tbping
-
-Another import aspect to caching is using "includes." The key 
-`include_with_ssi` allows the specified module or widget to be included as an 
-external file, saving server resources and making it easy to keep content 
-updated site-wide. Possible values are `1` and `0` (the default). Within the 
-UI, this option corresponds to the "Process as [SSI method] include" option 
-found when editing Template Modules and Widgets.
-
-Server Side Includes must be enabled at the blog level (enable this in 
-Preferences > Publishing). A great way to enable this feature automatically
-is to use the AutoPrefs plugin.
-
-### Localized Template Support
-
-An advanced feature that Theme Manager supports is installing localized 
-templates. Localized templates (that is, templates translated to another 
-language) need to be defined within your plugin. You'll need to specify an 
-`l10n_class` and the accompanying translations in your plugin.
-
-Note that Production Mode *must* be used to deploy your theme with 
-localization support. Templates are translated when they are installed. 
-
-Note also that Designer Mode loses the ability to link templates if your 
-theme is built with localization support. Again, templates are translated 
-when they are installed. If a template is linked, when re-synced to the 
-source template on the filesystem it will be overwritten with the 
-translated template.
-
-### Example of Additional Template Settings
-
-    name: Awesomeness
-    version: 1.0
-    l10n_class: 'Awesomeness::L10N'
-    template_sets:
-        my_awesome_theme:
-            base_path: 'templates'
-            label: 'My Awesome Theme'
-            languages:
-                - en-us
-                - fr
-                - es
-            templates:
-                index:
-                    main_index:
-                        main_index:
-                            label: 'Main Index'
-                            outfile: index.html
-                            rebuild_me: 1
-                            build_type: 1
-                archive:
-                    category_archive:
-                        label: 'Category Archive'
-                        mappings:
-                            category:
-                                archive_type: Category
-                                file_template: %c/%f
-                                preferred: 1
-                                build_type: 4
-                module:
-                    recent_entries:
-                        label: 'Recent Entries'
-                        cache:
-                            expire_type: 2
-                            expire_event: entry
-                widget:
-                    awesomeness_factor:
-                        label: 'My Awesomeness Factor'
-                        cache:
-                            expire_type: 1
-                            expire_interval: 30
-                            include_with_ssi: 1
 
 # Acknowledgements
 
