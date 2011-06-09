@@ -338,14 +338,19 @@ to use these keys.
 index and archive templates. Specifying the `build_type` of templates is a
 great way to control what is republished when; look at the Publishing Profiles
 (in Design > Templates) for inspiration about the benefits of specifying this
-option for each template. Numerals 0-4 are valid `build_type` values,
-corresponding to the options listed below:
+option for each template. Acceptable values for the `build_type` parameter can
+be provided in one of two formats, a numeric representation or a string-based
+reputation (beginning in version 0.10.20 of Theme Manager), according to the
+table below:
 
-    * 0: Do Not Publish
-    * 1: Static (the default method)
-    * 2: Manually
-    * 3: Dynamically
-    * 4: Publish Queue
+<table>
+<tr><th>Numeric</th><th>String</th><th>Description</th></tr>
+<tr><td>0</td><td>disabled</td><td>Disabled, do not publish.</td></tr>
+<tr><td>1</td><td>static</td><td>Publish statically on demand.</td></tr>
+<tr><td>2</td><td>manual</td><td>Publish manually, or only when specifically requested by an administrator.</td></tr>
+<tr><td>3</td><td>dynamic</td><td>Publish dyanmically in real time. Do not publish to the filesystem.</td></tr>
+<tr><td>4</td><td>async</td><td>Publish in the background using the run-periodic-tasks script.</td></tr>
+</table>
 
 #### Set Caching and Include Options
 

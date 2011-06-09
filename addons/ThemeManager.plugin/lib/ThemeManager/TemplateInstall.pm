@@ -576,6 +576,30 @@ sub _set_module_caching_prefs {
     } ## end foreach my $t (qw( module widget ))
 } ## end sub _set_module_caching_prefs
 
+sub _parse_build_type {
+    my ($type) = @_;
+    return $type if ( $type =~ /^[0..4]$/ );
+    require MT::PublishOption;
+    if ($type eq 'disabled') {
+        return MT::PublishOption::DISABLED();
+    } elsif ($type =~ /^static/i) {
+        return MT::PublishOption::ONDEMAND();
+    } elsif ($type =~ /^manual/i) {
+        return MT::PublishOption::MANUALLY();
+    } elsif ($type =~ /^dynamic/i) {
+        return MT::PublishOption::DYNAMIC();
+    } elsif ($type =~ /^async/i) {
+        return MT::PublishOption::ASYNC();
+    } else {
+        MT->log({
+            level   => MT->model('log')->WARNING(),
+            message => $tm->translate( "Unrecognized build_type parameter found in theme's config.yaml: [_1].", $type ),
+        });
+    }
+    # Default
+    return MT::PublishOption::ONDEMAND();
+}
+
 sub _set_archive_map_publish_types {
     my ( $cb, $param ) = @_;
     my $blog = $param->{blog} or return;
@@ -602,7 +626,7 @@ sub _set_archive_map_publish_types {
                                       }
                     );
                     return unless $tm;
-                    $tm->build_type( $map->{build_type} );
+                    $tm->build_type( _parse_build_type($map->{build_type}) );
                     $tm->is_preferred( $map->{preferred} );
                     $tm->save()
                       or MT->log( {
@@ -638,7 +662,7 @@ sub _set_index_publish_type {
             my $tmpl = MT->model('template')
               ->load( { blog_id => $blog->id, identifier => $t, } );
             return unless $tmpl;
-            $tmpl->build_type( $tmpls->{index}->{$t}->{build_type} );
+            $tmpl->build_type( _parse_build_type($tmpls->{index}->{$t}->{build_type}) );
             $tmpl->save()
               or MT->log( {
                    level   => MT->model('log')->ERROR(),
