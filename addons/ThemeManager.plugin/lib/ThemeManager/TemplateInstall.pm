@@ -591,6 +591,7 @@ sub _parse_build_type {
     } elsif ($type =~ /^async/i) {
         return MT::PublishOption::ASYNC();
     } else {
+        my $tm = MT->component('ThemeManager');
         MT->log({
             level   => MT->model('log')->WARNING(),
             message => $tm->translate( "Unrecognized build_type parameter found in theme's config.yaml: [_1].", $type ),
