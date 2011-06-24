@@ -453,30 +453,17 @@ sub _link_templates {
             # unique identifiers. We need to use the type that config.yaml
             # supplies so that the template identifier can be properly
             # looked-up, and therefore the correct path can be crafted.
-            my $config_yaml_tmpl_type;
+            my ($config_yaml_tmpl_type)
+                = grep { ($tmpl->type||'') eq $_ } 
+                    qw( index archive individual custom widget widgetset);
 
-            # If this is a template module ("custom" in the DB)...
-            if ( $tmpl->type eq 'custom' ) {
-                $config_yaml_tmpl_type = 'module';
-            }
+            # Template modules are called "custom" in the DB
+            $config_yaml_tmpl_type = 'module'
+                if $config_yaml_tmpl_type eq 'custom';
 
-            # If this isn't a normal template type, it must be a system
-            # template. (System templates each have a unique $tmpl->type.)
-            elsif (    ( $tmpl->type ne 'custom' )
-                    || ( $tmpl->type ne 'index' )
-                    || ( $tmpl->type ne 'archive' )
-                    || ( $tmpl->type ne 'individual' )
-                    || ( $tmpl->type ne 'widget' )
-                    || ( $tmpl->type ne 'widgetset' ) )
-            {
-                $config_yaml_tmpl_type = 'system';
-            }
-
-            # This is just a normal defined template type (basically, any
-            # of those listed above). So just use the saved type.
-            else {
-                $config_yaml_tmpl_type = $tmpl->type;
-            }
+            # If none of the above, it must be a system template b/c they
+            # each have a unique $tmpl->type.
+            $config_yaml_tmpl_type ||= 'system';    # Default fallback value
 
             # Get the filename of the template. We need to check if the
             # "filename" key was used in the theme YAML and use that, or
@@ -496,6 +483,15 @@ sub _link_templates {
                        'filename' );
             }
             else {
+                require Carp;
+                my $warn = "Failed Theme Manager registry lookup for: ".
+                    join(' > ',
+                        $cur_ts_plugin, 'template_sets', $ts_id,
+                        'templates',       $config_yaml_tmpl_type,
+                        $tmpl->identifier, 'filename'
+                    ).' '.Carp::longmess();
+                warn $warn;
+                MT->log( $warn );
                 $tmpl_filename = $tmpl->identifier . '.mtml';
             }
 
