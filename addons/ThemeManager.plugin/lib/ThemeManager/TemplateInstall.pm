@@ -580,7 +580,7 @@ sub _parse_build_type {
     my ($type) = @_;
     return $type if ( $type =~ /^[0-4]$/ );
     require MT::PublishOption;
-    if ($type eq 'disable') {
+    if ( $type =~ /^disable/i ) {
         return MT::PublishOption::DISABLED();
     } elsif ($type =~ /^static/i) {
         return MT::PublishOption::ONDEMAND();
