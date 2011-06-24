@@ -463,11 +463,11 @@ sub _link_templates {
             # If this isn't a normal template type, it must be a system
             # template. (System templates each have a unique $tmpl->type.)
             elsif (    ( $tmpl->type ne 'custom' )
-                    || ( $tmpl->type ne 'index' )
-                    || ( $tmpl->type ne 'archive' )
-                    || ( $tmpl->type ne 'individual' )
-                    || ( $tmpl->type ne 'widget' )
-                    || ( $tmpl->type ne 'widgetset' ) )
+                    && ( $tmpl->type ne 'index' )
+                    && ( $tmpl->type ne 'archive' )
+                    && ( $tmpl->type ne 'individual' )
+                    && ( $tmpl->type ne 'widget' )
+                    && ( $tmpl->type ne 'widgetset' ) )
             {
                 $config_yaml_tmpl_type = 'system';
             }
