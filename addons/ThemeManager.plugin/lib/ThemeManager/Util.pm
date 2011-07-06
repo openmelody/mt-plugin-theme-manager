@@ -237,7 +237,7 @@ sub theme_thumb_url {
                           'theme_thumbs', $blog->id . '.jpg' );
     }
     else {
-        my $ts_id  = $blog->template_set;
+        my $ts_id = $blog->template_set or return;
         my $plugin = find_theme_plugin($ts_id);
 
         # Just use theme_preview_url to craft the URL. Sure, this is really

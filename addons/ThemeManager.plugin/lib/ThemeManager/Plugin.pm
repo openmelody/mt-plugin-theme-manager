@@ -246,12 +246,10 @@ sub theme_dashboard {
       = theme_docs( $theme_meta->{documentation}, $plugin );
 
     # Grab the template set language, or fall back to the blog language.
-    # FIXME Below looks like an inadvertent error: You assign to a variable and never use it but instead continue using the $blog->template_set_language
     my $template_set_language = $blog->template_set_language
       || $blog->language;
-    if ( $blog->language ne $blog->template_set_language ) {
-        $param->{template_set_language} = $blog->template_set_language;
-    }
+    $param->{template_set_language} = $template_set_language
+      if $blog->language ne $template_set_language;
 
     my $dest_path = theme_thumb_path();
     if ( -w $dest_path ) {
