@@ -30,7 +30,7 @@ sub _refresh_all_templates {
             $blog = MT->model('blog')->load($blog_id);
             next BLOG unless $blog;
         }
-        
+
         if ( !$can_refresh_system )
         {    # system refreshers can refresh all blogs
             my $perms = MT->model('permission')
@@ -170,25 +170,26 @@ sub _create_default_templates {
         my $obj = MT->model('template')->new;
         local $val->{name}
           = $val->{name};    # name field is translated in "templates" call
-        # This code was added by Byrne because the localization of the $val->{text} 
-        # variable within the context of the eval block was resulting in the 
-        # translated text not to be saved to the variable.
+         # This code was added by Byrne because the localization of the $val->{text}
+         # variable within the context of the eval block was resulting in the
+         # translated text not to be saved to the variable.
         my $trans = $val->{text};
         eval {
-            $trans = $p->translate_templatized( $trans ); 
-            1
-        } or do {
+            $trans = $p->translate_templatized($trans);
+            1;
+          }
+          or do {
             MT->log(
                 level   => MT->model('log')->ERROR(),
                 blog_id => $blog ? $blog->id : 0,
                 message =>
-                $tm->translate(
+                  $tm->translate(
                     "There was an error translating the template '[_1].' Error: [_2]",
                     $val->{name},
                     $@
-                )
-                );
-        };
+                  )
+            );
+          };
         local $val->{text} = $trans;
 
         $obj->build_dynamic(0);
@@ -454,12 +455,12 @@ sub _link_templates {
             # supplies so that the template identifier can be properly
             # looked-up, and therefore the correct path can be crafted.
             my ($config_yaml_tmpl_type)
-                = grep { ($tmpl->type||'') eq $_ } 
-                    qw( index archive individual custom widget widgetset);
+              = grep { ( $tmpl->type || '' ) eq $_ }
+              qw( index archive individual custom widget widgetset);
 
             # Template modules are called "custom" in the DB
             $config_yaml_tmpl_type = 'module'
-                if $config_yaml_tmpl_type eq 'custom';
+              if $config_yaml_tmpl_type eq 'custom';
 
             # If none of the above, it must be a system template b/c they
             # each have a unique $tmpl->type.
@@ -484,14 +485,16 @@ sub _link_templates {
             }
             else {
                 require Carp;
-                my $warn = "Failed Theme Manager registry lookup for: ".
-                    join(' > ',
-                        $cur_ts_plugin, 'template_sets', $ts_id,
-                        'templates',       $config_yaml_tmpl_type,
-                        $tmpl->identifier, 'filename'
-                    ).' '.Carp::longmess();
+                my $warn = "Failed Theme Manager registry lookup for: "
+                  . join( ' > ',
+                          $cur_ts_plugin,         'template_sets',
+                          $ts_id,                 'templates',
+                          $config_yaml_tmpl_type, $tmpl->identifier,
+                          'filename' )
+                  . ' '
+                  . Carp::longmess();
                 warn $warn;
-                MT->log( $warn );
+                MT->log($warn);
                 $tmpl_filename = $tmpl->identifier . '.mtml';
             }
 
@@ -563,6 +566,7 @@ sub _set_module_caching_prefs {
                         $tmpl->$var($val);
                     }
                 }
+
 #                foreach (qw( include_with_ssi )) {
 #                    $tmpl->$_( $tmpls->{$t}->{$m}->{cache}->{$_} );
 #                }
@@ -578,24 +582,35 @@ sub _parse_build_type {
     require MT::PublishOption;
     if ( $type =~ /^disable/i ) {
         return MT::PublishOption::DISABLED();
-    } elsif ($type =~ /^static/i) {
-        return MT::PublishOption::ONDEMAND();
-    } elsif ($type =~ /^manual/i) {
-        return MT::PublishOption::MANUALLY();
-    } elsif ($type =~ /^dynamic/i) {
-        return MT::PublishOption::DYNAMIC();
-    } elsif ($type =~ /^async/i) {
-        return MT::PublishOption::ASYNC();
-    } else {
-        my $tm = MT->component('ThemeManager');
-        MT->log({
-            level   => MT->model('log')->WARNING(),
-            message => $tm->translate( "Unrecognized build_type parameter found in theme's config.yaml: [_1].", $type ),
-        });
     }
+    elsif ( $type =~ /^static/i ) {
+        return MT::PublishOption::ONDEMAND();
+    }
+    elsif ( $type =~ /^manual/i ) {
+        return MT::PublishOption::MANUALLY();
+    }
+    elsif ( $type =~ /^dynamic/i ) {
+        return MT::PublishOption::DYNAMIC();
+    }
+    elsif ( $type =~ /^async/i ) {
+        return MT::PublishOption::ASYNC();
+    }
+    else {
+        my $tm = MT->component('ThemeManager');
+        MT->log( {
+               level => MT->model('log')->WARNING(),
+               message =>
+                 $tm->translate(
+                   "Unrecognized build_type parameter found in theme's config.yaml: [_1].",
+                   $type
+                 ),
+            }
+        );
+    }
+
     # Default
     return MT::PublishOption::ONDEMAND();
-}
+} ## end sub _parse_build_type
 
 sub _set_archive_map_publish_types {
     my ( $cb, $param ) = @_;
@@ -623,7 +638,8 @@ sub _set_archive_map_publish_types {
                                       }
                     );
                     return unless $tm;
-                    $tm->build_type( _parse_build_type($map->{build_type}) );
+                    $tm->build_type(
+                                    _parse_build_type( $map->{build_type} ) );
                     $tm->is_preferred( $map->{preferred} );
                     $tm->save()
                       or MT->log( {
@@ -659,7 +675,8 @@ sub _set_index_publish_type {
             my $tmpl = MT->model('template')
               ->load( { blog_id => $blog->id, identifier => $t, } );
             return unless $tmpl;
-            $tmpl->build_type( _parse_build_type($tmpls->{index}->{$t}->{build_type}) );
+            $tmpl->build_type(
+                   _parse_build_type( $tmpls->{index}->{$t}->{build_type} ) );
             $tmpl->save()
               or MT->log( {
                    level   => MT->model('log')->ERROR(),
@@ -712,9 +729,9 @@ sub _refresh_system_custom_fields {
         next if UNIVERSAL::isa( $field_data, 'MT::Component' );    # plugin
         my %field = %$field_data;
         delete @field{qw( blog_id basename )};
-        my $field_name = delete $field{label};
-        my $field_scope
-          = ( $field{scope} && delete $field{scope} eq 'system' ? 0 : $blog->id );
+        my $field_name  = delete $field{label};
+        my $field_scope = ( $field{scope}
+                        && delete $field{scope} eq 'system' ? 0 : $blog->id );
         $field_name = $field_name->() if 'CODE' eq ref $field_name;
 
       REQUIRED: for my $required (qw( obj_type tag )) {
@@ -745,24 +762,24 @@ sub _refresh_system_custom_fields {
         if ($field_obj) {
 
             # Warn if the type is different.
-            if ($field_obj->type ne $field_data->{type}) {
+            if ( $field_obj->type ne $field_data->{type} ) {
                 MT->log( {
-                         level   => MT->model('log')->WARNING(),
-                         blog_id => $field_scope,
-                         message =>
-                           $tm->translate(
-                              'Could not install custom field [_1] on blog [_2]: '
-                                . 'the blog already has a field [_1] with a '
-                                . 'conflicting type',
-                              $field_id,
-                           ),
-                       }
+                       level   => MT->model('log')->WARNING(),
+                       blog_id => $field_scope,
+                       message =>
+                         $tm->translate(
+                           'Could not install custom field [_1] on blog [_2]: '
+                             . 'the blog already has a field [_1] with a '
+                             . 'conflicting type',
+                           $field_id,
+                         ),
+                    }
                 );
                 next FIELD;
             }
         }
         else {
-            
+
             # This field doesn't exist yet.
             $field_obj = MT->model('field')->new;
         }
@@ -787,14 +804,15 @@ sub _refresh_fd_fields {
     my $tm       = MT->component('ThemeManager');
     my $set_name = $blog->template_set or return;
     my $set      = MT->app->registry( 'template_sets', $set_name ) or return;
-    
+
     # Field Day fields are all defined under the fd_fields key.
-  FIELD: while ( my ( $field_id, $field_data ) = each %{$set->{fd_fields}} ) {
+  FIELD:
+    while ( my ( $field_id, $field_data ) = each %{ $set->{fd_fields} } ) {
         next if UNIVERSAL::isa( $field_data, 'MT::Component' );    # plugin
         my %field = %$field_data;
         delete @field{qw( blog_id basename )};
-        my $field_scope
-          = ( $field{scope} && delete $field{scope} eq 'system' ? 0 : $blog->id );
+        my $field_scope = ( $field{scope}
+                        && delete $field{scope} eq 'system' ? 0 : $blog->id );
 
       REQUIRED: for my $required (qw( obj_type type )) {
             next REQUIRED if $field{$required};
@@ -803,10 +821,10 @@ sub _refresh_fd_fields {
                        blog_id => $field_scope,
                        message =>
                          $tm->translate(
-                                 'Could not install Field Day field [_1]: field '
-                                   . 'attribute [_2] is required',
-                                 $field_id,
-                                 $required,
+                              'Could not install Field Day field [_1]: field '
+                                . 'attribute [_2] is required',
+                              $field_id,
+                              $required,
                          ),
                      }
             );
@@ -815,39 +833,39 @@ sub _refresh_fd_fields {
 
         # Does the blog have a field with this basename?
         my $field_obj = MT->model('fdsetting')->load( {
-                                  blog_id     => $field_scope,
-                                  name        => $field_id,
-                                  object_type => $field_data->{obj_type} || q{},
-                                }
+                               blog_id     => $field_scope,
+                               name        => $field_id,
+                               object_type => $field_data->{obj_type} || q{},
+                             }
         );
 
         if ($field_obj) {
 
             # Warn if the type is different.
-            if ($field_obj->type ne $field_data->{type}) {
+            if ( $field_obj->type ne $field_data->{type} ) {
                 MT->log( {
-                         level   => MT->model('log')->WARNING(),
-                         blog_id => $field_scope,
-                         message =>
-                           $tm->translate(
-                              'Could not install Field Day field [_1] on blog [_2]: '
-                                . 'the blog already has a field [_1] with a '
-                                . 'conflicting type',
-                              $field_id,
-                           ),
-                       }
+                       level   => MT->model('log')->WARNING(),
+                       blog_id => $field_scope,
+                       message =>
+                         $tm->translate(
+                           'Could not install Field Day field [_1] on blog [_2]: '
+                             . 'the blog already has a field [_1] with a '
+                             . 'conflicting type',
+                           $field_id,
+                         ),
+                    }
                 );
                 next FIELD;
             }
         }
         else {
-            
+
             # This field doesn't exist yet.
             $field_obj = MT->model('fdsetting')->new;
         }
 
         # The label field needs to be dereferenced.
-        $field_data->{data}->{label} = &{$field_data->{data}->{label}};
+        $field_data->{data}->{label} = &{ $field_data->{data}->{label} };
 
         $field_obj->set_values( {
                                   blog_id     => $field_scope,

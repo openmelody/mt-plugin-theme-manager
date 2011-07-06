@@ -10,7 +10,7 @@ use MT;
 sub widget {
     return {
         theme_manager => {
-            label => 'Theme Dashboard Widget',
+            label   => 'Theme Dashboard Widget',
             handler => sub {
                 my ( $app, $tmpl, $param ) = @_;
 
