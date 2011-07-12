@@ -5,7 +5,7 @@ use ConfigAssistant::Util qw( find_theme_plugin );
 use ThemeManager::Util qw( theme_label theme_thumbnail_url theme_preview_url
   theme_description theme_author_name theme_author_link
   theme_paypal_email theme_version theme_link theme_doc_link
-  theme_about_designer theme_docs theme_thumb_path theme_thumb_url
+  theme_about_designer theme_documentation theme_thumb_path theme_thumb_url
   prepare_theme_meta );
 use MT::Util qw(caturl dirify offset_time_list);
 use MT;
@@ -245,25 +245,7 @@ sub theme_dashboard {
     # use because it was previously sanitized through the Util methods (such
     # as theme_label and theme_description). But if the user is in Designer
     # Mode, we want to ensure that fallback values are used if necessary.
-    # TODO Refactor this into a single method call where you pass in $theme_meta and get out a parameter hash ref.
-    $param->{theme_label} = theme_label( $theme_meta->{label}, $plugin );
-    $param->{theme_description}
-      = theme_description( $theme_meta->{description}, $plugin );
-    $param->{theme_author_name}
-      = theme_author_name( $theme_meta->{author_name}, $plugin );
-    $param->{theme_author_link}
-      = theme_author_link( $theme_meta->{author_link}, $plugin );
-    $param->{theme_link} = theme_link( $theme_meta->{link}, $plugin );
-    $param->{theme_doc_link}
-      = theme_doc_link( $theme_meta->{doc_link}, $plugin );
-    $param->{theme_version}
-      = theme_version( $theme_meta->{version}, $plugin );
-    $param->{paypal_email}
-      = theme_paypal_email( $theme_meta->{paypal_email}, $plugin );
-    $param->{about_designer}
-      = theme_about_designer( $theme_meta->{about_designer}, $plugin );
-    $param->{theme_docs}
-      = theme_docs( $theme_meta->{documentation}, $plugin );
+    $param = _populate_theme_dashboard($param, $theme_meta, $plugin);
 
     # Grab the template set language, or fall back to the blog language.
     my $template_set_language = $blog->template_set_language
@@ -1579,6 +1561,34 @@ sub _find_supported_languages {
     }
     return @ts_langs;
 } ## end sub _find_supported_languages
+
+# Add all the necessary values to $param to populate the theme dashboard.
+sub _populate_theme_dashboard {
+    my ($param)      = shift;
+    my ($theme_meta) = shift;
+    my ($plugin)     = shift;
+
+    $param->{theme_label} = theme_label( $theme_meta->{label}, $plugin );
+    $param->{theme_description}
+      = theme_description( $theme_meta->{description}, $plugin );
+    $param->{theme_author_name}
+      = theme_author_name( $theme_meta->{author_name}, $plugin );
+    $param->{theme_author_link}
+      = theme_author_link( $theme_meta->{author_link}, $plugin );
+    $param->{theme_link} = theme_link( $theme_meta->{link}, $plugin );
+    $param->{theme_doc_link}
+      = theme_doc_link( $theme_meta->{doc_link}, $plugin );
+    $param->{theme_version}
+      = theme_version( $theme_meta->{version}, $plugin );
+    $param->{theme_paypal_email}
+      = theme_paypal_email( $theme_meta->{paypal_email}, $plugin );
+    $param->{theme_about_designer}
+      = theme_about_designer( $theme_meta->{about_designer}, $plugin );
+    $param->{theme_documentation}
+      = theme_documentation( $theme_meta->{documentation}, $plugin );
+
+    return $param;
+}
 
 1;
 

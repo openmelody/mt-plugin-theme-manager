@@ -8,7 +8,7 @@ use base 'Exporter';
 our @EXPORT_OK = qw( theme_label theme_thumbnail_url theme_preview_url
   theme_description theme_author_name theme_author_link
   theme_paypal_email theme_version theme_link theme_doc_link
-  theme_about_designer theme_docs theme_thumb_path theme_thumb_url
+  theme_about_designer theme_documentation theme_thumb_path theme_thumb_url
   prepare_theme_meta );
 
 # TODO - this looks very broken to me. NO global variables.
@@ -155,7 +155,7 @@ sub theme_about_designer {
 }
 
 # Theme Docs are inline-presented documentation.
-sub theme_docs {
+sub theme_documentation {
     my ( $data, $obj ) = @_;
     return _return_data( $data, $obj );
 }

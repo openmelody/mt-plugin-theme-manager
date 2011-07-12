@@ -1,7 +1,7 @@
 package ThemeManager::DashboardWidget;
 
 use ThemeManager::Util qw( theme_label theme_description theme_author_name
-  theme_author_link theme_version theme_link theme_doc_link theme_docs
+  theme_author_link theme_version theme_link theme_doc_link theme_documentation
 );
 
 use strict;

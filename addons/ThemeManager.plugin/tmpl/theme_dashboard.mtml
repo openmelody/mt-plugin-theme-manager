@@ -69,7 +69,7 @@
 <mt:SetVarBlock name="content_nav">
     <ul>
         <li class="about-tab active"><a href="javascript:void(0);" id="about-tab" title="<__trans phrase="About">: <$mt:var name="theme_label" encode_html="1"$>"><b><__trans phrase="About Theme"></b></a></li>
-    <mt:If name="theme_docs">
+    <mt:If name="theme_documentation">
         <li class="docs-tab"><a href="javascript:void(0);" id="docs-tab" title="<__trans phrase="Documentation">: <$mt:var name="theme_label" encode_html="1"$>"><b><__trans phrase="Documentation"></b></a></li>
     </mt:If>
     <mt:If name="has_permission">
@@ -135,16 +135,16 @@
         </mt:If>
         </ul>
 
-    <mt:If name="about_designer">
+    <mt:If name="theme_about_designer">
         <div id="about-designer-container">
-            <mt:Var name="about_designer">
+            <mt:Var name="theme_about_designer">
         </div>
     </mt:If>
 
-    <mt:If name="paypal_email">
+    <mt:If name="theme_paypal_email">
         <div id="paypal-donate-container">
             <a href="javascript:void(0);" onclick="return openDialog(null, 'paypal_donate', 
-                'theme_label=<mt:Var name="theme_label" escape_js="1">&paypal_email=<mt:Var name="paypal_email" 
+                'theme_label=<mt:Var name="theme_label" escape_js="1">&paypal_email=<mt:Var name="theme_paypal_email" 
                 escape_js="1">')">
                 <img src="https://www.paypal.com/en_US/i/btn/btn_donate_SM.gif" />
             </a>
@@ -154,9 +154,9 @@
     </mt:If>
 </div>
 
-<mt:If name="theme_docs">
+<mt:If name="theme_documentation">
     <div id="docs-tab-content">
-        <mt:Var name="theme_docs">
+        <mt:Var name="theme_documentation">
     </div>
 </mt:If>
 
