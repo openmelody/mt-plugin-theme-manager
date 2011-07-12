@@ -72,9 +72,11 @@
     <mt:If name="theme_docs">
         <li class="docs-tab"><a href="javascript:void(0);" id="docs-tab" title="<__trans phrase="Documentation">: <$mt:var name="theme_label" encode_html="1"$>"><b><__trans phrase="Documentation"></b></a></li>
     </mt:If>
+    <mt:If name="has_permission">
         <li class="customize-tab"><a href="javascript:void(0);" id="customize-tab" title="<__trans phrase="Customize">: <$mt:var name="theme_label" encode_html="1"$>"><b><__trans phrase="Customization"></b></a></li>
         <li class="templates-tab"><a href="javascript:void(0);" id="templates-tab" title="<__trans phrase="Templates">: <$mt:var name="theme_label" encode_html="1"$>"><b><__trans phrase="Templates"></b></a></li>
         <li class="apply-theme-tab"><a href="javascript:void(0);" id="apply-theme-tab" title="<__trans phrase="Change Theme">"><b><__trans phrase="Change Theme"></b></a></li>
+    </mt:If>
     </ul>
 </mt:SetVarBlock>
 
@@ -153,110 +155,112 @@
 </div>
 
 <mt:If name="theme_docs">
-<div id="docs-tab-content">
-    <mt:Var name="theme_docs">
-</div>
+    <div id="docs-tab-content">
+        <mt:Var name="theme_docs">
+    </div>
 </mt:If>
 
-<div id="templates-tab-content">
-  <mt:loop name="template_type_loop">
-    <mt:if name="__first__">
-      <$mt:var name="list_filter_form"$>
-    </mt:if>
-    <$mt:include name="include/template_table.tmpl" component="ThemeManager"$>
-  </mt:loop>
-</div>
+<mt:If name="has_permission">
+    <div id="templates-tab-content">
+      <mt:loop name="template_type_loop">
+        <mt:if name="__first__">
+          <$mt:var name="list_filter_form"$>
+        </mt:if>
+        <$mt:include name="include/template_table.tmpl" component="ThemeManager"$>
+      </mt:loop>
+    </div>
 
-<div id="customize-tab-content">
-    <mt:If name="theme_thumb_url">
-        <div id="theme-thumb">
-            <img src="<mt:Var name="theme_thumb_url">" width="300" height="240" title="<mt:BlogName remove_html="1"> <__trans phrase="on"> <mt:BlogURL>" />
-        </div>
-    </mt:If>
+    <div id="customize-tab-content">
+        <mt:If name="theme_thumb_url">
+            <div id="theme-thumb">
+                <img src="<mt:Var name="theme_thumb_url">" width="300" height="240" title="<mt:BlogName remove_html="1"> <__trans phrase="on"> <mt:BlogURL>" />
+            </div>
+        </mt:If>
 
-<mt:loop name="theme_dashboard_page_actions">
-    <mt:If name="__first__">
-        <h3><__trans phrase="Customize Theme"></h3>
-        <ul>
-    </mt:If>
-    <mt:If name="link">
-            <li class="icon-mini-left icon-mini-settings">
-                <a href="<mt:var name="script_url" escape="html">?__mode=<mt:var name="mode">&amp;blog_id=<mt:Var name="blog_id">&amp;magic_token=<mt:Var name="magic_token">"
-                    <mt:If name="continue_prompt"> onclick="return confirm('<mt:var name="continue_prompt" escape="js">');"</mt:If>>
+    <mt:loop name="theme_dashboard_page_actions">
+        <mt:If name="__first__">
+            <h3><__trans phrase="Customize Theme"></h3>
+            <ul>
+        </mt:If>
+        <mt:If name="link">
+                <li class="icon-mini-left icon-mini-settings">
+                    <a href="<mt:var name="script_url" escape="html">?__mode=<mt:var name="mode">&amp;blog_id=<mt:Var name="blog_id">&amp;magic_token=<mt:Var name="magic_token">"
+                        <mt:If name="continue_prompt"> onclick="return confirm('<mt:var name="continue_prompt" escape="js">');"</mt:If>>
+                            <mt:Var name="label">
+                    </a>
+                </li>
+        <mt:Else name="dialog">
+                <li class="icon-mini-left icon-mini-settings">
+                    <a href="javascript:void(0)" onclick="<mt:if name="continue_prompt">if(!confirm('<mt:var name="continue_prompt" escape="js">'))return false;</mt:if>return openDialog(false, '<mt:var name="dialog">', '<mt:if name="dialog_args"><mt:var name="dialog_args" escape="url"></mt:if><mt:if name="id">&amp;id=<mt:var name="id"></mt:if>&amp;blog_id=<mt:var name="blog_id">&amp;magic_token=<mt:Var name="magic_token">')">
+                        <mt:var name="label">
+                    </a>
+                </li>
+        </mt:If>
+        <mt:If name="__last__">
+            </ul>
+        </mt:If>
+    </mt:loop>
+    <mt:loop name="template_page_actions">
+        <mt:If name="__first__">
+            <h3><__trans phrase="Advanced Options"></h3>
+            <ul>
+        </mt:If>
+                <li class="icon-left icon-mini-settings">
+        <mt:If name="page">
+                    <a href="<mt:Var name="page" escape="html"><mt:If name="page_has_params"></mt:If><mt:If name="id">&amp;id=<mt:Var name="id"></mt:If><mt:If name="blog_id">&amp;blog_id=<mt:Var name="blog_id"></mt:If>&amp;magic_token=<mt:Var name="magic_token">&amp;return_args=<mt:Var name="return_args" escape="url">#customize"<mt:If name="continue_prompt"> onclick="return confirm('<mt:Var name="continue_prompt" escape="js">');"</mt:If>>
                         <mt:Var name="label">
-                </a>
-            </li>
-    <mt:Else name="dialog">
-            <li class="icon-mini-left icon-mini-settings">
-                <a href="javascript:void(0)" onclick="<mt:if name="continue_prompt">if(!confirm('<mt:var name="continue_prompt" escape="js">'))return false;</mt:if>return openDialog(false, '<mt:var name="dialog">', '<mt:if name="dialog_args"><mt:var name="dialog_args" escape="url"></mt:if><mt:if name="id">&amp;id=<mt:var name="id"></mt:if>&amp;blog_id=<mt:var name="blog_id">&amp;magic_token=<mt:Var name="magic_token">')">
-                    <mt:var name="label">
-                </a>
-            </li>
-    </mt:If>
-    <mt:If name="__last__">
-        </ul>
-    </mt:If>
-</mt:loop>
-<mt:loop name="template_page_actions">
-    <mt:If name="__first__">
-        <h3><__trans phrase="Advanced Options"></h3>
-        <ul>
-    </mt:If>
-            <li class="icon-left icon-mini-settings">
-    <mt:If name="page">
-                <a href="<mt:Var name="page" escape="html"><mt:If name="page_has_params"></mt:If><mt:If name="id">&amp;id=<mt:Var name="id"></mt:If><mt:If name="blog_id">&amp;blog_id=<mt:Var name="blog_id"></mt:If>&amp;magic_token=<mt:Var name="magic_token">&amp;return_args=<mt:Var name="return_args" escape="url">#customize"<mt:If name="continue_prompt"> onclick="return confirm('<mt:Var name="continue_prompt" escape="js">');"</mt:If>>
-                    <mt:Var name="label">
-                </a>
-    <mt:Else name="link">
-                <a href="<mt:var name="script_url" escape="html">?__mode=<mt:var name="mode">&amp;blog_id=<mt:Var name="blog_id">&amp;magic_token=<mt:Var name="magic_token">"
-                    <mt:If name="continue_prompt"> onclick="return confirm('<mt:var name="continue_prompt" escape="js">');"</mt:If>>
-                        <mt:Var name="label">
-                </a>
-    <mt:Else name="dialog">
-                <a href="javascript:void(0)" onclick="<mt:if name="continue_prompt">if(!confirm('<mt:var name="continue_prompt" escape="js">'))return false;</mt:if>return openDialog(false, '<mt:var name="dialog">', '<mt:if name="dialog_args"><mt:var name="dialog_args" escape="url"></mt:if><mt:if name="id">&amp;id=<mt:var name="id"></mt:if>&amp;blog_id=<mt:var name="blog_id">&amp;magic_token=<mt:Var name="magic_token">')">
-                    <mt:var name="label">
-                </a>
-    </mt:If>
-            </li>
-    <mt:If name="__last__">
-        </ul>
-    </mt:If>
-</mt:loop>
-</div>
+                    </a>
+        <mt:Else name="link">
+                    <a href="<mt:var name="script_url" escape="html">?__mode=<mt:var name="mode">&amp;blog_id=<mt:Var name="blog_id">&amp;magic_token=<mt:Var name="magic_token">"
+                        <mt:If name="continue_prompt"> onclick="return confirm('<mt:var name="continue_prompt" escape="js">');"</mt:If>>
+                            <mt:Var name="label">
+                    </a>
+        <mt:Else name="dialog">
+                    <a href="javascript:void(0)" onclick="<mt:if name="continue_prompt">if(!confirm('<mt:var name="continue_prompt" escape="js">'))return false;</mt:if>return openDialog(false, '<mt:var name="dialog">', '<mt:if name="dialog_args"><mt:var name="dialog_args" escape="url"></mt:if><mt:if name="id">&amp;id=<mt:var name="id"></mt:if>&amp;blog_id=<mt:var name="blog_id">&amp;magic_token=<mt:Var name="magic_token">')">
+                        <mt:var name="label">
+                    </a>
+        </mt:If>
+                </li>
+        <mt:If name="__last__">
+            </ul>
+        </mt:If>
+    </mt:loop>
+    </div>
 
-<div id="apply-theme-tab-content">
+    <div id="apply-theme-tab-content">
 
-    <div id="theme-chooser">
-<mt:Ignore>
-        <h3>Select a Theme</h3>
-        <div class="listing-filter">
-            <div class="listing-filter-inner inner pkg"></div>
-        </div>
-</mt:Ignore>
-        <div class="theme-gallery-container">
-            <div class="theme-gallery-container-inner list-data-wrapper-modal list-data">
+        <div id="theme-chooser">
+    <mt:Ignore>
+            <h3>Select a Theme</h3>
+            <div class="listing-filter">
+                <div class="listing-filter-inner inner pkg"></div>
+            </div>
+    </mt:Ignore>
+            <div class="theme-gallery-container">
+                <div class="theme-gallery-container-inner list-data-wrapper-modal list-data">
 
-<mtapp:listing type="theme" 
-    default="<__trans phrase="No themes could be found.">" 
-    empty_message="<__trans phrase="No themes could be found.">"
-    hide_pager="1"
-    show_actions="0">
-    <div id="<mt:Var name="id">-container" class="ts-container<mt:Unless name="__counter__" op="%" value="4"> last</mt:Unless>">
-        <div class="ts-container-inner">
-            <h3>
+    <mtapp:listing type="theme" 
+        default="<__trans phrase="No themes could be found.">" 
+        empty_message="<__trans phrase="No themes could be found.">"
+        hide_pager="1"
+        show_actions="0">
+        <div id="<mt:Var name="id">-container" class="ts-container<mt:Unless name="__counter__" op="%" value="4"> last</mt:Unless>">
+            <div class="ts-container-inner">
+                <h3>
+                    <a href="javascript:void(0);" onclick="return openDialog(null, 'theme_info', 'ts_id=<mt:Var name="id">&amp;plugin_sig=<mt:Var name="plugin_sig">&amp;blog_id=<mt:Var name="blog_id">')">
+                        <mt:Var name="label" default="<__trans phrase="Untitled">">
+                    </a>
+                </h3>
                 <a href="javascript:void(0);" onclick="return openDialog(null, 'theme_info', 'ts_id=<mt:Var name="id">&amp;plugin_sig=<mt:Var name="plugin_sig">&amp;blog_id=<mt:Var name="blog_id">')">
-                    <mt:Var name="label" default="<__trans phrase="Untitled">">
+                    <img src="<mt:Var name="thumbnail_url">" width="175" height="140" border="1" />
                 </a>
-            </h3>
-            <a href="javascript:void(0);" onclick="return openDialog(null, 'theme_info', 'ts_id=<mt:Var name="id">&amp;plugin_sig=<mt:Var name="plugin_sig">&amp;blog_id=<mt:Var name="blog_id">')">
-                <img src="<mt:Var name="thumbnail_url">" width="175" height="140" border="1" />
-            </a>
+            </div>
         </div>
-    </div>
-</mtapp:listing>
+    </mtapp:listing>
 
+            </div>
         </div>
     </div>
-</div>
+</mt:If>
 
 <mt:include name="include/footer.tmpl">

@@ -41,7 +41,6 @@ sub update_menus {
                                       order      => 1,
                                       mode       => 'theme_dashboard',
                                       view       => 'blog',
-                                      permission => 'edit_templates',
         },
 
         # Add the theme documentation to the menu to make it more prominent,
@@ -303,6 +302,17 @@ sub theme_dashboard {
 
     $param->{custom_fields_refreshed} = $q->param('custom_fields_refreshed');
     $param->{fd_fields_refreshed}     = $q->param('fd_fields_refreshed');
+
+    # Grab the user's permissions to decide what tabs and content to display 
+    # on the theme dashboard.
+    my $perms = $app->blog ? $app->permissions : $app->user->permissions;
+    return $app->return_to_dashboard( redirect => 1 )
+        unless $perms || $app->user->is_superuser;
+    
+    # If adequate permissions, return true; else false.
+    $param->{has_permission} = ( $perms && $perms->can_edit_templates )
+        ? 1 : 0;
+
 
     my $tmpl = $tm->load_tmpl('theme_dashboard.mtml');
     return $app->listing( {
