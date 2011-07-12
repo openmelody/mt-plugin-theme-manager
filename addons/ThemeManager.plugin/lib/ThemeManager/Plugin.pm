@@ -306,14 +306,13 @@ sub theme_dashboard {
                my ( $theme, $row ) = @_;
 
                # Use the plugin sig to grab the plugin.
-               # FIXME $app->component($theme->plugin_sig) ???
-               my $plugin = $MT::Plugins{ $theme->plugin_sig }->{object};
+               my $plugin = $app->component( $theme->plugin_sig );
                if ( !$plugin ) {
 
                    # This plugin couldn't be loaded! That must mean the theme has
                    # been uninstalled, so remove the entry in the table.
                    $theme->remove;
-                   $theme->save;
+                   $theme->save or die $theme->errstr;
                    next;
                }
                $row->{id}         = $theme->ts_id;
@@ -480,11 +479,9 @@ sub setup_theme {
     # set up. If there are, we want them to look good (including being sorted)
     # into alphabeticized fieldsets and to be ordered correctly with in each
     # fieldset, just like on the Theme Options page.
-    # FIXME Use MT->component
-    my $plugin = $MT::Plugins{$plugin_sig}->{object};
+    my $plugin = MT->component($plugin_sig);
 
-    # FIXME Use $plugin->registry('template_sets', $ts_id);
-    my $ts = $plugin->{registry}->{'template_sets'}->{$ts_id};
+    my $ts = $plugin->registry('template_sets', $ts_id);
 
     # Convert the saved YAML back into a hash.
     my $theme_meta
