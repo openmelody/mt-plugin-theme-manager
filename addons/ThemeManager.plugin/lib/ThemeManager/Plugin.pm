@@ -44,6 +44,27 @@ sub update_menus {
                                       permission => 'edit_templates',
         },
 
+        # Add the theme documentation to the menu to make it more prominent,
+        # if documentation is provided with this theme.
+        'design:theme_documentation' => {
+            label => 'Theme Documentation',
+            order => 2,
+            view => 'blog',
+            link       => sub {
+
+                # @_ contains... something. It's not an $app
+                # reference, and doesn't appear to directly have
+                # a blog object or the blog ID available. So, grab
+                # a new instance.
+                my $app = MT->instance;
+                return
+                  $app->uri(
+                             mode => 'theme_dashboard',
+                             args => { blog_id => $app->blog->id, },
+                  ) . '#docs';    # Go to Documentation.
+            },
+        },
+
         # Add the new template menu option, which is actually a link to the
         # Theme Dashboard > Templates screen.
         'design:templates' => {

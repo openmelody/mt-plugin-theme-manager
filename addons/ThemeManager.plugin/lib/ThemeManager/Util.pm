@@ -154,9 +154,8 @@ sub theme_about_designer {
     return _return_data( $data, $obj );
 }
 
+# Theme Docs are inline-presented documentation.
 sub theme_docs {
-
-    # Theme Docs are inline-presented documentation.
     my ( $data, $obj ) = @_;
     return _return_data( $data, $obj );
 }

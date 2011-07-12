@@ -42,7 +42,7 @@ callbacks:
     template_param.edit_blog:      $ThemeManager::ThemeManager::TemplateInstall::xfrm_param_add_language
 
 init_app: $ThemeManager::ThemeManager::Init::init_app
-    
+
 object_types:
     theme: ThemeManager::Theme
     blog:
