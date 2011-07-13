@@ -223,8 +223,6 @@ sub theme_dashboard {
     my $list_pref = $app->list_pref('theme') if $app->can('list_pref');
     $list_pref->{rows} = 999;
 
-
-
     $param->{theme_dashboard_page_actions}
       = $app->page_actions('theme_dashboard');
     $param->{template_page_actions} = $app->page_actions('list_templates');
@@ -255,11 +253,16 @@ sub theme_dashboard {
                my ( $theme, $row ) = @_;
 
                # Use the plugin sig to grab the plugin.
-               my $plugin = $app->component( $theme->plugin_sig );
-               if ( !$plugin ) {
+               my $plugin = MT->component( $theme->plugin_sig );
 
-                   # This plugin couldn't be loaded! That must mean the theme has
-                   # been uninstalled, so remove the entry in the table.
+               # The Community.pack and Commercial.pack need special handling?
+               if ($theme->plugin_sig =~ /(Community|Commercial).pack/) {
+                   $plugin = $MT::Plugins{ $theme->plugin_sig }->{object};
+               }
+
+               # This plugin couldn't be loaded! That must mean the theme has
+               # been uninstalled, so remove the entry in the table.
+               if ( !$plugin ) {
                    $theme->remove;
                    $theme->save or die $theme->errstr;
                    next;
