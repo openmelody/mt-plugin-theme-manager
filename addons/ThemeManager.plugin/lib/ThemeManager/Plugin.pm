@@ -197,55 +197,11 @@ sub theme_dashboard {
     my $ts_id  = $blog->template_set;
     my $tm     = MT->component('ThemeManager');
     my $plugin = find_theme_plugin($ts_id);
+    my $param  = {};
 
-    my $param      = {};
-    my $theme_meta = {};
-
-    # In Production Mode, read the cached theme meta from the DB.
-    # In Designer Mode, load the YAML and use that.
-    if ( $blog->theme_mode && $blog->theme_mode eq 'designer' ) {
-
-        # Grab the meta. This will always find *something* even if the
-        # theme plugin has been disabled/removed. The dashboard links,
-        # below, will also construct fallback data to display, if the
-        # theme couldn't be loaded here.
-        $theme_meta = $app->registry( 'template_sets', $ts_id );
-    }
-    else {
-
-        # This is Production Mode.
-        # By "else"-ing to Production Mode, we aren't relying upon the
-        # theme_mode meta field to be set, which may be true for those who
-        # have upgraded an existing site built without a theme, or when a
-        # theme hasn't been re-selected.
-
-        # If the blog has theme_meta, convert the saved YAML back into a hash.
-        $theme_meta
-          = eval { YAML::Tiny->read_string( $blog->theme_meta )->[0] };
-
-        # If theme meta isn't found, it wasn't set when the theme was
-        # applied (a very likely scenario for upgraders, who likely haven't
-        # applied a new theme). Go ahead and just create the theme meta.
-        if ( !$theme_meta ) {
-            $theme_meta = prepare_theme_meta($ts_id);
-            my $yaml = YAML::Tiny->new;
-            $yaml->[0] = $theme_meta;
-
-            # Turn that YAML into a plain old string and save it.
-            $blog->theme_meta( $yaml->write_string() );
-
-            # Upgraders likely also don't have the theme_mode switch set
-            $blog->theme_mode('production');
-            $blog->save;
-        }
-    } ## end else [ if ( $blog->theme_mode...)]
-
-    # Build the theme dashboard links.
-    # When in production mode, the data found in the keys should be good to
-    # use because it was previously sanitized through the Util methods (such
-    # as theme_label and theme_description). But if the user is in Designer
-    # Mode, we want to ensure that fallback values are used if necessary.
-    $param = _populate_theme_dashboard($param, $theme_meta, $plugin);
+    # Populate the theme dashboard with all sort of info about the theme:
+    # label, description, author, etc.
+    $param = _populate_theme_dashboard($blog, $param, $plugin);
 
     # Grab the template set language, or fall back to the blog language.
     my $template_set_language = $blog->template_set_language
@@ -253,19 +209,8 @@ sub theme_dashboard {
     $param->{template_set_language} = $template_set_language
       if $blog->language ne $template_set_language;
 
-    my $dest_path = theme_thumb_path();
-    if ( -w $dest_path ) {
-        $param->{theme_thumb_url} = theme_thumb_url();
-    }
-    else {
-        $param->{theme_thumbs_path} = $dest_path;
-    }
-
-    $param->{new_theme} = $q->param('new_theme');
-
     # TODO This kind of construct indicates that we need to be our own app class
     _populate_list_templates_context( $app, $param );
-
 
     # The user probably wants to apply a new theme; we start by browsing the
     # available themes.
@@ -278,10 +223,14 @@ sub theme_dashboard {
     my $list_pref = $app->list_pref('theme') if $app->can('list_pref');
     $list_pref->{rows} = 999;
 
+
+
     $param->{theme_dashboard_page_actions}
       = $app->page_actions('theme_dashboard');
     $param->{template_page_actions} = $app->page_actions('list_templates');
 
+    # System messages for the user
+    $param->{new_theme}               = $q->param('new_theme');
     $param->{custom_fields_refreshed} = $q->param('custom_fields_refreshed');
     $param->{fd_fields_refreshed}     = $q->param('fd_fields_refreshed');
 
@@ -1561,10 +1510,55 @@ sub _find_supported_languages {
 
 # Add all the necessary values to $param to populate the theme dashboard.
 sub _populate_theme_dashboard {
-    my ($param)      = shift;
-    my ($theme_meta) = shift;
-    my ($plugin)     = shift;
+    my ($blog)     = shift;
+    my ($param)    = shift;
+    my ($plugin)   = shift;
+    my $theme_meta = {};
 
+    $param->{theme_mode} = $blog->theme_mode;
+
+    # In Production Mode, read the cached theme meta from the DB.
+    # In Designer Mode, load the YAML from the plugin and use that.
+    if ( $blog->theme_mode && $blog->theme_mode eq 'designer' ) {
+
+        # We don't want to load the cached theme meta here (saved to the DB), 
+        # because we want it to be dynamically loaded from the plugin, which 
+        # is what the fallback values are anyway.
+        $theme_meta = MT->registry( 'template_sets', $blog->template_set );
+    }
+    else {
+
+        # This is Production Mode.
+        # By "else"-ing to Production Mode, we aren't relying upon the
+        # theme_mode meta field to be set, which may be true for those who
+        # have upgraded an existing site built without a theme, or when a
+        # theme hasn't been re-selected.
+
+        # If the blog has theme_meta, convert the saved YAML back into a hash.
+        $theme_meta
+          = eval { YAML::Tiny->read_string( $blog->theme_meta )->[0] };
+
+        # If theme meta isn't found, it wasn't set when the theme was
+        # applied (a very likely scenario for upgraders, who likely haven't
+        # applied a new theme). Go ahead and just create the theme meta.
+        if ( !$theme_meta ) {
+            $theme_meta = prepare_theme_meta($blog->template_set);
+            my $yaml = YAML::Tiny->new;
+            $yaml->[0] = $theme_meta;
+
+            # Turn that YAML into a plain old string and save it.
+            $blog->theme_meta( $yaml->write_string() );
+
+            # Upgraders likely also don't have the theme_mode switch set
+            $blog->theme_mode('production');
+            $blog->save;
+        }
+    } ## end else [ if ( $blog->theme_mode...)]
+
+    # Build the theme dashboard links.
+    # Each of these utility functions will set the parameter based on the 
+    # cached theme meta YAML (in production mode) or will fall back to the 
+    # plugin's YAML (in designer mode).
     $param->{theme_label} = theme_label( $theme_meta->{label}, $plugin );
     $param->{theme_description}
       = theme_description( $theme_meta->{description}, $plugin );
@@ -1583,6 +1577,18 @@ sub _populate_theme_dashboard {
       = theme_about_designer( $theme_meta->{about_designer}, $plugin );
     $param->{theme_documentation}
       = theme_documentation( $theme_meta->{documentation}, $plugin );
+
+    # Add the theme thumbnail to the theme dashboard.
+    my $dest_path = theme_thumb_path();
+    if ( -w $dest_path ) {
+        $param->{theme_thumb_url} = theme_thumb_url();
+    }
+    else {
+
+        # A system message for the user that the theme thumbnail destination
+        # path couldn't be read.
+        $param->{theme_thumbs_path} = $dest_path;
+    }
 
     return $param;
 }
