@@ -16,8 +16,6 @@ applications:
             paypal_donate:    $ThemeManager::ThemeManager::Plugin::paypal_donate
             list_template:    $ThemeManager::ThemeManager::Plugin::list_templates
             tm.rebuild_tmpl:  $ThemeManager::ThemeManager::Plugin::rebuild_tmpl
-            edit_templates:   $ThemeManager::ThemeManager::Plugin::edit_templates
-            unlink_templates: $ThemeManager::ThemeManager::Plugin::unlink_templates
             select_theme:     $ThemeManager::ThemeManager::Plugin::select_theme
             setup_theme:      $ThemeManager::ThemeManager::Plugin::setup_theme
             theme_dashboard:  $ThemeManager::ThemeManager::Plugin::theme_dashboard
@@ -59,20 +57,6 @@ widgets: $ThemeManager::ThemeManager::DashboardWidget::widget
 tags:
     function:
         TemplateSetLanguage: $ThemeManager::ThemeManager::Tags::template_set_language
-
-options:
-    fieldsets:
-        mode_overview:
-            label: 'Theme Deployment Mode'
-            hint: 'Theme Manager can deploy themes in one of two modes: Production Mode and Designer and Developer Mode. Production Mode is used for live, production sites; Designer and Developer Mode speeds theme creation. Refer to the Theme Manager documentation for more details on the difference between these options.'
-    tm_mode:
-        label: 'Select a Mode'
-        type: radio
-        values: 'Production Mode,Designer and Developer Mode'
-        default: 'Production Mode'
-        tag: ThemeManagerMode
-        scope: system
-        fieldset: mode_overview
 
 tasks:
     site_preview_image:

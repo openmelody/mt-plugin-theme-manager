@@ -986,39 +986,6 @@ sub paypal_donate {
     return $app->load_tmpl( 'paypal_donate.mtml', $param );
 }
 
-sub edit_templates {
-    my $app = shift;
-    my $q = $app->can('query') ? $app->query : $app->param;
-
-    # Pop up the warning dialog about what it really means to "edit templates."
-    my $param = {};
-    $param->{blog_id} = $q->param('blog_id');
-    return $app->load_tmpl( 'edit_templates.mtml', $param );
-}
-
-sub unlink_templates {
-    my $app = shift;
-    my $q = $app->can('query') ? $app->query : $app->param;
-
-    # Unlink all templates.
-    my $blog_id = $q->param('blog_id');
-    my $iter    = MT->model('template')
-      ->load_iter( { blog_id => $blog_id, linked_file => '*', } );
-    while ( my $tmpl = $iter->() ) {
-        $tmpl->linked_file(undef);
-        $tmpl->linked_file_mtime(undef);
-        $tmpl->linked_file_size(undef);
-        $tmpl->save;
-    }
-    my $return_url
-      = $app->uri
-      . '?__mode=theme_dashboard&blog_id='
-      . $blog_id
-      . '&unlinked=1';
-    my $param = { return_url => $return_url };
-    return $app->load_tmpl( 'templates_unlinked.mtml', $param );
-} ## end sub unlink_templates
-
 sub theme_info {
     my $app = shift;
     my $q = $app->can('query') ? $app->query : $app->param;
