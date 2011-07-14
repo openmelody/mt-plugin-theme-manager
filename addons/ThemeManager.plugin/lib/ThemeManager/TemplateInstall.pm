@@ -142,10 +142,11 @@ sub _refresh_all_templates {
     return 1;
 } ## end sub _refresh_all_templates
 
+# This is basically lifted right from MT::CMS::Template (from Movable Type
+# version 4.261), with some necessary changes to work with Theme Manager.
+# Default templates are created when a new theme is applied, using the 
+# templates specified in the theme.
 sub _create_default_templates {
-
-    # This is basically lifted right from MT::CMS::Template (from Movable Type
-    # version 4.261), with some necessary changes to work with Theme Manager.
     my $ts_id     = shift;
     my $blog      = shift;
     my $app       = MT->instance;
@@ -161,93 +162,25 @@ sub _create_default_templates {
                          $tm->translate("No default templates were found.") );
     }
 
-    my $p = find_theme_plugin($ts_id);
+    my $plugin = find_theme_plugin($ts_id);
 
-    require MT::Template;
-    my @arch_tmpl;
+    # This hash holds a list of all of the template mappings that are created
+    # for each template. Then, after creating tmeplates, it's used to set the
+    # blog-level preferred archive type.
+    my %archive_types;
+
+    # Go through each template definition and create a template.
     for my $val (@$tmpl_list) {
         next if $val->{global};
-        my $obj = MT->model('template')->new;
-        local $val->{name}
-          = $val->{name};    # name field is translated in "templates" call
-         # This code was added by Byrne because the localization of the $val->{text}
-         # variable within the context of the eval block was resulting in the
-         # translated text not to be saved to the variable.
-        my $trans = $val->{text};
-        eval {
-            $trans = $p->translate_templatized($trans);
-            1;
-          }
-          or do {
-            MT->log(
-                level   => MT->model('log')->ERROR(),
-                blog_id => $blog ? $blog->id : 0,
-                message =>
-                  $tm->translate(
-                    "There was an error translating the template '[_1].' Error: [_2]",
-                    $val->{name},
-                    $@
-                  )
-            );
-          };
-        local $val->{text} = $trans;
-
-        $obj->build_dynamic(0);
-        foreach my $v ( keys %$val ) {
-            $obj->column( $v, $val->{$v} ) if $obj->has_column($v);
+        my $tmpl = _create_template($val, $blog, $plugin);
+        
+        my $iter = MT->model('templatemap')->load_iter({ 
+            template_id => $tmpl->id 
+        });
+        while ( my $tmpl_map = $iter->() ) {
+            $archive_types{$tmpl_map->archive_type} = 1;
         }
-        $obj->blog_id( $blog->id );
-        if ( my $pub_opts = $val->{publishing} ) {
-            $obj->include_with_ssi(1) if $pub_opts->{include_with_ssi};
-        }
-        if ( ( 'widgetset' eq $val->{type} ) && ( exists $val->{widgets} ) ) {
-            my $modulesets = delete $val->{widgets};
-            $obj->modulesets(
-                 MT::Template->widgets_to_modulesets( $modulesets, $blog->id )
-            );
-        }
-        $obj->save;
-
-        if ( $val->{mappings} ) {
-            push @arch_tmpl,
-              {
-                template => $obj,
-                mappings => $val->{mappings},
-                exists( $val->{preferred} )
-                ? ( preferred => $val->{preferred} )
-                : ()
-              };
-        }
-    } ## end for my $val (@$tmpl_list)
-
-    my %archive_types;
-    if (@arch_tmpl) {
-        require MT::TemplateMap;
-        for my $map_set (@arch_tmpl) {
-            my $tmpl     = $map_set->{template};
-            my $mappings = $map_set->{mappings};
-            foreach my $map_key ( keys %$mappings ) {
-                my $m  = $mappings->{$map_key};
-                my $at = $m->{archive_type};
-                $archive_types{$at} = 1;
-
-                # my $preferred = $mappings->{$map_key}{preferred};
-                my $map = MT::TemplateMap->new;
-                $map->archive_type($at);
-                if ( exists $m->{preferred} ) {
-                    $map->is_preferred( $m->{preferred} );
-                }
-                else {
-                    $map->is_preferred(1);
-                }
-                $map->template_id( $tmpl->id );
-                $map->file_template( $m->{file_template} )
-                  if $m->{file_template};
-                $map->blog_id( $tmpl->blog_id );
-                $map->save;
-            } ## end foreach my $map_key ( keys ...)
-        } ## end for my $map_set (@arch_tmpl)
-    } ## end if (@arch_tmpl)
+    }
 
     $blog->archive_type( join ',', keys %archive_types );
     foreach my $at (qw( Individual Daily Weekly Monthly Category )) {
@@ -263,6 +196,87 @@ sub _create_default_templates {
     $app->set_language($curr_lang);
     return $blog;
 } ## end sub _create_default_templates
+
+# Create a template based on the theme's definition. Also creates template 
+# maps for archive templates.
+sub _create_template {
+    my ($tmpl_data) = shift;
+    my ($blog)      = shift;
+    my ($plugin)    = shift;
+
+    # Create the template
+    my $tmpl = MT->model('template')->new;
+
+    local $tmpl_data->{name}
+      = $tmpl_data->{name};    # name field is translated in "templates" call
+     # This code was added by Byrne because the localization of the $val->{text}
+     # variable within the context of the eval block was resulting in the
+     # translated text not to be saved to the variable.
+    my $trans = $tmpl_data->{text};
+    eval {
+        $trans = $plugin->translate_templatized($trans);
+        1;
+      }
+      or do {
+        my $tm = MT->component('ThemeManager');
+        MT->log(
+            level   => MT->model('log')->ERROR(),
+            blog_id => $blog ? $blog->id : 0,
+            message =>
+              $tm->translate(
+                "There was an error translating the template '[_1].' Error: [_2]",
+                $tmpl_data->{name},
+                $@
+              )
+        );
+      };
+    local $tmpl_data->{text} = $trans;
+
+    $tmpl->build_dynamic(0);
+    foreach my $v ( keys %$tmpl_data ) {
+        $tmpl->column( $v, $tmpl_data->{$v} ) if $tmpl->has_column($v);
+    }
+    $tmpl->blog_id( $blog->id );
+    if ( my $pub_opts = $tmpl_data->{publishing} ) {
+        $tmpl->include_with_ssi(1) if $pub_opts->{include_with_ssi};
+    }
+    if ( ( 'widgetset' eq $tmpl_data->{type} ) && ( exists $tmpl_data->{widgets} ) ) {
+        my $modulesets = delete $tmpl_data->{widgets};
+        $tmpl->modulesets(
+             MT::Template->widgets_to_modulesets( $modulesets, $blog->id )
+        );
+    }
+
+    $tmpl->save or die $tmpl->errstr;
+    
+    # Create the template mappings, if any exist.
+    if ( $tmpl_data->{mappings} ) {
+
+        # There can be several mappings to a single template, so use a loop to
+        # be sure to handle all of them.
+        my $mappings = $tmpl_data->{mappings};
+        foreach my $map_key ( keys %$mappings ) {
+            my $m  = $mappings->{$map_key};
+            my $at = $m->{archive_type};
+
+            my $map = MT->model('templatemap')->new;
+            $map->archive_type($at);
+            if ( exists $m->{preferred} ) {
+                $map->is_preferred( $m->{preferred} );
+            }
+            else {
+                $map->is_preferred(1);
+            }
+            $map->template_id( $tmpl->id );
+            $map->file_template( $m->{file_template} )
+              if $m->{file_template};
+            $map->blog_id( $tmpl->blog_id );
+            $map->save;
+        }
+    }
+    
+    return $tmpl;
+}
 
 sub template_filter {
     my ( $cb, $templates ) = @_;
