@@ -483,17 +483,23 @@ sub _link_templates {
                        'filename' );
             }
             else {
-                require Carp;
-                my $warn = "Failed Theme Manager registry lookup for: "
-                  . join( ' > ',
-                          $cur_ts_plugin,         'template_sets',
-                          $ts_id,                 'templates',
-                          $config_yaml_tmpl_type, $tmpl->identifier,
-                          'filename' )
-                  . ' '
-                  . Carp::longmess();
-                warn $warn;
-                MT->log($warn);
+                # Theme Manager didn't find a "filename" key in the 
+                # config.yaml for this template. That's not actually a problem 
+                # because the template identifier can be used instead, and is
+                # actually the more likely scenario.
+                # require Carp;
+                # my $warn = "Failed Theme Manager registry lookup for: "
+                #   . join( ' > ',
+                #           $cur_ts_plugin->name,   'template_sets',
+                #           $ts_id,                 'templates',
+                #           $config_yaml_tmpl_type, $tmpl->identifier, 
+                #           'filename' )
+                #   . ' '
+                #   . Carp::longmess();
+                # warn $warn;
+                # MT->log($warn);
+
+                # Use the template identifier as the file name.
                 $tmpl_filename = $tmpl->identifier . '.mtml';
             }
 
