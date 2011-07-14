@@ -231,6 +231,7 @@ sub theme_dashboard {
     $param->{new_theme}               = $q->param('new_theme');
     $param->{custom_fields_refreshed} = $q->param('custom_fields_refreshed');
     $param->{fd_fields_refreshed}     = $q->param('fd_fields_refreshed');
+    $param->{mode_switched}           = $q->param('mode_switched');
 
     # Grab the user's permissions to decide what tabs and content to display 
     # on the theme dashboard.

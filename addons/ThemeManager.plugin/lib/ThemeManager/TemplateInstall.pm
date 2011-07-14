@@ -410,9 +410,8 @@ sub _new_blog_template_set_language {
     $blog->template_set_language($template_set_language);
 }
 
+# Link the templates to the theme.
 sub _link_templates {
-
-    # Link the templates to the theme.
     my ( $cb, $param ) = @_;
     my $blog_id = $param->{blog}->id;
     my $ts_id   = $param->{blog}->template_set;
@@ -478,7 +477,7 @@ sub _link_templates {
                  )
               )
             {
-                $tmpl_filename =
+                $tmpl_filename = 
                   $cur_ts_plugin->registry( 'template_sets', $ts_id,
                        'templates', $config_yaml_tmpl_type, $tmpl->identifier,
                        'filename' );
@@ -1121,6 +1120,50 @@ sub xfrm_param_add_language {
     $param->{default_language} = $app->user->preferred_language || 'en-us';
 
 } ## end sub xfrm_param_add_language
+
+# The user wants to switch an applied theme's mode: from Designer to 
+# Production mode, or from Production to Designer mode.
+sub theme_mode_switch {
+    my $app = shift;
+    my $q   = $app->query;
+    
+    # Which mode do we want to switch to? Possible values are "designer" and
+    # "production."
+    my $switch_to = $q->param('switch_to');
+    
+    my $blog = MT->model('blog')->load( $q->param('blog_id') )
+        or die $app->errstr('Could not load the specified blog.');
+
+    # Set the theme mode to the selected value. This will be used as a flag
+    # for handling upgrades.
+    $blog->theme_mode( $switch_to );
+    $blog->save or die $blog->errstr;
+    
+    # Change whether templates are linked.
+    # Switching from Designer to Production mode, so unlink templates.
+    if ($switch_to eq 'production') {
+
+        # Unlink all templates.
+        my $iter = MT->model('template')->load_iter({ blog_id => $blog->id });
+        while ( my $tmpl = $iter->() ) {
+            $tmpl->linked_file(undef);
+            $tmpl->linked_file_mtime(undef);
+            $tmpl->linked_file_size(undef);
+            $tmpl->save or die $tmpl->errstr;
+        }
+    }
+    
+    # Switching from Production to Designer mode: link templates.
+    else {
+        _link_templates(undef, { blog => $blog });
+    }
+    
+    # Go back to the theme dashbaord, displaying a success message.
+    $app->redirect(
+        $app->uri . '?__mode=theme_dashboard&blog_id=' . $blog->id
+        . '&mode_switched=1'
+    );
+}
 
 1;
 

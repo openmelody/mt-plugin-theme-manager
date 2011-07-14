@@ -43,6 +43,34 @@ div#theme-label { display: none; }
     margin-bottom: 10px;
 }
 
+
+span#theme-mode-designer {
+    padding: 3px 8px;
+    text-align: center;
+    /* Use the Create Entry button background to highlight that designer mode
+       is used for this blog/theme. */
+    background: url('../../../../images/create-entry-button-right.gif') no-repeat left center;
+    color: #fff;
+    /* Use a small radius just to make the corners a little less hard. */
+    -webkit-border-radius: 3px; 
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+}
+
+span#theme-mode-production {
+    padding: 3px 8px;
+    text-align: center;
+    /* Use the Create Entry button background to highlight that designer mode
+       is used for this blog/theme. */
+    background: url('../../../../images/buttons/button-primary.gif') no-repeat left center;
+    color: #fff;
+    /* Use a small radius just to make the corners a little less hard. */
+    -webkit-border-radius: 3px; 
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+}
+
+
 /* Theme Chooser */
 
 #theme-info #status,

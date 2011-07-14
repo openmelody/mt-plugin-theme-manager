@@ -64,6 +64,13 @@
             <__trans phrase="Field Day fields have been refreshed.">
         </mtapp:statusmsg>
     </mt:If>
+    <mt:If name="mode_switched">
+        <mtapp:statusmsg
+            id="mode_switched"
+            class="success">
+            <__trans phrase="This theme has been successfully switched to <mt:Var name="theme_mode"> mode.">
+        </mtapp:statusmsg>
+    </mt:If>
 </mt:SetVarBlock>
 
 <mt:SetVarBlock name="content_nav">
@@ -225,6 +232,24 @@
             </ul>
         </mt:If>
     </mt:loop>
+
+            <h3><__trans phrase="Theme Mode"></h3>
+        <mt:If name="theme_mode" eq="designer">
+            <p>This theme is currently running in:
+                <span id="theme-mode-designer" title="The theme <mt:Var name="theme_label"> has been applied to this blog in Designer Mode.">Designer Mode</span>
+            </p>
+            <p>
+                <a href="<mt:Var name="script_uri">?__mode=theme_mode_switch&amp;switch_to=production&amp;blog_id=<mt:Var name="blog_id">">Switch to Production Mode</a>
+            </p>
+        <mt:Else>
+            <p>This theme is currently running in:
+                <span id="theme-mode-production" title="The theme <mt:Var name="theme_label"> has been applied to this blog in Production Mode.">Production Mode</span>
+            </p>
+            <p>
+                <a href="<mt:Var name="script_uri">?__mode=theme_mode_switch&amp;switch_to=designer&amp;blog_id=<mt:Var name="blog_id">">Switch to Designer Mode</a>
+            </p>
+        </mt:If>
+    
     </div>
 
     <div id="apply-theme-tab-content">

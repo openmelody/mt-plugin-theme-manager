@@ -22,6 +22,7 @@ applications:
             setup_theme:      $ThemeManager::ThemeManager::Plugin::setup_theme
             theme_dashboard:  $ThemeManager::ThemeManager::Plugin::theme_dashboard
             theme_info:       $ThemeManager::ThemeManager::Plugin::theme_info
+            theme_mode_switch: $ThemeManager::ThemeManager::TemplateInstall::theme_mode_switch
 
 page_actions: $ThemeManager::ThemeManager::Plugin::update_page_actions
 
