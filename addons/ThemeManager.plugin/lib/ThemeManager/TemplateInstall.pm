@@ -537,7 +537,7 @@ sub _link_templates {
         }
 
         # Lastly, save the linked (or unlinked) template.
-        $tmpl->save;
+        $tmpl->save or die $tmpl->errstr;
     } ## end while ( my $tmpl = $iter->...)
 } ## end sub _link_templates
 
