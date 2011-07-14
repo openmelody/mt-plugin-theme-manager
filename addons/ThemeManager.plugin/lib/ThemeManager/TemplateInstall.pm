@@ -521,7 +521,8 @@ sub _link_templates {
                        message =>
                          $tm->translate(
                            "The template [_1] could not be linked to the "
-                             . "source template. Check permissions for [_2].",
+                             . "source template. Check permissions of [_2] "
+                             . "(the source template file must be writable).",
                            $tmpl->name,
                            $path
                          ),
