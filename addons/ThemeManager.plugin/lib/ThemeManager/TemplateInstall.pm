@@ -101,7 +101,7 @@ sub _refresh_all_templates {
                 $tmpl->rebuild_me(0);
                 $tmpl->linked_file(undef);
                 $tmpl->outfile('');
-                $tmpl->save;
+                $tmpl->save or die $tmpl->errstr;
             }
         } ## end while ( my $tmpl = $tmpl_iter...)
 
@@ -112,7 +112,7 @@ sub _refresh_all_templates {
             _create_default_templates( $ts_id, $blog );
 
             $blog->template_set($ts_id);
-            $blog->save;
+            $blog->save or die $blog->errstr;
 
             $app->run_callbacks( 'blog_template_set_change',
                                  { blog => $blog } );
@@ -188,7 +188,7 @@ sub _create_default_templates {
           if exists $archive_types{$at};
     }
     $blog->custom_dynamic_templates('none');
-    $blog->save;
+    $blog->save or die $blog->errstr;
 
     MT->run_callbacks( ref($blog) . '::post_create_default_templates',
                        $blog, $tmpl_list );
@@ -271,7 +271,7 @@ sub _create_template {
             $map->file_template( $m->{file_template} )
               if $m->{file_template};
             $map->blog_id( $tmpl->blog_id );
-            $map->save;
+            $map->save or die $map->errstr;
         }
     }
     
@@ -556,11 +556,13 @@ sub _link_templates {
     } ## end while ( my $tmpl = $iter->...)
 } ## end sub _link_templates
 
+# Forcibly turn on module caching at the blog level, so that any theme cache
+# options actually work.
 sub _override_publishing_settings {
     my ( $cb, $param ) = @_;
     my $blog = $param->{blog} or return;
     $blog->include_cache(1);
-    $blog->save;
+    $blog->save or die $blog->errstr;
 }
 
 sub _set_module_caching_prefs {
@@ -587,10 +589,7 @@ sub _set_module_caching_prefs {
                     }
                 }
 
-#                foreach (qw( include_with_ssi )) {
-#                    $tmpl->$_( $tmpls->{$t}->{$m}->{cache}->{$_} );
-#                }
-                $tmpl->save;
+                $tmpl->save or die $tmpl->errstr;
             }
         }
     } ## end foreach my $t (qw( module widget ))
@@ -983,7 +982,7 @@ sub _install_containers {
               = eval { &{ $c->{label} } } ? &{ $c->{label} } : $basename;
             $obj->label($label);
             $obj->parent($pid);
-            $obj->save;
+            $obj->save or die $obj->errstr;
         }
         if ( $c->{$key} ) {
             _install_containers( $model, $key, $blog, $c->{$key}, $obj );
@@ -1015,7 +1014,7 @@ sub _install_pages_or_entries {
                 $obj->meta( $_, $p->{meta}->{$_} );
             }
             $obj->set_tags( @{ $p->{tags} } );
-            $obj->save;
+            $obj->save or die $obj->errstr;
 
             # Create the category/folder association if necessary.
             if ( $p->{folder} ) {
@@ -1039,7 +1038,7 @@ sub _install_pages_or_entries {
 
                     # A folder always has a primary placement.
                     $placement->is_primary(1);
-                    $placement->save;
+                    $placement->save or die $placement->errstr;
                 }
             } ## end if ( $p->{folder} )
         } ## end unless ($obj)

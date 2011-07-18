@@ -355,7 +355,7 @@ sub select_theme {
                    # This plugin couldn't be loaded! That must mean the theme has
                    # been uninstalled, so remove the entry in the table.
                    $theme->remove;
-                   $theme->save;
+                   $theme->save or die $theme->errstr;
                    next;
                }
 
@@ -450,7 +450,7 @@ sub setup_theme {
         foreach my $blog_id (@blog_ids) {
             my $blog = MT->model('blog')->load($blog_id);
             $blog->theme_mode( $q->param('theme_mode') );
-            $blog->save;
+            $blog->save or die $blog->errstr;
         }
     }
     else {
@@ -594,7 +594,7 @@ sub setup_theme {
         foreach my $blog_id (@blog_ids) {
             my $blog = MT->model('blog')->load($blog_id);
             $blog->template_set_language($selected_lang);
-            $blog->save;
+            $blog->save or die $blog->errstr;
         }
     }
 
@@ -1084,7 +1084,7 @@ sub _theme_check {
                 $theme = MT->model('theme')->new();
                 $theme->plugin_sig($sig);
                 $theme->ts_id($ts_id);
-                $theme->save;
+                $theme->save or die $theme->errstr;
             }
 
             # Prepare the theme_meta so that the hash can be written to
@@ -1101,7 +1101,7 @@ sub _theme_check {
             # theme meta label that we already calculated fallbacks for.
             $theme->ts_label( theme_label( $meta->{label}, $plugin ) );
 
-            $theme->save;
+            $theme->save or die $theme->errstr;
         } ## end foreach my $ts_id (@ts_ids)
     } ## end for my $sig ( keys %MT::Plugins)
 
@@ -1522,7 +1522,7 @@ sub _populate_theme_dashboard {
 
             # Upgraders likely also don't have the theme_mode switch set
             $blog->theme_mode('production');
-            $blog->save;
+            $blog->save or die $blog->errstr;
         }
     } ## end else [ if ( $blog->theme_mode...)]
 
