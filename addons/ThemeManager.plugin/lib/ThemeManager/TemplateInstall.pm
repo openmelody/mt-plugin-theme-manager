@@ -198,7 +198,7 @@ sub _create_default_templates {
 } ## end sub _create_default_templates
 
 # Create a template based on the theme's definition. Also creates template 
-# maps for archive templates.
+# maps for archive templates. Returns the created template object.
 sub _create_template {
     my ($tmpl_data) = shift;
     my ($blog)      = shift;
