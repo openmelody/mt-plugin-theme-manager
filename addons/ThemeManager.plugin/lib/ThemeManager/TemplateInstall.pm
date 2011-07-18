@@ -1086,8 +1086,13 @@ sub _save_theme_meta {
     my $set = MT->app->registry( 'template_sets', $ts_id ) or return;
 
     # Save the data to the theme_meta meta field.
-    $blog->theme_meta( prepare_theme_meta($ts_id) );
-    $blog->save;
+    my $meta = prepare_theme_meta($ts_id);
+    my $yaml = YAML::Tiny->new;
+    $yaml->[0] = $meta;
+
+    # Turn that YAML into a plain old string and save it.
+    $blog->theme_meta( $yaml->write_string() );
+    $blog->save or die $blog->errstr;
 }
 
 sub xfrm_add_language {
