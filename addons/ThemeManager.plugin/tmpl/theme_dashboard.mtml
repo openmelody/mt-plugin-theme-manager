@@ -108,6 +108,20 @@
                 <span class="theme_version">version <mt:Var name="theme_version"></span>
             </mt:If>
         </p>
+    <mt:If name="theme_mode" eq="designer">
+    <mt:Else>
+        <mt:If name="theme_upgrade_available">
+        <div class="actions-bar" style="display: inline-block; margin-bottom: 8px;">
+            <div class="actions-bar-inner pkg actions">
+                <button
+                    onclick="return openDialog(null, 'theme_upgrade', 'blog_id=<mt:Var name="blog_id">');"
+                    type="submit"
+                    class="primary-button"
+                    ><__trans phrase="Upgrade theme to version <mt:Var name="theme_upgrade_version_num">"></button>
+            </div>
+        </div>
+        </mt:If>
+    </mt:If>
     <mt:If name="theme_description">
         <div id="theme-description"><mt:Var name="theme_description"></div>
     </mt:If>

@@ -11,18 +11,22 @@ users allowing them to more easily apply and customize a theme. Furthermore,
 it virtually eliminates the need for end users to edit or worry about
 templates.
 
+An "upgrade" function allows a user to easily upgrade a blog to use the latest
+features and capabilities in the newest release of a theme.
+
 Using Theme Manager as an end user is known as "Production Mode."
 
 ## What Theme Manager Does for Designers
 
-Designers can speed theme creation with the "Designer Mode." Currently, the
-advantages of this mode are small (see the next section, Eliminate Burdensome
-"Template Refreshing").
+Designers can speed theme creation with the "Designer Mode." Designer Mode
+makes template editing easier and allows for quick iteration by automatically
+installing templates and custom fields as they are defined in the theme's
+`config.yaml`.
 
 When a theme is applied to a blog the user is presented with the ability to 
 apply the theme in Production or Designer Mode.
 
-### Eliminate Burdensome "Template Refreshing" and Use Your Preferred Editor
+### Eliminate Burdensome "Template Refreshing" and Use Your Preferred Text Editor
 
 Designers who have built sites on Movable Type are all too familiar with the
 workflow to see a simple change actually appear on a web site. It goes
@@ -34,17 +38,26 @@ something like this:
 4. Go to browser, refresh and see change.
 5. Repeat.
 
-Theme Manager streamlines this process by eliminating the need to refresh 
-templates, and by providing simple mechanisms inside of Movable Type to 
-quickly and efficiently republish templates, entries and pages. With 
-Theme Manager installed, when you edit a theme on the filesystem, the 
-theme is immediately updated in Movable Type. Then republishing that file
-is as simple as clicking a rebuild icon next to the template or content
-you would like refreshed. 
+Theme Manager streamlines this process by eliminating the need to refresh
+templates, and by providing simple mechanisms inside of Melody and Movable
+Type to quickly and efficiently republish templates, entries and pages. With
+Theme Manager installed, when you edit a theme on the filesystem, the theme is
+immediately updated in Movable Type. Then republishing that file is as simple
+as clicking a rebuild icon next to the template or content you would like
+refreshed.
+
+### Quickly Iterate Through Bigger Theme Updates
+
+In addition to speeding the theme development process with with linked
+templates and your favorite text editor, Theme Manager's Designer Mode relies
+upon your `config.yaml` to add new templates and create and update Custom
+Fields and Field Day fields automatically. That's right, defining a template
+in `config.yaml`, for example, is all that is required to deploy a new
+template! No need to upgrade or re-apply a theme.
 
 ### Create Better Products
 
-When a designers creates a theme with the intent to distribute it, it is
+When a designer creates a theme with the intent to distribute it, it is
 essential that the product they produce is not only easy to use, but also easy
 to support. Themes should never have to include complex instructions in order
 to allow end users to apply, setup, configure and tweak them. These actions
@@ -66,23 +79,34 @@ should be easy and obvious. Theme Manager makes that happen. Here's how:
   designer to constrain the ways in which a theme can be customized and 
   virtually eliminates the need for users to edit templates. 
 
-## Don't Let Upgrades Break Your Theme
+## Don't Let Theme Upgrades Break Your Web Site
 
 Upgrading a theme should be something every user should not only be able to
-do, but something they feel comfortable and safe in doing. Sadly, that is not
-often the case. Frequently, the thought of upgrading a theme is fraught with
-anxiety because upgrading may end up breaking your web site. And who in their
-right mind wants that?
+do, but something they feel comfortable and safe in doing. Adding new features
+to a blog through templates, for example, requires iterative testing that can
+result in a broken site. Themes and Theme Manager provide varied functionality
+to make testing, deploying, and upgrades an easier process.
 
-Theme Manager prevents this by allowing themes to operate in two modes:
-developer mode and production mode.
-
-In developer mode, a theme in the CMS is linked directly to the theme's source
-files on the file system. When the theme changes on the file system, it
+When creating a new theme or testing proposed changes you can work with a
+theme in Developer Mode (such as on a non-public development server or in a
+separate test blog within your Melody or Movable Type installation). In
+developer mode, a theme in the CMS is linked directly to the theme's template
+source files on the file system. When the theme changes on the file system, it
 changes in the CMS. This helps make iterating through changes to your web site
-much faster and more enjoyable.
+much faster and more enjoyable. Adding new templates in Designer mode is
+also easier: just define the template in `config.yaml` -- the template will be
+automatically added with the template definition you create. Similarly, Custom
+Fields and Field Day fields are automatically added (and updated) based on the
+contents of your `config.yaml` file.
 
-When a theme is in production mode, then the link between the CMS and theme's source files are broken, such that changes to the theme on the filesystem will not automatically appear on the live site. This allows for designers to work within the CMS on changes to a theme without fear of those changes they are iterating on and testing disruption the live/production web site. Then, when a set of changes are ready, simply re-apply the theme to live site and presto, your changes are live.
+When a theme is in Production Mode it is stable. Templates are not linked to
+their filesystem counterparts and are not automatically updated. Custom Fields
+and Field Day fields are similarly not automatically updated. When a new
+version of a theme is available, it's new features can be deployed by using
+Theme Manager's theme upgrade capability, helping you to understand exactly
+what will be affected by the upgrade and what to expect. Just look for the
+Upgrade button on the Theme Dashboard. The result: a smooth upgrade to a
+theme's new capabilities without unexpected downtime.
 
 
 # Prerequisites
@@ -136,10 +160,17 @@ of deploying in Production Mode or Designer Mode.
 Production Mode is aimed at running a live site. It is most analogous to how
 Movable Type runs out-of-the-box.
 
-Designer Mode is aimed at speeding development of a theme. The additional
-capabilities that Designer Mode offers are currently limited to just one:
-linking the installed template and the source file, making it easy to use your
-preferred text editor to build a template.
+Designer Mode is aimed at speeding development of a theme. Designer Mode has a
+short list of additional capabilities, but their value is high:
+
+* Linking the installed template and the source file, making it easy to use
+  your preferred text editor to build a template.
+
+* Automate "theme upgrades" based on the content of `config.yaml`.
+
+Switching from Production Mode to Designer Mode is easy and can be done at any
+time: simply go to the Design > Theme Dashboard menu item, then select the
+Customization tab. There you can see the current Mode and switch.
 
 ## Designers: Specifying Your Theme's Details
 
@@ -151,6 +182,11 @@ organized by a `config.yaml` file. Theme Manager adds several keys to the
 Tip: use Config Assistant to add user-fillable fields to your theme, as well
 as for the static file copy feature, negating the need to include an
 `mt-static` folder with your theme distribution!
+
+Tip: be sure to increment your theme's version number after making changes.
+Keeping a "version history" makes it easy to know when a new feature was
+added, for example. Incrementing the version number is also how Theme Manager
+knows how to provide users with a button to upgrade the theme.
 
 The following keys are available:
 
@@ -325,6 +361,11 @@ In addition to Index Templates and Template Modules, other template types can be
                     comment_preview:
                         label: 'Comment Preview'
 
+Note that if you are developing your theme in Designer Mode, simply adding the
+template definition to `config.yaml` is enough for Theme Manager to install
+your template. Just refresh in Melody or Movable Type and you will see your
+template listed and ready to use.
+
 ### Additional Template Settings
 
 Theme Manager allows you to specify some additional keys for templates: 
@@ -348,7 +389,7 @@ table below:
 <tr><td>0</td><td>disabled</td><td>Disabled, do not publish.</td></tr>
 <tr><td>1</td><td>static</td><td>Publish statically on demand.</td></tr>
 <tr><td>2</td><td>manual</td><td>Publish manually, or only when specifically requested by an administrator.</td></tr>
-<tr><td>3</td><td>dynamic</td><td>Publish dyanmically in real time. Do not publish to the filesystem.</td></tr>
+<tr><td>3</td><td>dynamic</td><td>Publish dynamically in real time. Do not publish to the filesystem.</td></tr>
 <tr><td>4</td><td>async</td><td>Publish in the background using the run-periodic-tasks script.</td></tr>
 </table>
 
@@ -455,7 +496,10 @@ translated template.
 Many sites require the use of the Movable Type Commercial Pack's Custom Fields
 (part of MT Pro). If fields are specified in your theme's `config.yaml` they
 can be automatically created when you deploy your theme. Fields can also be
-"refreshed" from the Theme Dashboard's Customization tab.
+"refreshed" from the Theme Dashboard's Customization tab. If you are creating
+or updating your theme by running in Designer Mode, simply defining the Custom
+Field definition is enough for Melody and Movable Type to install it; no need
+to "refresh" from the Theme Dashboard's Customization tab!
 
 The following example shows how to add a text custom field for Entries to the
 theme we're building.
@@ -520,11 +564,15 @@ object type), include the `scope` key:
 
 ## Designers: Create Field Day Fields
 
-Another tool for creating additional fields is [Field Day](https://github.com/movabletype/mt-plugin-field-day). As with the
+Another tool for creating additional fields is [Field
+Day](https://github.com/movabletype/mt-plugin-field-day). As with the
 Commercial Pack's Custom Fields, Field Day fields can be specified in your
 theme's `config.yaml` and will be automatically created when you deploy your
 theme. Fields can also be "refreshed" from the Theme Dashboard's Customization
-tab.
+tab. If you are creating or updating your theme by running in Designer Mode,
+simply defining the Field Day field definition is enough for Melody and
+Movable Type to install it; no need to "refresh" from the Theme Dashboard's
+Customization tab!
 
 Field Day field definitions are sufficiently complex and varied that writing 
 YAML from scratch for them is likely to be a very frustrating exercise. A much 
@@ -976,6 +1024,9 @@ page. Also notice that a folder is being associated with the page.
                     about:
                         label: 'About'
                         folder: our_company
+
+Note that Default Content is installed only when the theme is applied to a
+blog. Default Content is not re-installed when a theme upgrade is performed.
 
 ### Nested Categories and Folders
 

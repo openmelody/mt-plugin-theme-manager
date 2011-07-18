@@ -1,0 +1,154 @@
+<mt:SetVarBlock name="page_title">
+    <mt:If name="theme_upgrade_complete">
+        Theme Upgrade Successful
+    <mt:Else>
+        Upgrade Theme
+    </mt:If>
+</mt:SetVarBlock>
+<mt:Var name="screen_type" value="upgrade-theme">
+<mt:SetVarBlock name="html_head" append="1">
+    <link rel="stylesheet" href="<mt:PluginStaticWebPath component="ThemeManager">css/app.css" type="text/css" />
+<mt:unless tag="ProductName" eq="Melody">
+    <script src="<mt:StaticWebPath>jquery/jquery.js" type="text/javascript"></script>
+</mt:unless>
+    <script type="text/javascript">
+        /* <![CDATA[ */
+        CMSScriptURI = '<mt:var name="script_url">';
+        /* ]]> */
+    </script>
+</mt:SetVarBlock>
+
+<mt:Include name="dialog/header.tmpl">
+
+<mt:If name="theme_upgrade_complete">
+
+    <mt:Ignore>
+        The user has successfully upgraded this theme. Tell them how to 
+        proceed then close and reload the theme dashboard.
+    </mt:Ignore>
+
+    <p>The <mt:Var name="theme_label"> theme has been successfully upgraded to version <mt:Var name="theme_version">. Refer to the theme documentation for next steps (such as populating any new Theme Options or republishing the blog).</p>
+
+    <mt:If name="theme_upgrade_results_messages">
+    <p>The following changes were made to upgrade this blog:</p>
+    <ul>
+        <mt:Loop name="theme_upgrade_results_messages">
+        <li><mt:Var name="message"></li>
+        </mt:Loop>
+    </ul>
+    </mt:If>
+
+    <div class="actions-bar">
+        <div class="actions-bar-inner pkg actions">
+            <button
+                onclick="window.parent.location.href='<mt:Var name="script_uri">?__mode=theme_dashboard&blog_id=<mt:Var name="blog_id">';"
+                type="submit"
+                accesskey="x"
+                title="<__trans phrase="Close (x)">"
+                class="primary-button"
+                ><__trans phrase="Close"></button>
+        </div>
+    </div>
+
+<mt:Else>
+
+    <mt:Ignore>
+        Present the user with the proposed theme upgrade information and let
+        them choose to continue with the upgrade.
+    </mt:Ignore>
+
+    <form method="post" action="<mt:Var name="script_url">">
+        <input type="hidden" name="__mode" value="theme_upgrade_action" />
+        <input type="hidden" name="blog_id" value="<mt:Var name="blog_id">" />
+        <input type="hidden" name="magic_token" value="<mt:Var name="magic_token">" />
+        <input type="hidden" name="updated_cf_fields" value="<mt:Var name="updated_cf_fields">" />
+        <input type="hidden" name="updated_fd_fields" value="<mt:Var name="updated_fd_fields">" />
+
+        <p>
+            Currently, the blog <mt:Var name="blog_name"> is running version <mt:Var name="theme_version"> of the <mt:Var name="theme_label"> theme. This blog can be updated to run version <mt:Var name="theme_upgrade_version_num"> of the theme. This upgrade will:
+        </p>
+        <ul>
+        <mt:If name="new_templates">
+            <li>Install new templates</li>
+        </mt:If>
+        <mt:If name="changed_templates">
+            <li>Upgrade existing templates</li>
+        </mt:If>
+        <mt:If name="updated_cf_fields">
+            <li>Install/update Custom Fields</li>
+        </mt:If>
+        <mt:If name="updated_fd_fields">
+            <li>Install/update Field Day fields</li>
+        </mt:If>
+        </ul>
+
+    <mt:If name="new_templates">
+        <p><strong>The following new templates will be installed:</strong></p>
+        <ul>
+        <mt:Loop name="new_templates">
+            <li>
+                <mt:Var name="name"> (<mt:Var name="type">)
+                <input type="hidden" name="new_templates" value="<mt:Var name="identifier">" />
+            </li>
+        </mt:Loop>
+        </ul>
+    </mt:If>
+
+    <mt:If name="changed_templates">
+        <p><strong>The following templates will be upgraded:</strong></p>
+        <ul>
+        <mt:Loop name="changed_templates">
+            <li>
+                <a href="<mt:Var name="script_uri">?__mode=view&amp;_type=template&amp;id=<mt:Var name="id">&amp;blog_id=<mt:Var name="blog_id">" target="_blank"><mt:Var name="name"></a>
+                <input type="hidden" name="changed_templates" value="<mt:Var name="identifier">" />
+            </li>
+        </mt:Loop>
+        </ul>
+        <p>
+            If you have made edits to these templates yourself, you may want to review and manually upgrade them to avoid overwriting any changes you have added. Template metadata, such as caching options and template mappings, will not be affected.
+        </p>
+        <p>
+            <input type="checkbox" name="upgrade_existing_templates" id="upgrade_existing_templates" value="1" />
+            <label for="upgrade_existing_templates">Automatically upgrade existing templates. I understand that this will overwrite any changes I have manually made.</label>
+        </p>
+    </mt:If>
+
+    <mt:SetVarBlock name="if_templates_affected"><mt:If name="new_templates">1</mt:If><mt:If name="changed_templates">1</mt:If></mt:SetVarBlock>
+    <mt:If name="if_templates_affected">
+        <p>
+            Custom templates will not be deleted by this upgrade. Content such as Entries and Pages will not be affected by this upgrade.
+        <mt:If name="changed_templates">
+            Template metadata on existing templates&mdash;such as caching options, archive mappings, build types&mdash;will not be affected by this upgrade.
+        </mt:If>
+        </p>
+    </mt:If>
+
+        <div id="status" style="display: none;">
+            <div id="status-inner">
+                <p>Upgrading theme...</p>
+                <img src="<mt:Var name="static_uri">images/indicator.gif" width="66" height="66" border="0" />
+            </div>
+        </div>
+
+        <div class="actions-bar">
+            <div class="actions-bar-inner pkg actions">
+                <button
+                    onclick=""
+                    type="submit"
+                    accesskey="s"
+                    title="<__trans phrase="Upgrade (s)">"
+                    class="primary-button"
+                    ><__trans phrase="Upgrade"></button>
+                <button
+                    onclick="closeDialog(); return false"
+                    type="submit"
+                    accesskey="x"
+                    class="cancel"
+                    title="<__trans phrase="Cancel (x)">"
+                    ><__trans phrase="Cancel"></button>
+            </div>
+        </div>
+    </form>
+</mt:If>
+
+<mt:Include name="dialog/footer.tmpl">

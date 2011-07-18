@@ -1561,6 +1561,47 @@ sub _populate_theme_dashboard {
         $param->{theme_thumbs_path} = $dest_path;
     }
 
+    $param = _theme_upgrade_check($blog, $param, $plugin, $theme_meta->{version});
+
+    return $param;
+}
+
+sub _theme_upgrade_check {
+    my ($blog)   = shift;
+    my ($param)  = shift;
+    my ($plugin) = shift;
+
+    # The installed theme's version.
+    my $installed_version = shift;
+
+    # Upgrades are automatic with Designer Mode, so no need to provide the 
+    # upgrade option.
+    return $param if $blog->theme_mode eq 'designer';
+
+    # Grab the "latest" version number of the theme, checking both the plugin
+    # template set for a version key, and falling back to the plugin's version
+    # key.
+    my $latest_version 
+        = MT->registry( 'template_sets', $blog->template_set )->{version} 
+            || $plugin->version;
+
+    # Compare the latest version and installed version of the theme.
+    # version needs to be compiled to be used, so we can't supply it with 
+    # Theme Manager, and because it's not in Perl's core prior to 5.10 we
+    # can't rely on it being available. (Plus, 0.77 isn't in all versions of 
+    # Perl 5.10.x, so we can't rely on 5.10 being correct anyway.)
+    #use version 0.77;
+    use Perl::Version;
+    $latest_version = Perl::Version->new( $latest_version );
+    $installed_version = Perl::Version->new( $installed_version );
+
+    # Return true if a newer version is available than the installed version
+    # of the theme.
+    if ( $latest_version > $installed_version ) {
+        $param->{theme_upgrade_available} = 1;
+        $param->{theme_upgrade_version_num} = $latest_version->stringify;
+    }
+    
     return $param;
 }
 

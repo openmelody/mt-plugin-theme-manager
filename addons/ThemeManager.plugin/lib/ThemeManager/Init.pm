@@ -30,6 +30,9 @@ sub init_app {
     Sub::Install::reinstall_sub(
          { code => \&_translate, into => 'MT::Component', as => 'translate', }
     );
+
+    # In Designer Mode, theme upgrades should happen automatically.
+    _automatic_theme_upgrade();
 }
 
 sub _translate {
@@ -112,6 +115,90 @@ sub _translate {
     }
     $str;
 } ## end sub _translate
+
+# In Designer Mode, theme upgrades should happen automatically.
+sub _automatic_theme_upgrade {
+    my @blogs = MT->model('blog')->search_by_meta(
+        'theme_mode', # Look in the theme_mode blog meta field...
+        'designer',   # ...for any blog using Designer Mode.
+    )
+        or return 1; # Just quit if there are none.
+
+    my ($app) = MT->instance;
+
+    # The following blogs are using Designer Mode. Set the necessary variables
+    # then use the ThemeManager::TemplateInstall::_do_theme_upgrade method to 
+    # perform the upgrade.
+    foreach my $blog (@blogs) {
+        my $plugin = find_theme_plugin( $blog->template_set );
+        my $new_theme_meta = $app->registry( 'template_sets', $blog->template_set);
+        my $param = {};
+
+        # Check which templates are new and which existing templates need 
+        # updating.
+        require ThemeManager::TemplateInstall;
+        $param = ThemeManager::TemplateInstall::_upgrade_check_templates({
+            param  => $param,
+            blog   => $blog,
+            plugin => $plugin,
+        });
+
+        # Check if Custom Fields and Field Day fields exist with this theme and
+        # note that should will be (potentially) updated. These should be more
+        # thoroughly checked, like the templates...
+        $param = ThemeManager::TemplateInstall::_upgrade_check_fields({
+            param          => $param,
+            new_theme_meta => $new_theme_meta,
+        });
+
+        # In the theme upgrade GUI, the theme identifier is the only thing 
+        # passed into the new_templates array, so that's all we need here, too.
+        my (@new_templates, @changed_templates);
+        foreach my $tmpl ( @{ $param->{new_templates} } ) {
+            push @new_templates, $tmpl->{identifier};
+        }
+
+        # Changed templates don't need to be updated with the theme upgrade 
+        # process because we're in Developer Mode: the templates are already
+        # linked to the file system, and therefore are already picking up
+        # any changes to the template.
+        # foreach my $tmpl ( @{ $param->{changed_templates} } ) {
+        #     push @changed_templates, $tmpl->{identifier};
+        # }
+
+        # Actually do the upgrade, based on all of the above submitted info.
+        my @results = ThemeManager::TemplateInstall::_do_theme_upgrade({
+            blog              => $blog,
+            plugin            => $plugin,
+            updated_cf_fields => $param->{updated_cf_fields},
+            updated_fd_fields => $param->{updated_fd_fields},
+            new_templates     => \@new_templates,
+            changed_templates => \@changed_templates,
+        });
+
+        # Because we're in Designer Mode, all new templates should be linked
+        # to the filesystem.
+        foreach my $new_template (@new_templates) {
+            my ($tmpl) = MT->model('template')->load({
+                blog_id    => $blog->id,
+                identifier => $new_template,
+            })
+                or next MT->log({
+                    blog_id => $blog->id,
+                    level => MT->model('log')->WARNING(),
+                    message => 'The template "' . $new_template 
+                        . '" could not be found!',
+                });
+
+            ThemeManager::TemplateInstall::_link_template({
+                tmpl    => $tmpl,
+                plugin  => $plugin,
+                blog_id => $blog->id,
+                ts_id   => $blog->template_set,
+            });
+        }
+    }
+}
 
 1;
 

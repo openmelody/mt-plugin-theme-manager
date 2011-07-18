@@ -2,9 +2,11 @@ package ThemeManager::TemplateInstall;
 
 use strict;
 use ConfigAssistant::Util qw( find_theme_plugin );
-use ThemeManager::Util qw( prepare_theme_meta );
+use ThemeManager::Util qw( theme_label theme_version prepare_theme_meta );
 use MT::Util qw(caturl dirify offset_time_list);
 use MT;
+
+use Digest::MD5 qw(md5_hex);
 
 sub _refresh_all_templates {
 
@@ -808,6 +810,7 @@ sub _refresh_system_custom_fields {
         );
 
         if ($field_obj) {
+
             # The field data type can't just be changed willy-nilly. Because
             # different data types store data in different formats and in 
             # different fields we can't expect to change to another field type
@@ -1259,6 +1262,323 @@ sub theme_mode_switch {
         $app->uri . '?__mode=theme_dashboard&blog_id=' . $blog->id
         . '&mode_switched=1'
     );
+}
+
+# A newer version of the installed theme is available. The user has clicked
+# the "Upgrade theme to version x.x" button, and a pop-up appears, built by
+# this method.
+sub theme_upgrade_proposal {
+    my $app   = shift;
+    my $q     = $app->query;
+    my $param = {};
+    
+    my ($blog) = MT->model('blog')->load( $q->param('blog_id') );
+    $param->{blog_name} = $blog->name;
+
+    my $plugin  = find_theme_plugin( $blog->template_set );
+    my $new_theme_meta = $app->registry( 'template_sets', $blog->template_set);
+    my $installed_theme_meta 
+        = eval { YAML::Tiny->read_string( $blog->theme_meta )->[0] };
+
+    # Populate the screen with brief version information.
+    $param->{theme_upgrade_version_num} 
+        = $new_theme_meta->{version} || $plugin->version;
+    $param->{theme_label} 
+        = theme_label( $installed_theme_meta->{label}, $plugin );
+    $param->{theme_version}
+        = theme_version( $installed_theme_meta->{version}, $plugin );
+
+    # Check which templates are new and which existing templates need 
+    # updating.
+    $param = _upgrade_check_templates({
+        param  => $param,
+        blog   => $blog,
+        plugin => $plugin,
+    });
+
+    # Check if Custom Fields and Field Day fields exist with this theme and
+    # note that should will be (potentially) updated. These should be more
+    # thoroughly checked, like the templates...
+    $param = _upgrade_check_fields({
+        param          => $param,
+        new_theme_meta => $new_theme_meta,
+    });
+
+    return $app->load_tmpl( 'theme_upgrade.mtml', $param);
+}
+
+# Determine what needs to be done to upgrade a theme. This will check if any
+# new templates need to be installed or if any existing templates need to be
+# updated. The param hash is used to inform the user of what is changing.
+sub _upgrade_check_templates {
+    my ($arg_ref) = @_;
+    my $param  = $arg_ref->{param};
+    my $blog   = $arg_ref->{blog};
+    my $plugin = $arg_ref->{plugin};
+    my $app    = MT->instance;
+
+    # Create a list of the changed and new templates to be updated.
+    my (@changed_templates, @new_templates);
+
+    # Compare the on-disk templates to the in-DB templates so that we can know
+    # if they are being updated, and which ones.
+    require MT::DefaultTemplates;
+    my $tmpl_list = MT::DefaultTemplates->templates( $blog->template_set );
+    if ( !$tmpl_list || ( ref($tmpl_list) ne 'ARRAY' ) || ( !@$tmpl_list ) ) {
+        return $blog->error(
+                         $app->translate("No default templates were found.") );
+    }
+
+    foreach my $disk_tmpl (@$tmpl_list) {
+
+        # Look at this template to determine if any new templates should
+        # be installed. If a template is listed in config.yaml but not found
+        # in the DB, then tell the user a new template(s) will be installed.
+        my ($db_tmpl) = MT->model('template')->load({ 
+            blog_id    => $blog->id,
+            identifier => $disk_tmpl->{identifier},
+        });
+        
+        # This template was not found in the DB.
+        if (!$db_tmpl) {
+
+            # Tell the user about the new templates being installed
+            push @new_templates,
+                {
+                    name       => $disk_tmpl->{label},
+                    type       => $disk_tmpl->{type},
+                    identifier => $disk_tmpl->{identifier},
+                };
+            
+            next; # Go to the next template because there's nothing more to do.
+        }
+
+        # Look at this template to determine if any existing templates need 
+        # to be updated. Compare the actual template (text) to determine if 
+        # anything changed. Don't compare the template meta (build type or 
+        # caching, for example) because that's something that may have been 
+        # purposefully customized, and we don't want to overwrite that.
+        # The source template should be translated before trying to compare it 
+        # to the already-translated template in the DB.
+        my $disk_tmpl_trans = $disk_tmpl->{text} || '';
+        eval {
+            $disk_tmpl_trans = $plugin->translate_templatized($disk_tmpl_trans);
+            1;
+        };
+        
+        # Compare an MD5 hash of the templates to tell if they changed. Skip
+        # over any 'widgetset' template type because these have likely changed
+        # and we don't want to check them.
+        if ( $disk_tmpl->{type} ne 'widgetset' 
+            && md5_hex($disk_tmpl_trans) ne md5_hex($db_tmpl->text) 
+        ) {
+
+            # This template is going to be updated. We want to warn the user
+            # of this, so let's compile a list of changed templates
+            push @changed_templates,
+                {
+                    name       => $db_tmpl->name,
+                    identifier => $db_tmpl->identifier,
+                };
+
+            next;
+        }
+    }
+
+    # Add the above collected information to the parameter hash.
+    $param->{new_templates}     = \@new_templates;
+    $param->{changed_templates} = \@changed_templates;
+
+    return $param;
+}
+
+# Determine what needs to be done to upgrade a theme. This will check if any
+# Custom Fields or Field Day fields need to be installed/updated and updates
+# the param hash to inform the user of this.
+sub _upgrade_check_fields {
+    my ($arg_ref) = @_;
+    my $param          = $arg_ref->{param};
+    my $new_theme_meta = $arg_ref->{new_theme_meta};
+
+    if ( $new_theme_meta->{fields} ) {
+        $param->{updated_cf_fields} = 1;
+    }
+
+    if ( $new_theme_meta->{fd_fields} ) {
+        $param->{updated_fd_fields} = 1;
+    }
+
+    return $param;
+}
+
+# An upgrade to this theme is available. The user has clicked to learn about 
+# the upgrade and the changes that will occur, and has chosen to proceed. Now,
+# actually do the upgrade!
+sub theme_upgrade_action {
+    my $app    = shift;
+    my $q      = $app->query;
+    my $param  = {};
+    my $blog   = MT->model('blog')->load( $q->param('blog_id') );
+    my $plugin = find_theme_plugin( $blog->template_set );
+
+    # In the theme_upgrade_proposal we set some variables to save some effort 
+    # here: If an item is marked then it should be upgraded; no need to 
+    # recheck everything.
+    my $updated_cf_fields = $q->param('updated_cf_fields') || '';
+    my $updated_fd_fields = $q->param('updated_fd_fields') || '';
+    my @new_templates     = $q->param('new_templates')
+        ? $q->param('new_templates')
+        : (); # An empty array if no new templates.
+
+    # Only upgrade the changed templates if the user has acknowledged that
+    # they may be overwriting manually-added changes.
+    my @changed_templates = $q->param('upgrade_existing_templates')
+        ? $q->param('changed_templates') 
+        : (); # An empty array if no new templates.
+
+    # Actually do the upgrade, based on all of the above submitted info.
+    my $results = _do_theme_upgrade({
+        blog              => $blog,
+        plugin            => $plugin,
+        updated_cf_fields => $updated_cf_fields,
+        updated_fd_fields => $updated_fd_fields,
+        new_templates     => \@new_templates,
+        changed_templates => \@changed_templates,
+    });
+
+    # Report the success/fail messages to the user. This basically just tells
+    # them what was upgraded, because fail messages should cause the app to 
+    # die, hopefully forcing a theme designer to ensure their theme 100% works
+    # before making it available.
+    $param->{theme_upgrade_results_messages} = $results->{messages};
+
+    # The theme upgrade has completed. Tell the user.
+    $param->{theme_upgrade_complete} = 1;
+
+    my $theme_meta 
+        = eval { YAML::Tiny->read_string( $blog->theme_meta )->[0] };
+
+    # Populate the screen with brief version information.
+    $param->{theme_label} 
+        = theme_label( $theme_meta->{label}, $plugin );
+    $param->{theme_version}
+        = theme_version( $theme_meta->{version}, $plugin );
+
+    # Report that the upgrade was successful!
+    return $app->load_tmpl( 'theme_upgrade.mtml', $param );
+}
+
+# This function is responsible for completing the theme upgrade. It is used
+# for manual, user-initiated upgrades (in Production Mode) and automatic 
+# upgrades (in Designer Mode). Returns a results hash with messages about the
+# upgrade success/failure.
+sub _do_theme_upgrade {
+    my ($arg_ref) = @_;
+    my $blog              = $arg_ref->{blog};
+    my $plugin            = $arg_ref->{plugin};
+    my $updated_cf_fields = $arg_ref->{updated_cf_fields};
+    my $updated_fd_fields = $arg_ref->{updated_fd_fields};
+    my @new_templates     = @{$arg_ref->{new_templates}};
+    my @changed_templates = @{$arg_ref->{changed_templates}};
+    my $app = MT->instance;
+    my @results; # Return success/fail messages.
+
+    # Update the Custom Fields and Field Day fields, if necessary.
+    if ($updated_cf_fields) {
+        _refresh_system_custom_fields($blog);
+        push @results, { message => 'Custom Fields have been refreshed.' };
+    }
+    if ($updated_fd_fields) {
+        _refresh_fd_fields($blog) if $updated_fd_fields;
+        push @results, { message => 'Field Day fields have been refreshed.' };
+    }
+
+    # Does anything need to be done with templates?
+    if (@new_templates || @changed_templates) {
+        require MT::DefaultTemplates;
+        my $tmpl_list = MT::DefaultTemplates->templates( $blog->template_set );
+        if ( !$tmpl_list || ( ref($tmpl_list) ne 'ARRAY' ) || ( !@$tmpl_list ) ) {
+            return $blog->error(
+                             $app->translate("No default templates were found.") );
+        }
+
+        foreach my $new_tmpl (@$tmpl_list) {
+
+            # New templates need to be installed. Look for the current 
+            # template identifier in the @new_templates array. If found, add
+            # the template.
+            if ( grep $_ eq $new_tmpl->{identifier}, @new_templates ) {
+
+                # This is a new template that needs to be installed. Before
+                # installing, just do a quick check to ensure it doesn't 
+                # exist, though.
+                if (
+                    ! MT->model('template')->exist({ 
+                        blog_id    => $blog->id,
+                        identifier => $new_tmpl->{identifier},
+                    })
+                ) {
+
+                    # This template does not exist, so create it!
+                    my $tmpl = _create_template($new_tmpl, $blog, $plugin);
+
+                    if ($tmpl) {
+                        my $message = 'A new template, "' . $tmpl->name 
+                            . '," has been installed.';
+                        push @results, { message => $message };
+                        MT->log({
+                            level   => MT->model('log')->INFO(),
+                            blog_id => $blog->id,
+                            message => 'Theme upgrade: ' . $message,
+                        });
+                    }
+
+                    # Move on to the next template; there's nothing more to
+                    # with this one!
+                    next;
+                }
+            }
+
+            # Existing templates need to be updated. The parameter 
+            # "upgrade_existing_templates" is a checkbox the user has 
+            # previously selected, acknowledging that upgrading templates 
+            # could overwrite any of their manually added changes. Also, look
+            # for the current template identifier in the @changed_templates 
+            # array. If found, we need to upgrade the template. Update the 
+            # actual template text only, not any of the template meta because 
+            # the user may have purposefully changed that.
+            elsif ( grep $_ eq $new_tmpl->{identifier}, @changed_templates ) {
+                my ($db_tmpl) = MT->model('template')->load({
+                    blog_id => $blog->id,
+                    identifier => $new_tmpl->{identifier},
+                })
+                    or die $app->error(
+                        'Can not find a template with the identifer '
+                        . $new_tmpl->{identifier} . ' in blog ' . $blog->name
+                    );
+
+                $db_tmpl->text( $new_tmpl->{text} );
+                $db_tmpl->save or die $db_tmpl->errstr;
+
+                my $message = 'The template "' . $db_tmpl->name 
+                    . '" has been upgraded.';
+                push @results, { message => $message };
+                MT->log({
+                    level   => MT->model('log')->INFO(),
+                    blog_id => $blog->id,
+                    message => 'Theme upgrade: ' . $message,
+                });
+            }
+        }
+    }
+
+    # Update the theme meta in the DB so that the new version number is 
+    # reflected (as well as any other changes to the theme meta, too, of 
+    # course)
+    _save_theme_meta( undef, {blog => $blog} );
+
+    # Return the results array, which is populated with success/fail messages.
+    return { messages => \@results};
 }
 
 1;
