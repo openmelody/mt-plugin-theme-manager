@@ -754,21 +754,34 @@ sub _refresh_system_custom_fields {
                         && delete $field{scope} eq 'system' ? 0 : $blog->id );
         $field_name = $field_name->() if 'CODE' eq ref $field_name;
 
+        # If the custom field definition is missing the required basic field
+        # definitions then we should report that problem immediately. In
+        # Production Mode, just die immediately; in Designer Mode save the 
+        # error to the Activity Log.
       REQUIRED: for my $required (qw( obj_type tag )) {
             next REQUIRED if $field{$required};
-            MT->log( {
-                       level   => MT->model('log')->ERROR(),
-                       blog_id => $field_scope,
-                       message =>
-                         $tm->translate(
-                                 'Could not install custom field [_1]: field '
-                                   . 'attribute [_2] is required',
-                                 $field_id,
-                                 $required,
-                         ),
-                     }
-            );
-            next FIELD;
+
+            if ($blog->theme_mode eq 'production') {
+                die MT->instance->error(
+                    "Could not install custom field $field_id: field attribute "
+                    . "$required is required."
+                );
+            }
+            else {
+                MT->log( {
+                           level   => MT->model('log')->ERROR(),
+                           blog_id => $field_scope,
+                           message => $tm->translate(
+                                   'Could not install custom field [_1]: field '
+                                     . 'attribute [_2] is required',
+                                   $field_id,
+                                   $required,
+                               ),
+                         }
+                );
+
+                next FIELD;
+            }
         }
 
         # Does the blog have a field with this basename?
@@ -780,22 +793,36 @@ sub _refresh_system_custom_fields {
         );
 
         if ($field_obj) {
-
-            # Warn if the type is different.
+            # The field data type can't just be changed willy-nilly. Because
+            # different data types store data in different formats and in 
+            # different fields we can't expect to change to another field type
+            # and just see things continue to work. Again, in Production Mode
+            # the user should be notified immediately, while in Designer Mode
+            # the error is written to the Activity Log.
             if ( $field_obj->type ne $field_data->{type} ) {
-                MT->log( {
-                       level   => MT->model('log')->WARNING(),
-                       blog_id => $field_scope,
-                       message =>
-                         $tm->translate(
-                           'Could not install custom field [_1] on blog [_2]: '
-                             . 'the blog already has a field [_1] with a '
-                             . 'conflicting type',
-                           $field_id,
-                         ),
-                    }
-                );
-                next FIELD;
+                if ($blog->theme_mode eq 'production') {
+                    die MT->instance->error(
+                        "Could not install custom field $field_id on blog "
+                        . $blog->name . ": the blog already has a field "
+                        . "$field_id with a conflicting type."
+                    );
+                }
+                else {
+                    MT->log( {
+                           level   => MT->model('log')->ERROR(),
+                           blog_id => $field_scope,
+                           message =>
+                             $tm->translate(
+                               'Could not install custom field [_1] on blog [_2]: '
+                                 . 'the blog already has a field [_1] with a '
+                                 . 'conflicting type',
+                               $field_id,
+                             ),
+                        }
+                    );
+
+                    next FIELD;
+                }
             }
         }
         else {
