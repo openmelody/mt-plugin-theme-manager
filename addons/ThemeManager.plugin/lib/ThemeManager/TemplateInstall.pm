@@ -462,6 +462,14 @@ sub _link_template {
     my $plugin  = $arg_ref->{plugin};
     my $blog_id = $arg_ref->{blog_id};
     my $ts_id   = $arg_ref->{ts_id};
+    
+    # If translations are offered for this theme, just give up. We don't
+    # want to try to link a theme that has translations because the
+    # linking process will throw away the "__trans phrase" wrappers.
+    # Yes, this is also checked in _link_templates, above. But if 
+    # _link_template is called during the theme upgrade we need to make sure
+    # to only link templates that should be linked.
+    return if eval { $plugin->registry('l10n_class') };
 
     my $cur_ts_widgets
       = $plugin->registry( 'template_sets', $ts_id, 'templates', 'widget' );
