@@ -424,7 +424,8 @@ sub _new_blog_template_set_language {
     $blog->template_set_language($template_set_language);
 }
 
-# Link the templates to the theme.
+# In Designer Mode, all of the templates in a theme should be linked to their
+# counterparts on the filesystem.
 sub _link_templates {
     my ( $cb, $param ) = @_;
     my $blog_id = $param->{blog}->id;
@@ -437,124 +438,139 @@ sub _link_templates {
     # linking process will throw away the "__trans phrase" wrappers.
     return if eval { $cur_ts_plugin->registry('l10n_class') };
 
-    my $cur_ts_widgets =
-      $cur_ts_plugin->registry( 'template_sets', $ts_id,
-                                'templates',     'widget' );
-
     # Grab all of the templates except the Widget Sets, because the user
     # should be able to edit (drag-drop) those all the time.
     my $iter = MT->model('template')
       ->load_iter( { blog_id => $blog_id, type => { not => 'backup' }, } );
 
     while ( my $tmpl = $iter->() ) {
+        _link_template({
+            tmpl    => $tmpl,
+            plugin  => $cur_ts_plugin,
+            blog_id => $blog_id,
+            ts_id   => $ts_id,
+        });
+    }
+} ## end sub _link_templates
+
+# Link a template from the DB to the filesystem.
+sub _link_template {
+    my ($arg_ref) = @_;
+    my $tmpl    = $arg_ref->{tmpl};
+    my $plugin  = $arg_ref->{plugin};
+    my $blog_id = $arg_ref->{blog_id};
+    my $ts_id   = $arg_ref->{ts_id};
+
+    my $cur_ts_widgets
+      = $plugin->registry( 'template_sets', $ts_id, 'templates', 'widget' );
+
+    if (
+         ( ( $tmpl->type ne 'widgetset' ) && ( $tmpl->type ne 'widget' ) )
+         || (    ( $tmpl->type eq 'widget' )
+              && ( $cur_ts_widgets->{ $tmpl->identifier } ) )
+      )
+    {
+
+        # Link the template to the source file in the theme. This has to
+        # be crafted from several pieces.
+
+        # The base_path is specified in the theme.
+        my $base_path = $plugin->registry( 'template_sets', $ts_id,
+                                           'base_path' );
+
+        # The $tmpl->type needs to be fixed. Within the DB, "template
+        # modules" have the template type of "custom," not "module" as
+        # you might expect. Similarly, all of the system templates have
+        # unique identifiers. We need to use the type that config.yaml
+        # supplies so that the template identifier can be properly
+        # looked-up, and therefore the correct path can be crafted.
+        my ($config_yaml_tmpl_type)
+          = grep { ( $tmpl->type || '' ) eq $_ }
+          qw( index archive individual custom widget widgetset);
+
+        # Template modules are called "custom" in the DB
+        $config_yaml_tmpl_type = 'module'
+          if $config_yaml_tmpl_type eq 'custom';
+
+        # If none of the above, it must be a system template b/c they
+        # each have a unique $tmpl->type.
+        $config_yaml_tmpl_type ||= 'system';    # Default fallback value
+
+        # Get the filename of the template. We need to check if the
+        # "filename" key was used in the theme YAML and use that, or
+        # just make up the filename based on identifier.
+        my $tmpl_filename;
         if (
-             ( ( $tmpl->type ne 'widgetset' ) && ( $tmpl->type ne 'widget' ) )
-             || (    ( $tmpl->type eq 'widget' )
-                  && ( $cur_ts_widgets->{ $tmpl->identifier } ) )
+             $plugin->registry(
+                                'template_sets',   $ts_id,
+                                'templates',       $config_yaml_tmpl_type,
+                                $tmpl->identifier, 'filename'
+             )
           )
         {
-
-            # Link the template to the source file in the theme. This has to
-            # be crafted from several pieces.
-
-            # The base_path is specified in the theme.
-            my $base_path = $cur_ts_plugin->registry( 'template_sets', $ts_id,
-                                                      'base_path' );
-
-            # The $tmpl->type needs to be fixed. Within the DB, "template
-            # modules" have the template type of "custom," not "module" as
-            # you might expect. Similarly, all of the system templates have
-            # unique identifiers. We need to use the type that config.yaml
-            # supplies so that the template identifier can be properly
-            # looked-up, and therefore the correct path can be crafted.
-            my ($config_yaml_tmpl_type)
-              = grep { ( $tmpl->type || '' ) eq $_ }
-              qw( index archive individual custom widget widgetset);
-
-            # Template modules are called "custom" in the DB
-            $config_yaml_tmpl_type = 'module'
-              if $config_yaml_tmpl_type eq 'custom';
-
-            # If none of the above, it must be a system template b/c they
-            # each have a unique $tmpl->type.
-            $config_yaml_tmpl_type ||= 'system';    # Default fallback value
-
-            # Get the filename of the template. We need to check if the
-            # "filename" key was used in the theme YAML and use that, or
-            # just make up the filename based on identifier.
-            my $tmpl_filename;
-            if (
-                 $cur_ts_plugin->registry(
-                                    'template_sets',   $ts_id,
-                                    'templates',       $config_yaml_tmpl_type,
-                                    $tmpl->identifier, 'filename'
-                 )
-              )
-            {
-                $tmpl_filename = 
-                  $cur_ts_plugin->registry( 'template_sets', $ts_id,
-                       'templates', $config_yaml_tmpl_type, $tmpl->identifier,
-                       'filename' );
-            }
-            else {
-                # Theme Manager didn't find a "filename" key in the 
-                # config.yaml for this template. That's not actually a problem 
-                # because the template identifier can be used instead, and is
-                # actually the more likely scenario.
-                # require Carp;
-                # my $warn = "Failed Theme Manager registry lookup for: "
-                #   . join( ' > ',
-                #           $cur_ts_plugin->name,   'template_sets',
-                #           $ts_id,                 'templates',
-                #           $config_yaml_tmpl_type, $tmpl->identifier, 
-                #           'filename' )
-                #   . ' '
-                #   . Carp::longmess();
-                # warn $warn;
-                # MT->log($warn);
-
-                # Use the template identifier as the file name.
-                $tmpl_filename = $tmpl->identifier . '.mtml';
-            }
-
-            # Assemble the path to the source template.
-            my $path = File::Spec->catfile( $cur_ts_plugin->path, $base_path,
-                                            $tmpl_filename, );
-
-            # Try to set the linked file to the source template path. First,
-            # check to see if the path is writable. If not, complain in the
-            # Activity Log.
-            if ( -w $path ) {
-                $tmpl->linked_file($path);
-            }
-            else {
-                my $tm = MT->component('ThemeManager');
-                MT->log( {
-                       level   => MT->model('log')->ERROR(),
-                       blog_id => $blog_id,
-                       message =>
-                         $tm->translate(
-                           "The template [_1] could not be linked to the "
-                             . "source template. Check permissions of [_2] "
-                             . "(the source template file must be writable).",
-                           $tmpl->name,
-                           $path
-                         ),
-                    }
-                );
-            }
-        } ## end if ( ( ( $tmpl->type ne...)))
+            $tmpl_filename = 
+              $plugin->registry( 'template_sets', $ts_id,
+                   'templates', $config_yaml_tmpl_type, $tmpl->identifier,
+                   'filename' );
+        }
         else {
+            # Theme Manager didn't find a "filename" key in the 
+            # config.yaml for this template. That's not actually a problem 
+            # because the template identifier can be used instead, and is
+            # actually the more likely scenario.
+            # require Carp;
+            # my $warn = "Failed Theme Manager registry lookup for: "
+            #   . join( ' > ',
+            #           $cur_ts_plugin->name,   'template_sets',
+            #           $ts_id,                 'templates',
+            #           $config_yaml_tmpl_type, $tmpl->identifier, 
+            #           'filename' )
+            #   . ' '
+            #   . Carp::longmess();
+            # warn $warn;
+            # MT->log($warn);
 
-            # Just in case Widget Sets were previously linked,
-            # now forcefully unlink!
-            $tmpl->linked_file(undef);
+            # Use the template identifier as the file name.
+            $tmpl_filename = $tmpl->identifier . '.mtml';
         }
 
-        # Lastly, save the linked (or unlinked) template.
-        $tmpl->save or die $tmpl->errstr;
-    } ## end while ( my $tmpl = $iter->...)
-} ## end sub _link_templates
+        # Assemble the path to the source template.
+        my $path = File::Spec->catfile( $plugin->path, $base_path,
+                                        $tmpl_filename, );
+
+        # Try to set the linked file to the source template path. First,
+        # check to see if the path is writable. If not, complain in the
+        # Activity Log.
+        if ( -w $path ) {
+            $tmpl->linked_file($path);
+        }
+        else {
+            my $tm = MT->component('ThemeManager');
+            MT->log( {
+                   level   => MT->model('log')->ERROR(),
+                   blog_id => $blog_id,
+                   message =>
+                     $tm->translate(
+                       "The template \"[_1]\" could not be linked to the "
+                         . "source template. Check permissions of \"[_2]\" "
+                         . "(the source template file must be writable).",
+                       $tmpl->name,
+                       $path
+                     ),
+                }
+            );
+        }
+    } ## end if ( ( ( $tmpl->type ne...)))
+    else {
+
+        # Just in case Widget Sets were previously linked,
+        # now forcefully unlink!
+        $tmpl->linked_file(undef);
+    }
+
+    # Lastly, save the linked (or unlinked) template.
+    $tmpl->save or die $tmpl->errstr;
+}
 
 # Forcibly turn on module caching at the blog level, so that any theme cache
 # options actually work.
