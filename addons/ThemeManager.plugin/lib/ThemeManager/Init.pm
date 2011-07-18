@@ -6,11 +6,18 @@ use ConfigAssistant::Util qw( find_theme_plugin );
 # Theme Manager, we can rely on it being available.
 use Sub::Install;
 
-# TODO Determine whether this SHOULD actually be running for non MT::Apps for example upon blog creation through the API
+# TODO Determine whether this SHOULD actually be running for non MT::Apps for
+# example upon blog creation through the API
 
-# FIXME At very least, the copied functions from MT 4.261 should be removed and replaced with a method that overrides the internal methods, evaluates the environment and either runs or passes back to the original method
+# FIXME At very least, the copied functions from MT 4.261 should be removed
+# and replaced with a method that overrides the internal methods, evaluates
+# the environment and either runs or passes back to the original method
 
-# FIXME Overriding the core translate function of pretty much every component is overkill and I'm not sure why the individual plugins own L10N handles won't work perfectly. What's more, the handles are stored in the MT->request object and can be modified before and after the internal methods if nothing else.
+# FIXME Overriding the core translate function of pretty much every component
+# is overkill and I'm not sure why the individual plugins own L10N handles
+# won't work perfectly. What's more, the handles are stored in the MT->request
+# object and can be modified before and after the internal methods if nothing
+# else.
 
 sub init_app {
     my ( $cb, $app ) = @_;
