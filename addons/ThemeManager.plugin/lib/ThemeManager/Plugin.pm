@@ -49,6 +49,16 @@ sub update_menus {
             label => 'Theme Documentation',
             order => 2,
             view => 'blog',
+            condition => sub {
+                my $app = MT->instance;
+                my $blog = $app->blog
+                    or return 0;
+                return 1
+                  if eval {
+                    $app->registry('template_sets', $blog->template_set, 'documentation');
+                  };
+                return 0;
+            },
             link       => sub {
 
                 # @_ contains... something. It's not an $app
