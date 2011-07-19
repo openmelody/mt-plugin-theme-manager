@@ -118,13 +118,13 @@ sub _translate {
 
 # In Designer Mode, theme upgrades should happen automatically.
 sub _automatic_theme_upgrade {
+    my ($app) = MT->instance;
+
     my @blogs = MT->model('blog')->search_by_meta(
         'theme_mode', # Look in the theme_mode blog meta field...
         'designer',   # ...for any blog using Designer Mode.
     )
         or return 1; # Just quit if there are none.
-
-    my ($app) = MT->instance;
 
     # The following blogs are using Designer Mode. Set the necessary variables
     # then use the ThemeManager::TemplateInstall::_do_theme_upgrade method to 
