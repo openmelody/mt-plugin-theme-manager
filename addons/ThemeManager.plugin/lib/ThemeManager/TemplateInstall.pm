@@ -8,11 +8,10 @@ use MT;
 
 use Digest::MD5 qw(md5_hex);
 
+# This sub is responsible for applying the new theme's templates.
+# This is basically lifted right from MT::CMS::Template (from Movable Type
+# version 4.261), with some necessary changes to work with Theme Manager.
 sub _refresh_all_templates {
-
-    # This sub is responsible for applying the new theme's templates.
-    # This is basically lifted right from MT::CMS::Template (from Movable Type
-    # version 4.261), with some necessary changes to work with Theme Manager.
     my ( $ts_id, $blog_id, $app ) = @_;
     my $q = $app->can('query') ? $app->query : $app->param;
 
@@ -91,9 +90,14 @@ sub _refresh_all_templates {
             }
             if ( $skip == 0 ) {
 
-                # zap all template maps
+                # Remove all template maps for this template.
                 MT->model('templatemap')
                   ->remove( { template_id => $tmpl->id, } );
+
+                # Remove all fileinfo records for this template.
+                MT->model('fileinfo')
+                  ->remove( { template_id => $tmpl->id, } );
+
                 $tmpl->name(   $tmpl->name
                              . ' (Backup from '
                              . $ts . ') '
