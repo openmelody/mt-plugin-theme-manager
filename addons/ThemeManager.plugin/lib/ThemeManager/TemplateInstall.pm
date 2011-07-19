@@ -98,6 +98,11 @@ sub _refresh_all_templates {
                 MT->model('fileinfo')
                   ->remove( { template_id => $tmpl->id, } );
 
+                # Delete any caching for this template.
+                my $key = 'blog::' . $blog_id . '::template_' . $tmpl->type 
+                    . '::' . $tmpl->name;
+                MT->model('session')->remove( { id => $key });
+
                 $tmpl->name(   $tmpl->name
                              . ' (Backup from '
                              . $ts . ') '
@@ -1561,7 +1566,7 @@ sub _do_theme_upgrade {
             # the user may have purposefully changed that.
             elsif ( grep $_ eq $new_tmpl->{identifier}, @changed_templates ) {
                 my ($db_tmpl) = MT->model('template')->load({
-                    blog_id => $blog->id,
+                    blog_id    => $blog->id,
                     identifier => $new_tmpl->{identifier},
                 })
                     or die $app->error(
@@ -1580,6 +1585,11 @@ sub _do_theme_upgrade {
                     blog_id => $blog->id,
                     message => 'Theme upgrade: ' . $message,
                 });
+
+                # Delete any caching for this template.
+                my $key = 'blog::' . $blog->id . '::template_' 
+                    . $db_tmpl->type . '::' . $db_tmpl->name;
+                MT->model('session')->remove( { id => $key });
             }
         }
     }

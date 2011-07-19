@@ -161,10 +161,20 @@ sub _automatic_theme_upgrade {
         # Changed templates don't need to be updated with the theme upgrade 
         # process because we're in Developer Mode: the templates are already
         # linked to the file system, and therefore are already picking up
-        # any changes to the template.
-        # foreach my $tmpl ( @{ $param->{changed_templates} } ) {
-        #     push @changed_templates, $tmpl->{identifier};
-        # }
+        # any changes to the template. If a template has been cached, however,
+        # republishing may not include the latest changes. So, flush the cache.
+        foreach my $changed_tmpl ( @{ $param->{changed_templates} } ) {
+            my ($tmpl) = MT->model('template')->load({
+                blog_id    => $blog->id,
+                identifier => $changed_tmpl->{identifier},
+            })
+                or next;
+
+            # Delete any caching for this template
+            my $key = 'blog::' . $blog->id . '::template_' 
+                . $tmpl->type . '::' . $tmpl->name;
+            MT->model('session')->remove( { id => $key });
+        }
 
         # Actually do the upgrade, based on all of the above submitted info.
         my @results = ThemeManager::TemplateInstall::_do_theme_upgrade({
