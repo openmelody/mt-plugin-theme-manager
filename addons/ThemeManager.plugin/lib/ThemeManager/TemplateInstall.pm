@@ -1208,7 +1208,7 @@ sub xfrm_param_add_language {
     while ( my $theme = $iter->() ) {
 
         # Grab the languages available
-        my $ts_plugin = $MT::Plugins{ $theme->plugin_sig }{object};
+        my $ts_plugin = MT->component( $theme->plugin_sig );
         my $langs = $ts_plugin->registry( 'template_sets', $theme->ts_id,
                                           'languages' );
 

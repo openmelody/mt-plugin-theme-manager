@@ -66,6 +66,7 @@ sub update_menus {
                 # a blog object or the blog ID available. So, grab
                 # a new instance.
                 my $app = MT->instance;
+
                 return
                   $app->uri(
                              mode => 'theme_dashboard',
@@ -266,11 +267,6 @@ sub theme_dashboard {
                # Use the plugin sig to grab the plugin.
                my $plugin = MT->component( $theme->plugin_sig );
 
-               # The Community.pack and Commercial.pack need special handling?
-               if ($theme->plugin_sig =~ /(Community|Commercial).pack/) {
-                   $plugin = $MT::Plugins{ $theme->plugin_sig }->{object};
-               }
-
                # This plugin couldn't be loaded! That must mean the theme has
                # been uninstalled, so remove the entry in the table.
                if ( !$plugin ) {
@@ -359,7 +355,7 @@ sub select_theme {
                my ( $theme, $row ) = @_;
 
                # Use the plugin sig to grab the plugin.
-               my $plugin = $MT::Plugins{ $theme->plugin_sig }->{object};
+               my $plugin = MT->component( $theme->plugin_sig );
                if ( !$plugin ) {
 
                    # This plugin couldn't be loaded! That must mean the theme has
@@ -1005,7 +1001,7 @@ sub theme_info {
     my $param = {};
 
     my $plugin_sig = $q->param('plugin_sig');
-    my $plugin     = $MT::Plugins{$plugin_sig}->{object};
+    my $plugin     = MT->component( $plugin_sig );
 
     my $ts_id = $q->param('ts_id');
 
@@ -1087,12 +1083,12 @@ sub _theme_check {
             # Does this theme already exist? If so just load the record and
             # update it.
             my $theme = MT->model('theme')
-              ->load( { ts_id => $ts_id, plugin_sig => $sig, } );
+              ->load( { ts_id => $ts_id, plugin_sig => $obj->{id}, } );
             if ( !$theme ) {
 
                 # Theme hasn't been previously saved, so create it.
                 $theme = MT->model('theme')->new();
-                $theme->plugin_sig($sig);
+                $theme->plugin_sig($obj->{id});
                 $theme->ts_id($ts_id);
                 $theme->save or die $theme->errstr;
             }
@@ -1120,7 +1116,7 @@ sub _theme_check {
     while ( my $theme = $iter->() ) {
 
         # Use the plugin sig to grab the plugin.
-        my $plugin = $MT::Plugins{ $theme->plugin_sig }->{object};
+        my $plugin = MT->component( $theme->plugin_sig );
         if ( !$plugin ) {
 
             # This plugin couldn't be loaded! That must mean the theme has

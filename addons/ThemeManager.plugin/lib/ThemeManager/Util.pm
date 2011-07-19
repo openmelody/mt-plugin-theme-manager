@@ -270,11 +270,8 @@ sub prepare_theme_meta {
         return $theme_meta;
     }
 
-    my $sig = $plugin->{plugin_sig};
-    my $obj = $MT::Plugins{$sig}{object};
-
     # Grab the existing theme meta
-    $theme_meta = $obj->registry( 'template_sets', $ts_id );
+    $theme_meta = $plugin->registry( 'template_sets', $ts_id );
 
     # Place the final theme meta into $meta. We need to grab and save only
     # the meta that we need, because code references will cause YAML::Tiny
