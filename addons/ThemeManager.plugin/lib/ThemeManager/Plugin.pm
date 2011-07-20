@@ -1230,17 +1230,6 @@ sub _populate_list_templates_context {
         $row->{type}          = 'entry' if $type eq 'individual';
         $row->{status}        = 'Foo';
 
-        if ( my $lfile = $obj->linked_file ) {
-
-            # TODO - Change use to require
-            use String::CRC::Cksum qw(cksum);
-            my ( $cksum1, $size1 ) = cksum( $obj->MT::Object::text() );
-            my ( $cksum2, $size2 ) = cksum( $obj->_sync_from_disk() );
-            $row->{has_changed} = ( $cksum1 ne $cksum2 );
-
-#            $row->{has_changed} = ($obj->text eq $obj->MT::Object::text());
-        }
-
         my $published_url = $obj->published_url;
         $row->{published_url} = $published_url if $published_url;
     };

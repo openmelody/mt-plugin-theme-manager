@@ -214,7 +214,6 @@ span#theme-mode-production {
 }
 
 /* Template Listing */
-tr.has-changed { font-style: italic; }
 td.status { width: 16px; }
 td.status a {
     width: 16px;
