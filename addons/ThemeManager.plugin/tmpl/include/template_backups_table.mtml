@@ -1,0 +1,54 @@
+<mt:setvarblock name="listing_header">
+    <h3><mt:var name="template_type_label"></h3>
+</mt:setvarblock>
+<mt:setvarblock name="action_buttons">
+    <a href="javascript:void(0)"
+        onclick="doRemoveItems(getByID('<$mt:var name="template_type_label" dirify="-" default="template"$>-listing-form'), '<__trans phrase="template" escape="js">', '<__trans phrase="templates" escape="js">'); return false;"
+        accesskey="x"
+        title="<__trans phrase="Delete selected [_1] (x)" params="<$mt:var name="object_label_plural"$>">"
+        ><__trans phrase="Delete"></a>
+</mt:setvarblock>
+<mt:setvarblock name="table_id"><mt:var name="template_type_label" dirify="-" default="template">-listing</mt:setvarblock>
+
+<mtapp:listing 
+    id="$table_id" 
+    hide_pager="1" 
+    class="show-all" 
+    listing_class="show-actions-bar-top" 
+    type="template">
+    <mt:if __first__>
+        <thead>
+            <tr>
+                <th class="cb"><input type="checkbox" name="id-head" value="all" class="select" /></th>
+                <th class="template-name"><__trans phrase="Template Name"></th>
+                <th class="template-type"><__trans phrase="Template Type"></th>
+        <mt:If name="blog_view">
+                <th class="blog"><__trans phrase="Blog"></th>
+        </mt:If>
+            </tr>
+        </thead>
+        <tbody>
+    </mt:if>
+            <tr class="<mt:if name="__odd__">odd<mt:else>even</mt:if> template-<$mt:var name="template_type" default="template" escape="html"$>">
+                <td class="cb"><input type="checkbox" name="id" class="select" value="<mt:var name="id">" /></td>
+                <td class="template-name"><a href="<mt:var name="script_url">?__mode=view&amp;_type=template&amp;id=<mt:var name="id">&amp;blog_id=<mt:var name="blog_id">"><mt:var name="name" escape="html"></a></td>
+                <td class="template-type"><mt:Var name="was_type"></td>
+            <mt:If name="blog_view">
+                <td class="blog"><a href="<$mt:var name="script_url"$>?__mode=list&amp;_type=template&amp;blog_id=<$mt:var name="blog_id"$>"><$mt:var name="weblog_name" escape="html"$></a></td>
+            </mt:If>
+            </tr>
+    <mt:if __last__>
+        </tbody>
+    </mt:if>
+<mt:else>
+    <div id="<$mt:var name="template_type" default="template" escape="html"$>-listing" class="listing zero-state-listing zero-state">
+        <div class="listing-header">
+            <$mt:var name="listing_header"$>
+        </div>
+        <mtapp:statusmsg
+            id="zero-state"
+            class="info zero-state">
+            <__trans phrase="No [_1] could be found." params="<$mt:var name="template_type_label" lower_case="1"$>">
+        </mtapp:statusmsg>
+    </div>
+</mtapp:listing>

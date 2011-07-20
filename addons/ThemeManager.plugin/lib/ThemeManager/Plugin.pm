@@ -154,6 +154,30 @@ sub update_page_actions {
                     $app->call_return;
                 },
             },
+            template_backups => {
+                label      => 'View Template Backup Sets',
+                order      => 10,
+                permission => 'edit_templates',
+                condition  => sub {
+                    # Don't display on the Global Templates screen.
+                    return 0 if !MT->app->blog;
+
+                    return 1 if MT->model('template')->exist({
+                        type => 'backup',
+                        blog_id => MT->app->blog->id,
+                    });
+                    return 0; # Just to be safe.
+                },
+                mode => 'list_template_backups',
+            }
+        },
+        list_template_backups => {
+            delete_all_backups => {
+                label => 'Delete all Template Backup Sets',
+                order => 1,
+                permission => 'edit_templates',
+                dialog => 'delete_tmpl_backups',
+            },
         },
         theme_dashboard => {
             theme_options => {
@@ -1431,6 +1455,126 @@ sub list_templates {
     return $app->load_tmpl( 'list_template.tmpl', $params );
 }
 
+# List template backups. Templates are sorted and organized by date based on
+# the contents of the template name.
+sub list_template_backups {
+    my $app      = shift;
+    my $q        = $app->param;
+    my ($params) = @_;
+
+    return $app->translate('Permission denied.')
+        unless $app->user->is_superuser() 
+            || (
+                $app->blog 
+                && $app->user->permissions($app->blog->id)->can_edit_templates()
+            );
+
+    my $code = sub {
+        my ($tmpl, $row) = @_;
+        $row->{id} = $tmpl->id;
+
+        # The template name is formatted with lots of info:
+        # [tmpl name] [backup date] [tmpl type]
+        # Extract the name and type to display on this listing screen.
+        my $tmpl_name = $tmpl->name;
+        $tmpl_name =~ s/(.*)\s\(Backup.*/$1/;
+        $row->{name} = $tmpl_name;
+
+        # Provide a little formatting to the template type display with 
+        # proper case and a "system" identifier.
+        my $tmpl_type = $tmpl->name;
+        $tmpl_type =~ s/.*\(Backup.*\)\s(.*)/$1/;
+        if ($tmpl_type eq 'custom') {
+            $tmpl_type = 'Module';
+        }
+        elsif ($tmpl_type eq 'widgetset') {
+            $tmpl_type = 'Widget Set';
+        }
+        elsif ($tmpl_type =~ /(index|archive|widget|individual)/) {
+            $tmpl_type = ucfirst($tmpl_type);
+        }
+        else {
+            $tmpl_type = "System: $tmpl_type";
+        }
+        $row->{was_type} = $tmpl_type;
+        $row->{template_type} = 'backup'; # These are all backup templates
+    };
+
+    my $terms = {
+        blog_id => $app->blog->id,
+        type    => 'backup',
+    };
+
+    my $args = {
+        sort      => 'modified_on',
+        direction => 'descend',
+    };
+
+    # We want to display the backup templates sorted by date. To do that we 
+    # can use the "template_type" sorting capability already in use on the
+    # Template Listing screen, which is responsible for dividing index and 
+    # archive templates, for example.
+    my @tmpl_loop;
+    my $tmpl_param = {};
+    my $saved_date = 0;
+    my $currently_displaying = 1;
+    my $display_history = ($q->param('limit') && $q->param('limit') eq 'all')
+        ? '999999' # A really huge number, effectively all backup sets.
+        : $q->param('limit') || 5; # 5 is safely small but useful.
+
+    my $iter = MT->model('template')->load_iter( $terms, $args, );
+    while ( my $tmpl = $iter->() ) {
+        last if ($currently_displaying > $display_history);
+
+        # We can't just use the modified_on date to sort by because that 
+        # doesn't necessarily reflect when the backup was created nore does
+        # it account for the possiblity that the backup template is unedited.
+        # Extract the backup date/time from the template name, and use that
+        # for sorting.
+        my $date = $tmpl->name;
+        $date =~ s/.*\(Backup from (.*)\).*/$1/;
+
+        # If the current template should be grouped with the previous template
+        # (according to the date it was marked as a backup) then just skip
+        # to the next template.
+        next if $date eq $saved_date;
+
+        # Grab the templates that match the selected date to create a "backup 
+        # set."
+        $terms->{name} = { like => "%$date%" };
+        $args->{sort}      = 'name';
+        $args->{direction} = 'ascend';
+
+        $tmpl_param = $app->listing({
+            type     => 'template',
+            terms    => $terms,
+            args     => $args,
+            no_limit => 1,
+            no_html  => 1,
+            code     => $code,
+        });
+
+        $tmpl_param->{template_type} = 'backup';
+        $tmpl_param->{template_type_label} = "Templates Backups from $date";
+
+        push @tmpl_loop, $tmpl_param;
+
+        $saved_date = $date;
+        $currently_displaying++;
+    }
+
+    $params->{template_type_loop} = \@tmpl_loop;
+
+    $params->{saved_deleted}  = $q->param('saved_deleted');
+    $params->{search_label}   = $app->translate("Templates");
+    $params->{screen_class}   = "list-template";
+    $params->{screen_id}      = "list-template";
+    $params->{listing_screen} = 1;
+    $params->{page_actions}   = $app->page_actions('list_template_backups');
+
+    return $app->load_tmpl('list_template_backups.mtml', $params);
+}
+
 sub _find_supported_languages {
     my $ts_id     = shift;
     my $ts_plugin = find_theme_plugin($ts_id);
@@ -1598,6 +1742,24 @@ sub _theme_upgrade_check {
     }
     
     return $param;
+}
+
+# Delete all of the backup templates in this blog.
+sub delete_tmpl_backups {
+    my ($app) = @_;
+    my $q     = $app->param;
+    my $param = {};
+    
+    if ( $q->param('delete_confirm') ) {
+        MT->model('template')->remove({
+            type => 'backup',
+            blog_id => $q->param('blog_id'),
+        });
+    }
+
+    $param->{delete_confirm} = $q->param('delete_confirm');
+
+    return $app->load_tmpl('delete_tmpl_backups.mtml', $param);
 }
 
 1;

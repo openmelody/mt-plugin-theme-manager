@@ -13,16 +13,18 @@ applications:
     cms:
         menus: $ThemeManager::ThemeManager::Plugin::update_menus
         methods:
-            paypal_donate:        $ThemeManager::ThemeManager::Plugin::paypal_donate
-            list_template:        $ThemeManager::ThemeManager::Plugin::list_templates
-            tm.rebuild_tmpl:      $ThemeManager::ThemeManager::Plugin::rebuild_tmpl
-            select_theme:         $ThemeManager::ThemeManager::Plugin::select_theme
-            setup_theme:          $ThemeManager::ThemeManager::Plugin::setup_theme
-            theme_dashboard:      $ThemeManager::ThemeManager::Plugin::theme_dashboard
-            theme_info:           $ThemeManager::ThemeManager::Plugin::theme_info
-            theme_mode_switch:    $ThemeManager::ThemeManager::TemplateInstall::theme_mode_switch
-            theme_upgrade:        $ThemeManager::ThemeManager::TemplateInstall::theme_upgrade_proposal
-            theme_upgrade_action: $ThemeManager::ThemeManager::TemplateInstall::theme_upgrade_action
+            paypal_donate:         $ThemeManager::ThemeManager::Plugin::paypal_donate
+            list_template:         $ThemeManager::ThemeManager::Plugin::list_templates
+            list_template_backups: $ThemeManager::ThemeManager::Plugin::list_template_backups
+            delete_tmpl_backups:   $ThemeManager::ThemeManager::Plugin::delete_tmpl_backups
+            tm.rebuild_tmpl:       $ThemeManager::ThemeManager::Plugin::rebuild_tmpl
+            select_theme:          $ThemeManager::ThemeManager::Plugin::select_theme
+            setup_theme:           $ThemeManager::ThemeManager::Plugin::setup_theme
+            theme_dashboard:       $ThemeManager::ThemeManager::Plugin::theme_dashboard
+            theme_info:            $ThemeManager::ThemeManager::Plugin::theme_info
+            theme_mode_switch:     $ThemeManager::ThemeManager::TemplateInstall::theme_mode_switch
+            theme_upgrade:         $ThemeManager::ThemeManager::TemplateInstall::theme_upgrade_proposal
+            theme_upgrade_action:  $ThemeManager::ThemeManager::TemplateInstall::theme_upgrade_action
 
 page_actions: $ThemeManager::ThemeManager::Plugin::update_page_actions
 
