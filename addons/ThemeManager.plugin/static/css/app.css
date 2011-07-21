@@ -232,3 +232,8 @@ td.status a span {
     list-style-type: disc;
     margin-left: 15px;
 }
+
+.upgrade-theme form {
+    height: 370px;
+    overflow: auto;
+}
