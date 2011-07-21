@@ -1574,7 +1574,19 @@ sub _do_theme_upgrade {
                         . $new_tmpl->{identifier} . ' in blog ' . $blog->name
                     );
 
-                $db_tmpl->text( $new_tmpl->{text} );
+                # Translate the template to another language, if translations 
+                # were provided.
+                my $trans = $new_tmpl->{text};
+                eval {
+                    $trans = $plugin->translate_templatized($trans);
+                    1;
+                  }
+                  or die $app->error(
+                        "There was an error translating the template '"
+                        . $new_tmpl->{name} . ".' Error: " . $@
+                  );
+
+                $db_tmpl->text( $trans );
                 $db_tmpl->save or die $db_tmpl->errstr;
 
                 my $message = 'The template "' . $db_tmpl->name 
