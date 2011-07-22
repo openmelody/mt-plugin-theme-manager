@@ -14,6 +14,8 @@ templates.
 An "upgrade" function allows a user to easily upgrade a blog to use the latest
 features and capabilities in the newest release of a theme.
 
+Need to refer to an old template for some reason? Template backups are organized by date, making it easier to locate what you are looking for, as well as letting you see how your templates have changed.
+
 Using Theme Manager as an end user is known as "Production Mode."
 
 ## What Theme Manager Does for Designers
