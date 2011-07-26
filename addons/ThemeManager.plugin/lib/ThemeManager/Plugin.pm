@@ -1713,6 +1713,11 @@ sub _theme_upgrade_check {
     # The installed theme's version.
     my $installed_version = shift;
 
+    # If no installed version was supplied, just give up because we certainly 
+    # can't tell if there's an upgrade without knowing what version we started
+    # with.
+    return $param if !$installed_version;
+
     # Upgrades are automatic with Designer Mode, so no need to provide the 
     # upgrade option.
     return $param if $blog->theme_mode eq 'designer';
