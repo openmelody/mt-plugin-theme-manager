@@ -248,9 +248,7 @@ sub _create_template {
         $tmpl->column( $v, $tmpl_data->{$v} ) if $tmpl->has_column($v);
     }
     $tmpl->blog_id( $blog->id );
-    if ( my $pub_opts = $tmpl_data->{publishing} ) {
-        $tmpl->include_with_ssi(1) if $pub_opts->{include_with_ssi};
-    }
+    $tmpl->include_with_ssi(1) if $tmpl_data->{cache}->{include_with_ssi};
     if ( ( 'widgetset' eq $tmpl_data->{type} ) && ( exists $tmpl_data->{widgets} ) ) {
         my $modulesets = delete $tmpl_data->{widgets};
         $tmpl->modulesets(
