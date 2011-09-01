@@ -1,6 +1,13 @@
+/* Theme Documentation Styles*/
+
 #docs-tab-content {
   padding-top: 20px;
 }
+
+/* The first item in the tab area should get no top margin so that it starts
+   at the appropriate spot on the page. */
+#main-content #docs-tab-content + * { margin-top: 0; }
+
 #docs-tab-content h1 {
   font-size: 24px;
   border-bottom: 1px solid #CCC;
@@ -13,10 +20,10 @@
   font-size: 18px;
 }
 #docs-tab-content h4 {
-  font-size: 16px;
+  font-size: 14px;
 }
 #docs-tab-content h5 {
-  font-size: 14px;
+  font-size: 12px;
 }
 #docs-tab-content ul,
 #docs-tab-content ol {
@@ -32,6 +39,8 @@
 #docs-tab-content li {
   padding-bottom: 3px;
 }
+
+#docs-tab-content blockquote,
 #docs-tab-content pre {
     margin: 0 0 10px 0 !important;
     padding: 10px;
