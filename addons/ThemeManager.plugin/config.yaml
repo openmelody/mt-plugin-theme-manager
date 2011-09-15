@@ -4,7 +4,7 @@ key: ThemeManager
 author_link: http://endevver.com/
 author_name: Endevver
 description: 'A comprehensive theme management plugin!'
-version: 1.0.4
+version: 1.1
 schema_version: 7
 static_version: 10
 l10n_class: ThemeManager::L10N
@@ -45,6 +45,17 @@ list_actions:
 applications:
     cms:
         menus: $ThemeManager::ThemeManager::Plugin::update_menus
+        list_actions:
+            template:
+                link:
+                    label: 'Link to Theme'
+                    order: 201 
+                    code:  $ThemeManager::ThemeManager::Plugin::itemset_link
+                unlink:
+                    label: 'Unlink to Theme'
+                    order: 202
+                    code:  $ThemeManager::ThemeManager::Plugin::itemset_unlink
+
         methods:
             paypal_donate:         $ThemeManager::ThemeManager::Plugin::paypal_donate
             list_template:         $ThemeManager::ThemeManager::Plugin::list_templates
