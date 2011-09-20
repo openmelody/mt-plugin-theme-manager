@@ -20,7 +20,33 @@
 
 <mt:Include name="dialog/header.tmpl">
 
-<mt:If name="theme_upgrade_complete">
+<mt:If name="no_change">
+
+    <mt:Ignore>
+        This theme has no changes that merit a theme upgrade, so just
+        communicate that to the user.
+    </mt:Ignore>
+
+    <p>
+        Currently, the blog <mt:Var name="blog_name"> is running version
+        <mt:Var name="theme_version"> of the <mt:Var name="theme_label">
+        theme. This is the most recent version of this theme and your blog
+        appears to be up-to-date. No upgrade is necessary.
+    </p>
+
+    <div class="actions-bar">
+        <div class="actions-bar-inner pkg actions">
+            <button
+                onclick="closeDialog();"
+                type="submit"
+                accesskey="x"
+                title="<__trans phrase="Close (x)">"
+                class="primary-button"
+                ><__trans phrase="Close"></button>
+        </div>
+    </div>
+
+<mt:Else name="theme_upgrade_complete">
 
     <mt:Ignore>
         The user has successfully upgraded this theme. Tell them how to 

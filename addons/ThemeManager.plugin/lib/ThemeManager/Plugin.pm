@@ -169,7 +169,20 @@ sub update_page_actions {
                     return 0; # Just to be safe.
                 },
                 mode => 'list_template_backups',
-            }
+            },
+            theme_upgrade => {
+                label => 'Upgrade Theme',
+                order => 20,
+                permission => 'edit_templates',
+                condition => sub {
+                    # Designer Mode doesn't need the ability to upgrade, since
+                    # it happens automatically.
+                    my $theme_mode = MT->app->blog->theme_mode;
+                    return 0 if $theme_mode eq 'designer';
+                    return 1; # Must be production mode, right?
+                },
+                dialog => 'theme_upgrade',
+            },
         },
         list_template_backups => {
             delete_all_backups => {

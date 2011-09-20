@@ -1318,6 +1318,18 @@ sub theme_upgrade_proposal {
         param          => $param,
         new_theme_meta => $new_theme_meta,
     });
+    
+    # Check if there is anything to upgrade based on the above results. If
+    # nothing has changed then the theme can't be upgraded because there's
+    # nothing to do. Supply a notice to the user about this state.
+    if (
+        !@{ $param->{new_templates} }
+        && !@{ $param->{changed_templates} }
+        && !$param->{updated_cf_fields}
+        && !$param->{updated_fd_fields}
+    ) {
+        $param->{no_change} = 1;
+    }
 
     return $app->load_tmpl( 'theme_upgrade.mtml', $param);
 }
