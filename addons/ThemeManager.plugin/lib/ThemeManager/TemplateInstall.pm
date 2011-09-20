@@ -1415,6 +1415,8 @@ sub _upgrade_check_fields {
     my $param          = $arg_ref->{param};
     my $new_theme_meta = $arg_ref->{new_theme_meta};
 
+    # This really isn't a test to tell if CF of FD fields have *changed*, it
+    # just notes if they exist. This could be much more comprehensive!
     if ( $new_theme_meta->{fields} ) {
         $param->{updated_cf_fields} = 1;
     }
