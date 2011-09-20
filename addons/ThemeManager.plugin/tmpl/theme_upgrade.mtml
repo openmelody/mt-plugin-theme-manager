@@ -27,7 +27,12 @@
         proceed then close and reload the theme dashboard.
     </mt:Ignore>
 
-    <p>The <mt:Var name="theme_label"> theme has been successfully upgraded to version <mt:Var name="theme_version">. Refer to the theme documentation for next steps (such as populating any new Theme Options or republishing the blog).</p>
+    <p>
+        The <mt:Var name="theme_label"> theme has been successfully upgraded
+        to version <mt:Var name="theme_version">. Refer to the theme
+        documentation for next steps (such as populating any new Theme Options
+        or republishing the blog).
+    </p>
 
     <mt:If name="theme_upgrade_results_messages">
     <p>The following changes were made to upgrade this blog:</p>
@@ -65,7 +70,11 @@
         <input type="hidden" name="updated_fd_fields" value="<mt:Var name="updated_fd_fields">" />
 
         <p>
-            Currently, the blog <mt:Var name="blog_name"> is running version <mt:Var name="theme_version"> of the <mt:Var name="theme_label"> theme. This blog can be updated to run version <mt:Var name="theme_upgrade_version_num"> of the theme. This upgrade will:
+            Currently, the blog <mt:Var name="blog_name"> is running version
+            <mt:Var name="theme_version"> of the <mt:Var name="theme_label">
+            theme. This blog can be updated to run version
+            <mt:Var name="theme_upgrade_version_num"> of the theme. This
+            upgrade will:
         </p>
         <ul>
         <mt:If name="new_templates">
@@ -105,7 +114,10 @@
         </mt:Loop>
         </ul>
         <p>
-            If you have made edits to these templates yourself, you may want to review and manually upgrade them to avoid overwriting any changes you have added. Template metadata, such as caching options and template mappings, will not be affected.
+            If you have made edits to these templates yourself, you may want
+            to review and manually upgrade them to avoid overwriting any
+            changes you have added. Template metadata, such as caching options
+            and template mappings, will not be affected.
         </p>
         <p>
             <input type="checkbox" name="upgrade_existing_templates" id="upgrade_existing_templates" value="1" />
@@ -116,9 +128,12 @@
     <mt:SetVarBlock name="if_templates_affected"><mt:If name="new_templates">1</mt:If><mt:If name="changed_templates">1</mt:If></mt:SetVarBlock>
     <mt:If name="if_templates_affected">
         <p>
-            Custom templates will not be deleted by this upgrade. Content such as Entries and Pages will not be affected by this upgrade.
+            Custom templates will not be deleted by this upgrade. Content such
+            as Entries and Pages will not be affected by this upgrade.
         <mt:If name="changed_templates">
-            Template metadata on existing templates&mdash;such as caching options, archive mappings, build types&mdash;will not be affected by this upgrade.
+            Template metadata on existing templates&mdash;such as caching
+            options, archive mappings, build types&mdash;will not be affected
+            by this upgrade.
         </mt:If>
         </p>
     </mt:If>
