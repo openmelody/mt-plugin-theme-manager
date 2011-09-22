@@ -175,6 +175,7 @@ sub update_page_actions {
                 order => 20,
                 permission => 'edit_templates',
                 condition => sub {
+                    return 0 if !MT->app->blog;
                     # Designer Mode doesn't need the ability to upgrade, since
                     # it happens automatically.
                     my $theme_mode = MT->app->blog->theme_mode;
