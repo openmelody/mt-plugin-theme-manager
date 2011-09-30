@@ -601,10 +601,11 @@ sub _override_publishing_settings {
 sub _set_module_caching_prefs {
     my ( $cb, $param ) = @_;
     my $blog = $param->{blog} or return;
+    my $app = MT->instance;
 
     my $set_name = $blog->template_set or return;
-    my $set = MT->instance->registry( 'template_sets', $set_name ) or return;
-    my $tmpls = MT->instance->registry( 'template_sets', $set_name, 'templates' );
+    my $set = $app->registry( 'template_sets', $set_name ) or return;
+    my $tmpls = $app->registry( 'template_sets', $set_name, 'templates' );
     foreach my $t (qw( module widget )) {
 
         # Give up if there are no templates that match
@@ -667,10 +668,11 @@ sub _parse_build_type {
 sub _set_archive_map_publish_types {
     my ( $cb, $param ) = @_;
     my $blog = $param->{blog} or return;
+    my $app = MT->instance;
 
     my $set_name = $blog->template_set or return;
-    my $set = MT->instance->registry( 'template_sets', $set_name ) or return;
-    my $tmpls = MT->instance->registry( 'template_sets', $set_name, 'templates' );
+    my $set = $app->registry( 'template_sets', $set_name ) or return;
+    my $tmpls = $app->registry( 'template_sets', $set_name, 'templates' );
     my $tm = MT->component('ThemeManager');
     foreach my $a (qw( archive individual )) {
 
@@ -712,10 +714,11 @@ sub _set_archive_map_publish_types {
 sub _set_index_publish_type {
     my ( $cb, $param ) = @_;
     my $blog = $param->{blog} or return;
+    my $app = MT->instance;
 
     my $set_name = $blog->template_set or return;
-    my $set = MT->instance->registry( 'template_sets', $set_name ) or return;
-    my $tmpls = MT->instance->registry( 'template_sets', $set_name, 'templates' );
+    my $set = $app->registry( 'template_sets', $set_name ) or return;
+    my $tmpls = $app->registry( 'template_sets', $set_name, 'templates' );
 
     # Give up if there are no templates that match
     return unless eval { %{ $tmpls->{index} } };
@@ -754,9 +757,10 @@ sub _refresh_system_custom_fields {
     my ($blog) = @_;
     return unless MT->component('Commercial');
 
+    my $app      = MT->instance;
     my $tm       = MT->component('ThemeManager');
     my $set_name = $blog->template_set or return;
-    my $set      = MT->instance->registry( 'template_sets', $set_name ) or return;
+    my $set      = $app->registry( 'template_sets', $set_name ) or return;
 
     # In order to refresh both the blog-level and system-level custom fields,
     # merge each of those hashes. We don't have to worry about those hashes
@@ -794,7 +798,7 @@ sub _refresh_system_custom_fields {
             next REQUIRED if $field{$required};
 
             if ($blog->theme_mode eq 'production') {
-                die MT->instance->error(
+                die $app->error(
                     "Could not install custom field $field_id: field attribute "
                     . "$required is required."
                 );
@@ -834,7 +838,7 @@ sub _refresh_system_custom_fields {
             # the error is written to the Activity Log.
             if ( $field_obj->type ne $field_data->{type} ) {
                 if ($blog->theme_mode eq 'production') {
-                    die MT->instance->error(
+                    die $app->error(
                         "Could not install custom field $field_id on blog "
                         . $blog->name . ": the blog already has a field "
                         . "$field_id with a conflicting type."
@@ -881,9 +885,10 @@ sub _refresh_fd_fields {
     my ($blog) = @_;
     return unless MT->component('FieldDay');
 
+    my $app      = MT->instance;
     my $tm       = MT->component('ThemeManager');
     my $set_name = $blog->template_set or return;
-    my $set      = MT->instance->registry( 'template_sets', $set_name ) or return;
+    my $set      = $app->registry( 'template_sets', $set_name ) or return;
 
     # Field Day fields are all defined under the fd_fields key.
   FIELD:
@@ -902,7 +907,7 @@ sub _refresh_fd_fields {
             next REQUIRED if $field{$required};
 
             if ($blog->theme_mode eq 'production') {
-                die MT->instance->error(
+                die $app->error(
                     "Could not install Field Day field $field_id: field "
                     . "attribute $required is required."
                 );
@@ -942,7 +947,7 @@ sub _refresh_fd_fields {
             # the error is written to the Activity Log.
             if ( $field_obj->type ne $field_data->{type} ) {
                 if ($blog->theme_mode eq 'production') {
-                    die MT->instance->error(
+                    die $app->error(
                         "Could not install Field Day field $field_id on blog "
                         . $blog->name . ": the blog already has a field "
                         . "$field_id with a conflicting type."
