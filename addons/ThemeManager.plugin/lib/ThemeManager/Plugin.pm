@@ -50,7 +50,6 @@ sub update_menus {
             order => 2,
             view => 'blog',
             condition => sub {
-                my $app = MT->instance;
                 my $blog = $app->blog
                     or return 0;
                 return 1
@@ -60,13 +59,6 @@ sub update_menus {
                 return 0;
             },
             link       => sub {
-
-                # @_ contains... something. It's not an $app
-                # reference, and doesn't appear to directly have
-                # a blog object or the blog ID available. So, grab
-                # a new instance.
-                my $app = MT->instance;
-
                 return
                   $app->uri(
                              mode => 'theme_dashboard',
@@ -83,12 +75,6 @@ sub update_menus {
             view       => 'blog',
             permission => 'edit_templates',
             link       => sub {
-
-                # @_ contains... something. It's not an $app
-                # reference, and doesn't appear to directly have
-                # a blog object or the blog ID available. So, grab
-                # a new instance.
-                my $app = MT->instance;
                 return
                   $app->uri(
                              mode => 'theme_dashboard',
