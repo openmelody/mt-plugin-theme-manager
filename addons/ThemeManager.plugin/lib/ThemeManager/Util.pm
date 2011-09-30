@@ -11,6 +11,8 @@ our @EXPORT_OK = qw( theme_label theme_thumbnail_url theme_preview_url
   theme_about_designer theme_documentation theme_thumb_path theme_thumb_url
   prepare_theme_meta );
 
+use MT;
+
 # TODO - this looks very broken to me. NO global variables.
 my $app = MT->instance;
 my $tm  = MT->component('ThemeManager');
