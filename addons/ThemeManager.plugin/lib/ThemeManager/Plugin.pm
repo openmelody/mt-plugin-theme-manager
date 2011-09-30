@@ -126,7 +126,7 @@ sub update_page_actions {
                 order      => 1,
                 permission => 'edit_templates',
                 condition  => sub {
-                    MT->component('Commercial') && MT->app->blog;
+                    MT->component('Commercial') && MT->instance->blog;
                 },
                 code => sub {
                     my ($app) = @_;
@@ -143,7 +143,7 @@ sub update_page_actions {
                 order      => 2,
                 permission => 'edit_templates',
                 condition  => sub {
-                    MT->component('FieldDay') && MT->app->blog;
+                    MT->component('FieldDay') && MT->instance->blog;
                 },
                 code => sub {
                     my ($app) = @_;
@@ -160,11 +160,11 @@ sub update_page_actions {
                 permission => 'edit_templates',
                 condition  => sub {
                     # Don't display on the Global Templates screen.
-                    return 0 if !MT->app->blog;
+                    return 0 if !MT->instance->blog;
 
                     return 1 if MT->model('template')->exist({
                         type => 'backup',
-                        blog_id => MT->app->blog->id,
+                        blog_id => MT->instance->blog->id,
                     });
                     return 0; # Just to be safe.
                 },
@@ -175,10 +175,10 @@ sub update_page_actions {
                 order => 20,
                 permission => 'edit_templates',
                 condition => sub {
-                    return 0 if !MT->app->blog;
+                    return 0 if !MT->instance->blog;
                     # Designer Mode doesn't need the ability to upgrade, since
                     # it happens automatically.
-                    my $theme_mode = MT->app->blog->theme_mode;
+                    my $theme_mode = MT->instance->blog->theme_mode;
                     return 0 if $theme_mode eq 'designer';
                     return 1; # Must be production mode, right?
                 },
@@ -785,7 +785,7 @@ sub setup_theme {
                       = $fieldsets->{$set}->{format}
                       ? $fieldsets->{$set}->{format}
                       : '__default__';
-                    $txt = MT->apply_text_filters( $txt->text(), [$filter] );
+                    $txt = MT->instancely_text_filters( $txt->text(), [$filter] );
                     $innerhtml = $txt;
                     $html .= $txt;
                 }
