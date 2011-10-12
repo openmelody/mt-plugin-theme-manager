@@ -241,7 +241,7 @@ sub theme_thumb_url {
     }
     else {
         my $ts_id = $blog->template_set or return;
-        my $plugin = find_theme_plugin($ts_id);
+        my $plugin = find_theme_plugin($ts_id) or return;
 
         # Just use theme_preview_url to craft the URL. Sure, this is really
         # intended for when the user is applying a theme, but it works just
