@@ -1547,6 +1547,35 @@ sub _do_theme_upgrade {
                         identifier => $new_tmpl->{identifier},
                     })
                 ) {
+                    
+                    # Check for an existing template with the name name, which
+                    # could have been created manually and therefore doesn't
+                    # have the template identifier assigned to it.
+                    my $existing_tmpl = MT->model('template')->load({
+                        blog_id => $blog->id,
+                        type    => $new_tmpl->{type},
+                        name    => $new_tmpl->{name},
+                    });
+                    if ($existing_tmpl) {
+                        # Build a timestamp to append to the retired tempalte.
+                        my @ts = offset_time_list( time, $blog->id );
+                        my $ts = sprintf "%04d-%02d-%02d %02d:%02d:%02d",
+                            $ts[5] + 1900, $ts[4] + 1, @ts[ 3, 2, 1, 0 ];
+
+                        $existing_tmpl->name(
+                            $new_tmpl->{name} . ' [Retired ' . $ts . ']'
+                        );
+                        $existing_tmpl->save or die $existing_tmpl->errstr;
+                        
+                        # Notify the user about this fring case.
+                        push @results, { 
+                            message => 'A template named ' . $new_tmpl->{name}
+                                . ' already exists (perhaps it was manually '
+                                . 'created?) and has been retired. You may '
+                                . 'wish to review the changes between the '
+                                . 'current and retired templates.'
+                        };
+                    }
 
                     # This template does not exist, so create it!
                     my $tmpl = _create_template($new_tmpl, $blog, $plugin);
