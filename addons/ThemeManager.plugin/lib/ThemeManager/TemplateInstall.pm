@@ -1552,41 +1552,22 @@ sub _do_theme_upgrade {
                         identifier => $new_tmpl->{identifier},
                     })
                 ) {
-                    
-                    # Check for an existing template with the name name, which
-                    # could have been created manually and therefore doesn't
-                    # have the template identifier assigned to it.
-                    my $existing_tmpl = MT->model('template')->load({
-                        blog_id => $blog->id,
-                        type    => $new_tmpl->{type},
-                        name    => $new_tmpl->{name},
+                    # Is there a manually created version of this template in
+                    # the theme? If so it needs to be retired so that the new
+                    # template can be installed.
+                    my $message = _retire_template({
+                        blog_id  => $blog->id,
+                        new_tmpl => $new_tmpl,
                     });
-                    if ($existing_tmpl) {
-                        # Build a timestamp to append to the retired tempalte.
-                        my @ts = offset_time_list( time, $blog->id );
-                        my $ts = sprintf "%04d-%02d-%02d %02d:%02d:%02d",
-                            $ts[5] + 1900, $ts[4] + 1, @ts[ 3, 2, 1, 0 ];
 
-                        $existing_tmpl->name(
-                            $new_tmpl->{name} . ' [Retired ' . $ts . ']'
-                        );
-                        $existing_tmpl->save or die $existing_tmpl->errstr;
-                        
-                        # Notify the user about this fring case.
-                        push @results, { 
-                            message => 'A template named ' . $new_tmpl->{name}
-                                . ' already exists (perhaps it was manually '
-                                . 'created?) and has been retired. You may '
-                                . 'wish to review the changes between the '
-                                . 'current and retired templates.'
-                        };
-                    }
+                    push @results, { message => $message }
+                        if $message;
 
                     # This template does not exist, so create it!
                     my $tmpl = _create_template($new_tmpl, $blog, $plugin);
 
                     if ($tmpl) {
-                        my $message = 'A new template, "' . $tmpl->name 
+                        $message = 'A new template, "' . $tmpl->name 
                             . '," has been installed.';
                         push @results, { message => $message };
                         MT->log({
@@ -1659,6 +1640,39 @@ sub _do_theme_upgrade {
 
     # Return the results array, which is populated with success/fail messages.
     return { messages => \@results};
+}
+
+# Before installing a new template, check for a manually created template with
+# the same name (but no identifier because it was manually created). Check for
+# an existing template with the name name, which could have been created
+# manually and therefore doesn't have the template identifier assigned to it.
+sub _retire_template {
+    my ($arg_ref) = @_;
+    my $new_tmpl = $arg_ref->{new_tmpl};
+    my $blog_id  = $arg_ref->{blog_id};
+
+    my $existing_tmpl = MT->model('template')->load({
+        blog_id => $blog_id,
+        type    => $new_tmpl->{type},
+        name    => $new_tmpl->{name},
+    })
+        or return;
+
+    # Build a timestamp to append to the retired tempalte.
+    my @ts = offset_time_list( time, $blog_id );
+    my $ts = sprintf "%04d-%02d-%02d %02d:%02d:%02d",
+        $ts[5] + 1900, $ts[4] + 1, @ts[ 3, 2, 1, 0 ];
+
+    # Rename the template to something unique so that the new template can be
+    # installed.
+    $existing_tmpl->name( $new_tmpl->{name} . " [Retired $ts]" );
+    $existing_tmpl->save or die $existing_tmpl->errstr;
+
+    # Notify the user about this fringe case.
+    return 'A template named "' . $new_tmpl->{name} . '" already exists '
+        . '(perhaps it was manually created?) and has been retired. You may '
+        . 'wish to review the changes between the current and retired '
+        . 'templates.'
 }
 
 1;
