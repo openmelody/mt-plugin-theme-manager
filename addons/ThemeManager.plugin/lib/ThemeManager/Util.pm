@@ -112,15 +112,19 @@ sub theme_paypal_email {
     return _return_data( $data, $obj );
 }
 
+# Grab the version number. If no template set version, then use the parent 
+# plugin's version. If that's not set, just make up a value to use.
 sub theme_version {
-
-    # Grab the version number. If no template set version, then use
-    # the parent plugin's version.
     my ( $data, $obj ) = @_;
 
     # If no version was found in the theme meta, return the plugin
     # version (if present).
-    $data = eval { $obj->version } unless $data;
+    $data = defined $data 
+        ? $data                  # $data is valid!
+        : eval { $obj->version } # Is their a plugin version?
+        ? eval { $obj->version } # Yes, use the plugin version
+        : '0.0.1';               # Make up a value because none was available.
+
     return _return_data( $data, $obj );
 }
 

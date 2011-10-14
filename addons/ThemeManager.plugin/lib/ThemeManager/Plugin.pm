@@ -1722,12 +1722,12 @@ sub _theme_upgrade_check {
     # upgrade option.
     return $param if $blog->theme_mode eq 'designer';
 
-    # Grab the "latest" version number of the theme, checking both the plugin
-    # template set for a version key, and falling back to the plugin's version
-    # key.
-    my $latest_version 
-        = MT->registry( 'template_sets', $blog->template_set )->{version} 
-            || $plugin->version;
+    # Grab the "latest" version number of the theme. This will use the version
+    # of the theme from the plugin or the version of the plugin, or a default.
+    my $latest_version = theme_version(
+        MT->registry( 'template_sets', $blog->template_set )->{version},
+        $plugin
+    );
 
     # Compare the latest version and installed version of the theme.
     # version needs to be compiled to be used, so we can't supply it with 
