@@ -13,7 +13,7 @@ use MT;
 
 sub update_menus {
     my $app = MT->instance;
-    my $q = $app->can('query') ? $app->query : $app->param;
+    my $q = $app->query;
 
     # Theme Manager is turning the Design menu into a friendlier, more useful
     # area than it used to be, and the first step to that is removing the
@@ -87,7 +87,7 @@ sub update_menus {
 
 sub update_page_actions {
     my $app     = MT->instance;
-    my $q       = $app->can('query') ? $app->query : $app->param;
+    my $q       = $app->query;
     my $blog_id = $q->param('blog_id');
     if ($blog_id) {
 
@@ -222,7 +222,7 @@ sub update_page_actions {
 
 sub theme_dashboard {
     my $app = shift;
-    my $q = $app->can('query') ? $app->query : $app->param;
+    my $q = $app->query;
 
     # Since there is no Theme Dashboard at the system level, capture and
     # redirect to the System Dashboard, if necessary.
@@ -318,7 +318,7 @@ sub theme_dashboard {
 
 sub select_theme {
     my $app = shift;
-    my $q = $app->can('query') ? $app->query : $app->param;
+    my $q = $app->query;
 
     # The user probably wants to apply a new theme; we start by browsing the
     # available themes.
@@ -429,7 +429,7 @@ sub setup_theme {
 
     # The user has selected a theme and wants to apply it to the current blog.
     my $app = shift;
-    my $q   = $app->can('query') ? $app->query : $app->param;
+    my $q   = $app->query;
     my $tm  = MT->component('ThemeManager');
 
     my $ts_id      = $q->param('theme_id');
@@ -970,7 +970,7 @@ sub _get_local_preview {
 
 sub _make_mini {
     my $app = MT->instance;
-    my $q   = $app->can('query') ? $app->query : $app->param;
+    my $q   = $app->query;
     my $tm  = MT->component('ThemeManager');
 
     use File::Spec;
@@ -1003,7 +1003,7 @@ sub _make_mini {
 
 sub paypal_donate {
     my $app = shift;
-    my $q = $app->can('query') ? $app->query : $app->param;
+    my $q = $app->query;
 
     # Donating through PayPal requires a pop-up dialog so that we can break
     # out of MT and the normal button handling. (That is, clicking a PayPal
@@ -1018,7 +1018,7 @@ sub paypal_donate {
 
 sub theme_info {
     my $app = shift;
-    my $q = $app->can('query') ? $app->query : $app->param;
+    my $q = $app->query;
 
     # Theme info is displayed when a user clicks to select a theme (from the
     # Change Theme tab).
@@ -1163,7 +1163,7 @@ sub _theme_check {
 
 sub rebuild_tmpl {
     my $app        = shift;
-    my $q          = $app->can('query') ? $app->query : $app->param;
+    my $q          = $app->query;
     my $blog       = $app->blog;
     my $return_val = { success => 0 };
     my $templates
@@ -1200,7 +1200,7 @@ sub _send_json_response {
 sub _populate_list_templates_context {
     my $app      = shift;
     my $tm       = MT->component('ThemeManager');
-    my $q        = $app->can('query') ? $app->query : $app->param;
+    my $q        = $app->query;
     my ($params) = @_;
 
 #    my ($params_ref) = @_;

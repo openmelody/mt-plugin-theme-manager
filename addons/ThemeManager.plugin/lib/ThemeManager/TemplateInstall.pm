@@ -13,7 +13,7 @@ use Digest::MD5 qw(md5_hex);
 # version 4.261), with some necessary changes to work with Theme Manager.
 sub _refresh_all_templates {
     my ( $ts_id, $blog_id, $app ) = @_;
-    my $q = $app->can('query') ? $app->query : $app->param;
+    my $q = $app->query;
 
     my $t = time;
 
@@ -293,7 +293,7 @@ sub template_filter {
 
     # TODO Determine whether this SHOULD actually be running for non MT::Apps
     return unless $app->isa('MT::App');
-    my $q = $app->can('query') ? $app->query : $app->param;
+    my $q = $app->query;
 
     # If a new blog is being created/saved, we don't want to run this callback.
     return
@@ -417,7 +417,7 @@ sub _new_blog_template_set_language {
 
     # Only run when a new blog is being created.
     my $app = MT->instance;
-    my $q = $app->can('query') ? $app->query : $app->param;
+    my $q = $app->query;
     return
       unless (    ( ( $q->param('__mode') || '' ) eq 'save' )
                && ( ( $q->param('_type') || '' ) eq 'blog' ) );
