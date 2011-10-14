@@ -161,6 +161,7 @@ sub _create_default_templates {
     my $ts_id     = shift;
     my $blog      = shift;
     my $app       = MT->instance;
+    my $q         = $app->query;
     my $tm        = MT->component('ThemeManager');
     my $curr_lang = $app->current_language;
     $app->set_language( $blog->language );
@@ -179,12 +180,40 @@ sub _create_default_templates {
     # for each template. Then, after creating tmeplates, it's used to set the
     # blog-level preferred archive type.
     my %archive_types;
+    
+    my $save_widget_sets = $q->param('save_widgetsets');
+    my $save_widgets     = $q->param('save_widgets');
 
     # Go through each template definition and create a template.
     for my $val (@$tmpl_list) {
         next if $val->{global};
+
+        # Did the user request we save the widgets? If so, then we don't want
+        # to overwrite any existing widget.
+        next if ( 
+            $save_widgets 
+            && $val->{type} eq 'widget'
+            && MT->model('template')->exist({
+                blog_id => $blog->id,
+                type    => 'widget',
+                name    => $val->{name},
+            })
+        );
+
+        # Did the user request we save the widget sets? If so, then we don't
+        # want to overwrite any existing widget sets.
+        next if ( 
+            $save_widget_sets 
+            && $val->{type} eq 'widgetset'
+            && MT->model('template')->exist({
+                blog_id => $blog->id,
+                type    => 'widgetset',
+                name    => $val->{name},
+            })
+        );
+
         my $tmpl = _create_template($val, $blog, $plugin);
-        
+
         my $iter = MT->model('templatemap')->load_iter({ 
             template_id => $tmpl->id 
         });
