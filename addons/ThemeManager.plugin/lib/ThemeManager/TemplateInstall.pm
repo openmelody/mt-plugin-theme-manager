@@ -73,7 +73,7 @@ sub _refresh_all_templates {
                  $q->param('save_widgetsets')
                  && (    ( $tmpl->type eq 'widgetset' )
                       || ( $tmpl->type eq 'widget' ) )
-                 && ( ( $tmpl->linked_file ne '*' )
+                 && ( ( $tmpl->linked_file && $tmpl->linked_file ne '*' )
                       || !defined( $tmpl->linked_file ) )
               )
             {
