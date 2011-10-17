@@ -1719,10 +1719,11 @@ sub _theme_upgrade_check {
 
     # Grab the "latest" version number of the theme. This will use the version
     # of the theme from the plugin or the version of the plugin, or a default.
-    my $latest_version = theme_version(
-        MT->registry( 'template_sets', $blog->template_set )->{version},
-        $plugin
-    );
+    my $ts = {};
+    if ( my $ts_id = $blog->template_set ) {
+        $ts = eval { MT->registry( 'template_sets', $ts_id ) } || {};
+    }
+    my $latest_version = theme_version( $ts->{version}, $plugin );
 
     # Compare the latest version and installed version of the theme.
     # version needs to be compiled to be used, so we can't supply it with 
