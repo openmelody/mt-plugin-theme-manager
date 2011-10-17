@@ -1311,8 +1311,11 @@ sub _populate_list_templates_context {
             # an "Email Templates" template area. Only show this area if a
             # theme requires it, because email templates can't be manually
             # created anyway.
-            if ( MT->registry( 'template_sets', $set, 'templates', 'email' ) )
-            {
+            if (
+                eval {
+                    MT->registry( 'template_sets', $set, 'templates', 'email' ) 
+                }
+            ) {
                 $types{'email'} = {
                                    label => $tm->translate("Email Templates"),
                                    type  => 'email',
@@ -1325,8 +1328,10 @@ sub _populate_list_templates_context {
             # a theme requires it, because system templates can't be manually
             # created anyway.
             if (
-                MT->registry( 'template_sets', $set, 'templates', 'system' ) )
-            {
+                eval {
+                    MT->registry( 'template_sets', $set, 'templates', 'system' )
+                }
+            ) {
                 $types{'system'} = {
                                   label => $tm->translate("System Templates"),
                                   type  => [ keys %$sys_tmpl ],
