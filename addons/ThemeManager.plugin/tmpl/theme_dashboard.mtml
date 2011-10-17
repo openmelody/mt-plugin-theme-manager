@@ -212,7 +212,7 @@
                 </li>
         <mt:Else name="dialog">
                 <li class="icon-mini-left icon-mini-settings">
-                    <a href="javascript:void(0)" onclick="<mt:if name="continue_prompt">if(!confirm('<mt:var name="continue_prompt" escape="js">'))return false;</mt:if>return openDialog(false, '<mt:var name="dialog">', '<mt:if name="dialog_args"><mt:var name="dialog_args" escape="url"></mt:if><mt:if name="id">&amp;id=<mt:var name="id"></mt:if>&amp;blog_id=<mt:var name="blog_id">&amp;magic_token=<mt:Var name="magic_token">')">
+                    <a href="javascript:void(0)" onclick="<mt:if name="continue_prompt">if(!confirm('<mt:var name="continue_prompt" escape="js">'))return false;</mt:if>return openDialog(false, '<mt:var name="dialog">', '<mt:if name="dialog_args"><mt:var name="dialog_args" escape="url">&amp;</mt:if><mt:if name="id">id=<mt:var name="id">&amp;</mt:if>blog_id=<mt:var name="blog_id">&amp;magic_token=<mt:Var name="magic_token">')">
                         <mt:var name="label">
                     </a>
                 </li>
@@ -228,7 +228,7 @@
         </mt:If>
                 <li class="icon-left icon-mini-settings">
         <mt:If name="page">
-                    <a href="<mt:Var name="page" escape="html"><mt:If name="page_has_params"></mt:If><mt:If name="id">&amp;id=<mt:Var name="id"></mt:If><mt:If name="blog_id">&amp;blog_id=<mt:Var name="blog_id"></mt:If>&amp;magic_token=<mt:Var name="magic_token">&amp;return_args=<mt:Var name="return_args" escape="url">#customize"<mt:If name="continue_prompt"> onclick="return confirm('<mt:Var name="continue_prompt" escape="js">');"</mt:If>>
+                    <a href="<mt:Var name="page" escape="html"><mt:If name="page_has_params">&amp;</mt:If><mt:If name="id">id=<mt:Var name="id">&amp;</mt:If><mt:If name="blog_id">blog_id=<mt:Var name="blog_id">&amp;</mt:If>magic_token=<mt:Var name="magic_token">&amp;return_args=<mt:Var name="return_args" escape="url">#customize"<mt:If name="continue_prompt"> onclick="return confirm('<mt:Var name="continue_prompt" escape="js">');"</mt:If>>
                         <mt:Var name="label">
                     </a>
         <mt:Else name="link">
@@ -237,7 +237,7 @@
                             <mt:Var name="label">
                     </a>
         <mt:Else name="dialog">
-                    <a href="javascript:void(0)" onclick="<mt:if name="continue_prompt">if(!confirm('<mt:var name="continue_prompt" escape="js">'))return false;</mt:if>return openDialog(false, '<mt:var name="dialog">', '<mt:if name="dialog_args"><mt:var name="dialog_args" escape="url"></mt:if><mt:if name="id">&amp;id=<mt:var name="id"></mt:if>&amp;blog_id=<mt:var name="blog_id">&amp;magic_token=<mt:Var name="magic_token">')">
+                    <a href="javascript:void(0)" onclick="<mt:if name="continue_prompt">if(!confirm('<mt:var name="continue_prompt" escape="js">'))return false;</mt:if>return openDialog(false, '<mt:var name="dialog">', '<mt:if name="dialog_args"><mt:var name="dialog_args" escape="url">&amp;</mt:if><mt:if name="id">id=<mt:var name="id">&amp;</mt:if>blog_id=<mt:var name="blog_id">&amp;magic_token=<mt:Var name="magic_token">')">
                         <mt:var name="label">
                     </a>
         </mt:If>
