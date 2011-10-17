@@ -89,6 +89,8 @@ sub update_page_actions {
     my $app     = MT->instance;
     my $q       = $app->query;
     my $blog_id = $q->param('blog_id');
+    my $blog    = eval { $app->blog };
+    
     if ($blog_id) {
 
         # FIXME This should be done in a pre_run or init_request callback like so:
@@ -112,11 +114,10 @@ sub update_page_actions {
                 order      => 1,
                 permission => 'edit_templates',
                 condition  => sub {
-                    MT->component('Commercial') && $app->blog;
+                    MT->component('Commercial') && $blog;
                 },
                 code => sub {
                     $app->validate_magic or return;
-                    my $blog = $app->blog;
                     ThemeManager::TemplateInstall::_refresh_system_custom_fields(
                                                                        $blog);
                     $app->add_return_arg( custom_fields_refreshed => 1 );
@@ -128,11 +129,10 @@ sub update_page_actions {
                 order      => 2,
                 permission => 'edit_templates',
                 condition  => sub {
-                    MT->component('FieldDay') && $app->blog;
+                    MT->component('FieldDay') && $blog;
                 },
                 code => sub {
                     $app->validate_magic or return;
-                    my $blog = $app->blog;
                     ThemeManager::TemplateInstall::_refresh_fd_fields($blog);
                     $app->add_return_arg( fd_fields_refreshed => 1 );
                     $app->call_return;
@@ -144,11 +144,11 @@ sub update_page_actions {
                 permission => 'edit_templates',
                 condition  => sub {
                     # Don't display on the Global Templates screen.
-                    return 0 if !$app->blog;
+                    return 0 unless $blog;
 
                     return 1 if MT->model('template')->exist({
                         type => 'backup',
-                        blog_id => $app->blog->id,
+                        blog_id => $blog->id,
                     });
                     return 0; # Just to be safe.
                 },
@@ -159,10 +159,10 @@ sub update_page_actions {
                 order => 20,
                 permission => 'edit_templates',
                 condition => sub {
-                    return 0 if !$app->blog;
+                    return 0 unless $blog;
                     # Designer Mode doesn't need the ability to upgrade, since
                     # it happens automatically.
-                    my $theme_mode = $app->blog->theme_mode;
+                    my $theme_mode = $blog->theme_mode;
                     return 0 if $theme_mode eq 'designer';
                     return 1; # Must be production mode, right?
                 },
@@ -184,9 +184,8 @@ sub update_page_actions {
                 mode      => 'theme_options',
                 condition => sub {
                     return 0 unless MT->component('ConfigAssistant');
-                    my $blog = $app->blog;
-                    return 0 if !$blog;
-                    my $ts_id = $app->blog->template_set;
+                    return 0 unless $blog;
+                    my $ts_id = $blog->template_set;
                     return 0 if !$ts_id;
                     return 1
                       if eval {
@@ -200,10 +199,9 @@ sub update_page_actions {
                 order     => 101,
                 mode      => 'list_widget',
                 condition => sub {
-                    my $blog = $app->blog;
-                    return 0 if !$blog;
-                    my $ts_id = $app->blog->template_set;
-                    return 0 if !$ts_id;
+                    return 0 unless $blog;
+                    my $ts_id = $blog->template_set;
+                    return 0 unless $ts_id;
                     return 1
                       if eval {
                         $app->registry( 'template_sets', $ts_id,
