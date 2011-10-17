@@ -112,7 +112,7 @@ sub update_page_actions {
                 order      => 1,
                 permission => 'edit_templates',
                 condition  => sub {
-                    MT->component('Commercial') && MT->instance->blog;
+                    MT->component('Commercial') && $app->blog;
                 },
                 code => sub {
                     my ($app) = @_;
@@ -129,7 +129,7 @@ sub update_page_actions {
                 order      => 2,
                 permission => 'edit_templates',
                 condition  => sub {
-                    MT->component('FieldDay') && MT->instance->blog;
+                    MT->component('FieldDay') && $app->blog;
                 },
                 code => sub {
                     my ($app) = @_;
@@ -146,11 +146,11 @@ sub update_page_actions {
                 permission => 'edit_templates',
                 condition  => sub {
                     # Don't display on the Global Templates screen.
-                    return 0 if !MT->instance->blog;
+                    return 0 if !$app->blog;
 
                     return 1 if MT->model('template')->exist({
                         type => 'backup',
-                        blog_id => MT->instance->blog->id,
+                        blog_id => $app->blog->id,
                     });
                     return 0; # Just to be safe.
                 },
@@ -161,10 +161,10 @@ sub update_page_actions {
                 order => 20,
                 permission => 'edit_templates',
                 condition => sub {
-                    return 0 if !MT->instance->blog;
+                    return 0 if !$app->blog;
                     # Designer Mode doesn't need the ability to upgrade, since
                     # it happens automatically.
-                    my $theme_mode = MT->instance->blog->theme_mode;
+                    my $theme_mode = $app->blog->theme_mode;
                     return 0 if $theme_mode eq 'designer';
                     return 1; # Must be production mode, right?
                 },
@@ -186,9 +186,9 @@ sub update_page_actions {
                 mode      => 'theme_options',
                 condition => sub {
                     return 0 unless MT->component('ConfigAssistant');
-                    my $blog = MT->instance->blog;
+                    my $blog = $app->blog;
                     return 0 if !$blog;
-                    my $ts_id = MT->instance->blog->template_set;
+                    my $ts_id = $app->blog->template_set;
                     return 0 if !$ts_id;
                     my $app = MT::App->instance;
                     return 1
@@ -203,9 +203,9 @@ sub update_page_actions {
                 order     => 101,
                 mode      => 'list_widget',
                 condition => sub {
-                    my $blog = MT->instance->blog;
+                    my $blog = $app->blog;
                     return 0 if !$blog;
-                    my $ts_id = MT->instance->blog->template_set;
+                    my $ts_id = $app->blog->template_set;
                     return 0 if !$ts_id;
                     my $app = MT::App->instance;
                     return 1
