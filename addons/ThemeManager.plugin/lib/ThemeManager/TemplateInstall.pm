@@ -112,7 +112,8 @@ sub _refresh_all_templates {
                 $tmpl->rebuild_me(0);
                 $tmpl->linked_file(undef);
                 $tmpl->outfile('');
-                $tmpl->save or die $tmpl->errstr;
+                $tmpl->save
+                    or die 'Error saving template: '.$tmpl->errstr;
             }
         } ## end while ( my $tmpl = $tmpl_iter...)
 
@@ -123,7 +124,8 @@ sub _refresh_all_templates {
             _create_default_templates( $ts_id, $blog );
 
             $blog->template_set($ts_id);
-            $blog->save or die $blog->errstr;
+            $blog->save
+                or die 'Error saving blog: '.$blog->errstr;
 
             $app->run_callbacks( 'blog_template_set_change',
                                  { blog => $blog } );
@@ -228,7 +230,8 @@ sub _create_default_templates {
           if exists $archive_types{$at};
     }
     $blog->custom_dynamic_templates('none');
-    $blog->save or die $blog->errstr;
+    $blog->save
+        or die 'Error saving blog: '.$blog->errstr;
 
     MT->run_callbacks( ref($blog) . '::post_create_default_templates',
                        $blog, $tmpl_list );
@@ -285,7 +288,7 @@ sub _create_template {
         );
     }
 
-    $tmpl->save or die $tmpl->errstr;
+    $tmpl->save or die 'Error saving template: '.$tmpl->errstr;
     
     # Create the template mappings, if any exist.
     if ( $tmpl_data->{mappings} ) {
@@ -309,7 +312,8 @@ sub _create_template {
             $map->file_template( $m->{file_template} )
               if $m->{file_template};
             $map->blog_id( $tmpl->blog_id );
-            $map->save or die $map->errstr;
+            $map->save
+                or die 'Error saving template mapping: '.$map->errstr;
         }
     }
     
@@ -615,7 +619,7 @@ sub _link_template {
     }
 
     # Lastly, save the linked (or unlinked) template.
-    $tmpl->save or die $tmpl->errstr;
+    $tmpl->save or die 'Error saving template: '.$tmpl->errstr;
 }
 
 # Forcibly turn on module caching at the blog level, so that any theme cache
@@ -624,7 +628,8 @@ sub _override_publishing_settings {
     my ( $cb, $param ) = @_;
     my $blog = $param->{blog} or return;
     $blog->include_cache(1);
-    $blog->save or die $blog->errstr;
+    $blog->save
+        or die 'Error saving blog: '.$blog->errstr;
 }
 
 sub _set_module_caching_prefs {
@@ -652,7 +657,8 @@ sub _set_module_caching_prefs {
                     }
                 }
 
-                $tmpl->save or die $tmpl->errstr;
+                $tmpl->save
+                    or die 'Error saving blog: '.$tmpl->errstr;
             }
         }
     } ## end foreach my $t (qw( module widget ))
@@ -827,10 +833,8 @@ sub _refresh_system_custom_fields {
             next REQUIRED if $field{$required};
 
             if ($blog->theme_mode eq 'production') {
-                die $app->error(
-                    "Could not install custom field $field_id: field attribute "
-                    . "$required is required."
-                );
+                die "Could not install custom field $field_id: field attribute "
+                    . "$required is required.";
             }
             else {
                 MT->log( {
@@ -867,11 +871,9 @@ sub _refresh_system_custom_fields {
             # the error is written to the Activity Log.
             if ( $field_obj->type ne $field_data->{type} ) {
                 if ($blog->theme_mode eq 'production') {
-                    die $app->error(
-                        "Could not install custom field $field_id on blog "
+                    die "Could not install custom field $field_id on blog "
                         . $blog->name . ": the blog already has a field "
-                        . "$field_id with a conflicting type."
-                    );
+                        . "$field_id with a conflicting type.";
                 }
                 else {
                     MT->log( {
@@ -906,7 +908,8 @@ sub _refresh_system_custom_fields {
                                   %field,
                                 }
         );
-        $field_obj->save() or die $field_obj->errstr();
+        $field_obj->save()
+            or die 'Error saving custom field: '.$field_obj->errstr;
     } ## end while ( my ( $field_id, $field_data...))
 } ## end sub _refresh_system_custom_fields
 
@@ -936,10 +939,8 @@ sub _refresh_fd_fields {
             next REQUIRED if $field{$required};
 
             if ($blog->theme_mode eq 'production') {
-                die $app->error(
-                    "Could not install Field Day field $field_id: field "
-                    . "attribute $required is required."
-                );
+                die "Could not install Field Day field $field_id: field "
+                    . "attribute $required is required.";
             }
             else {
                 MT->log( {
@@ -976,11 +977,9 @@ sub _refresh_fd_fields {
             # the error is written to the Activity Log.
             if ( $field_obj->type ne $field_data->{type} ) {
                 if ($blog->theme_mode eq 'production') {
-                    die $app->error(
-                        "Could not install Field Day field $field_id on blog "
+                    die "Could not install Field Day field $field_id on blog "
                         . $blog->name . ": the blog already has a field "
-                        . "$field_id with a conflicting type."
-                    );
+                        . "$field_id with a conflicting type.";
                 }
                 else {
                     MT->log( {
@@ -1018,7 +1017,8 @@ sub _refresh_fd_fields {
                                   data        => $field_data->{data},
                                 }
         );
-        $field_obj->save() or die $field_obj->errstr();
+        $field_obj->save()
+            or die 'Error saving Field Day field: '.$field_obj->errstr;
     } ## end while ( my ( $field_id, $field_data...))
 } ## end sub _refresh_fd_fields
 
@@ -1050,7 +1050,8 @@ sub _install_containers {
               = eval { &{ $c->{label} } } ? &{ $c->{label} } : $basename;
             $obj->label($label);
             $obj->parent($pid);
-            $obj->save or die $obj->errstr;
+            $obj->save
+                or die 'Error saving '.$obj->class_type.': '.$obj->errstr;
         }
         if ( $c->{$key} ) {
             _install_containers( $model, $key, $blog, $c->{$key}, $obj );
@@ -1082,7 +1083,8 @@ sub _install_pages_or_entries {
                 $obj->meta( $_, $p->{meta}->{$_} );
             }
             $obj->set_tags( @{ $p->{tags} } );
-            $obj->save or die $obj->errstr;
+            $obj->save
+                or die 'Error saving '.$obj->class_type.': '.$obj->errstr;
 
             # Create the category/folder association if necessary.
             if ( $p->{folder} ) {
@@ -1106,7 +1108,9 @@ sub _install_pages_or_entries {
 
                     # A folder always has a primary placement.
                     $placement->is_primary(1);
-                    $placement->save or die $placement->errstr;
+                    $placement->save
+                        or die 'Error saving category placement: '
+                                .$placement->errstr;
                 }
             } ## end if ( $p->{folder} )
         } ## end unless ($obj)
@@ -1159,7 +1163,7 @@ sub _save_theme_meta {
 
     # Turn that YAML into a plain old string and save it.
     $blog->theme_meta( $yaml->write_string() );
-    $blog->save or die $blog->errstr;
+    $blog->save or die 'Error saving blog: '.$blog->errstr;
 }
 
 sub xfrm_add_language {
@@ -1280,12 +1284,12 @@ sub theme_mode_switch {
     my $switch_to = $q->param('switch_to');
     
     my $blog = MT->model('blog')->load( $q->param('blog_id') )
-        or die $app->errstr('Could not load the specified blog.');
+        or die 'Could not load the specified blog.';
 
     # Set the theme mode to the selected value. This will be used as a flag
     # for handling upgrades.
     $blog->theme_mode( $switch_to );
-    $blog->save or die $blog->errstr;
+    $blog->save or die 'Error saving blog: '.$blog->errstr;
     
     # Change whether templates are linked.
     # Switching from Designer to Production mode, so unlink templates.
@@ -1297,7 +1301,8 @@ sub theme_mode_switch {
             $tmpl->linked_file(undef);
             $tmpl->linked_file_mtime(undef);
             $tmpl->linked_file_size(undef);
-            $tmpl->save or die $tmpl->errstr;
+            $tmpl->save
+                or die 'Error saving template: '.$tmpl->errstr;
         }
     }
     
@@ -1625,10 +1630,8 @@ sub _do_theme_upgrade {
                     blog_id    => $blog->id,
                     identifier => $new_tmpl->{identifier},
                 })
-                    or die $app->error(
-                        'Can not find a template with the identifer '
-                        . $new_tmpl->{identifier} . ' in blog ' . $blog->name
-                    );
+                    or die 'Can not find a template with the identifer '
+                        . $new_tmpl->{identifier} . ' in blog ' . $blog->name;
 
                 # Translate the template to another language, if translations 
                 # were provided.
@@ -1637,13 +1640,12 @@ sub _do_theme_upgrade {
                     $trans = $plugin->translate_templatized($trans);
                     1;
                   }
-                  or die $app->error(
-                        "There was an error translating the template '"
-                        . $new_tmpl->{name} . ".' Error: " . $@
-                  );
+                  or die "There was an error translating the template '"
+                        . $new_tmpl->{name} . ".' Error: " . $@;
 
                 $db_tmpl->text( $trans );
-                $db_tmpl->save or die $db_tmpl->errstr;
+                $db_tmpl->save
+                    or die 'Error saving template: '.$db_tmpl->errstr;
 
                 my $message = 'The template "' . $db_tmpl->name 
                     . '" has been upgraded.';
@@ -1695,7 +1697,9 @@ sub _retire_template {
     # Rename the template to something unique so that the new template can be
     # installed.
     $existing_tmpl->name( $new_tmpl->{name} . " [Retired $ts]" );
-    $existing_tmpl->save or die $existing_tmpl->errstr;
+    $existing_tmpl->save
+        or die 'Error saving template: '.$existing_tmpl->errstr;
+
 
     # Notify the user about this fringe case.
     return 'A template named "' . $new_tmpl->{name} . '" already exists '
