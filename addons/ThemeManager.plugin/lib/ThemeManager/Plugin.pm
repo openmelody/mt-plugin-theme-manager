@@ -115,7 +115,6 @@ sub update_page_actions {
                     MT->component('Commercial') && $app->blog;
                 },
                 code => sub {
-                    my ($app) = @_;
                     $app->validate_magic or return;
                     my $blog = $app->blog;
                     ThemeManager::TemplateInstall::_refresh_system_custom_fields(
@@ -132,7 +131,6 @@ sub update_page_actions {
                     MT->component('FieldDay') && $app->blog;
                 },
                 code => sub {
-                    my ($app) = @_;
                     $app->validate_magic or return;
                     my $blog = $app->blog;
                     ThemeManager::TemplateInstall::_refresh_fd_fields($blog);
@@ -190,7 +188,6 @@ sub update_page_actions {
                     return 0 if !$blog;
                     my $ts_id = $app->blog->template_set;
                     return 0 if !$ts_id;
-                    my $app = MT::App->instance;
                     return 1
                       if eval {
                         $app->registry('template_sets')->{$ts_id}->{options};
@@ -207,7 +204,6 @@ sub update_page_actions {
                     return 0 if !$blog;
                     my $ts_id = $app->blog->template_set;
                     return 0 if !$ts_id;
-                    my $app = MT::App->instance;
                     return 1
                       if eval {
                         $app->registry( 'template_sets', $ts_id,
