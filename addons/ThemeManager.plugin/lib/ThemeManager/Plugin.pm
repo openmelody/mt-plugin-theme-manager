@@ -144,13 +144,12 @@ sub update_page_actions {
                 permission => 'edit_templates',
                 condition  => sub {
                     # Don't display on the Global Templates screen.
-                    return 0 unless $blog;
-
-                    return 1 if MT->model('template')->exist({
-                        type => 'backup',
-                        blog_id => $blog->id,
-                    });
-                    return 0; # Just to be safe.
+                    return 1 if $blog
+                            and MT->model('template')->exist({
+                                    type => 'backup',
+                                    blog_id => $blog->id,
+                                });
+                    return 0;
                 },
                 mode => 'list_template_backups',
             },
@@ -159,12 +158,11 @@ sub update_page_actions {
                 order => 20,
                 permission => 'edit_templates',
                 condition => sub {
-                    return 0 unless $blog;
                     # Designer Mode doesn't need the ability to upgrade, since
                     # it happens automatically.
-                    my $theme_mode = $blog->theme_mode;
-                    return 0 if $theme_mode eq 'designer';
-                    return 1; # Must be production mode, right?
+                    my $theme_mode = eval { $blog->theme_mode } || '';
+                    return $theme_mode eq 'designer' ? 0 : 1;
+                                            # Must be production mode, right?
                 },
                 dialog => 'theme_upgrade',
             },
@@ -183,14 +181,13 @@ sub update_page_actions {
                 order     => 100,
                 mode      => 'theme_options',
                 condition => sub {
-                    return 0 unless MT->component('ConfigAssistant');
-                    return 0 unless $blog;
-                    my $ts_id = $blog->template_set;
-                    return 0 if !$ts_id;
-                    return 1
-                      if eval {
-                        $app->registry('template_sets')->{$ts_id}->{options};
-                      };
+                    my $ts_id = eval { $blog->template_set };
+                    if ( MT->component('ConfigAssistant') and $ts_id ) {
+                        return 1 if
+                          eval {
+                            $app->registry('template_sets')->{$ts_id}->{options}
+                          }
+                    }
                     return 0;
                 },
             },
@@ -199,14 +196,13 @@ sub update_page_actions {
                 order     => 101,
                 mode      => 'list_widget',
                 condition => sub {
-                    return 0 unless $blog;
-                    my $ts_id = $blog->template_set;
-                    return 0 unless $ts_id;
-                    return 1
-                      if eval {
-                        $app->registry( 'template_sets', $ts_id,
-                                        'templates',     'widgetset' );
-                      };
+                    if ( my $ts_id = eval { $blog->template_set } ) {
+                        return 1 if
+                          eval {
+                            $app->registry( 'template_sets', $ts_id,
+                                            'templates',     'widgetset' );
+                          };
+                    }
                     return 0;
                 },
             },
