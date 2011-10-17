@@ -240,9 +240,9 @@ sub theme_dashboard {
 
     # Grab the template set language, or fall back to the blog language.
     my $template_set_language = $blog->template_set_language
-      || $blog->language;
+                             || $blog->language;
     $param->{template_set_language} = $template_set_language
-      if $blog->language ne $template_set_language;
+        if $blog->language ne $template_set_language;
 
     # TODO This kind of construct indicates that we need to be our own app class
     _populate_list_templates_context( $app, $param );
