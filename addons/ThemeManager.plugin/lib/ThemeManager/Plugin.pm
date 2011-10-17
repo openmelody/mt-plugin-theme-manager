@@ -296,7 +296,7 @@ sub theme_dashboard {
                if ( !$plugin ) {
                    $theme->remove;
                    $theme->save or die $theme->errstr;
-                   next;
+                   return;
                }
                $row->{id}         = $theme->ts_id;
                $row->{plugin_sig} = $theme->plugin_sig;
