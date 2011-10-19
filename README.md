@@ -14,7 +14,9 @@ templates.
 An "upgrade" function allows a user to easily upgrade a blog to use the latest
 features and capabilities in the newest release of a theme.
 
-Need to refer to an old template for some reason? Template backups are organized by date, making it easier to locate what you are looking for, as well as letting you see how your templates have changed.
+Need to refer to an old template for some reason? Template backups are
+organized by date, making it easier to locate what you are looking for, as
+well as letting you see how your templates have changed.
 
 Using Theme Manager as an end user is known as "Production Mode."
 
@@ -307,7 +309,10 @@ that's beyond the scope of this document.
 
 ## Designers: Specify Your Theme's Templates
 
-The heart of your theme is the templates, of course. Theme Manager will look for a `templates` key and install any templates specified there in the familiar YAML syntax. In the following example, an index template and template module are added to our example theme.
+The heart of your theme is the templates, of course. Theme Manager will look
+for a `templates` key and install any templates specified there in the
+familiar YAML syntax. In the following example, an index template and template
+module are added to our example theme.
 
     template_sets:
         my_awesome_theme:
@@ -321,7 +326,8 @@ The heart of your theme is the templates, of course. Theme Manager will look for
                     entry_summary:
                         label: 'Entry Summary'
 
-In addition to Index Templates and Template Modules, other template types can be specified here as well, following this same format. Examples:
+In addition to Index Templates and Template Modules, other template types can
+be specified here as well, following this same format. Examples:
 
     template_sets:
         my_awesome_theme:
@@ -1069,8 +1075,9 @@ called "Press Kits" which will have two tags: `@nav` and `press`:
 
 # Acknowledgements
 
-This plugin was commissioned by Endevver from Dan Wolfgang of [uiNNOVATIONS](http://uinnovations.com/). 
-Endevver is proud to be partners with uiNNOVATIONS.
+This plugin was commissioned by Endevver from Dan Wolfgang of
+[uiNNOVATIONS](http://uinnovations.com/). Endevver is proud to be partners
+with uiNNOVATIONS.
 
 # License
 
