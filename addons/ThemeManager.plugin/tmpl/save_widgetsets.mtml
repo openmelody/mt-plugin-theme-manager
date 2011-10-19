@@ -17,12 +17,13 @@
         <input type="hidden" name="save_widgetsets_beacon" value="1" />
 
 <mt:If name="if_save_widgetsets">
-        <p><__trans phrase="<strong>Widget Sets</strong> have been modified from their default on this blog. If you are re-applying this theme to upgrade, you probably <em>should</em> save the Widget Sets so your blog continues to work as expected. If you are applying a different theme it's possible your Widget Sets won't work with the new theme, and <em>should not</em> be saved."></p>
-        <p style="margin-bottom: 30px;"><input type="checkbox" name="save_widgetsets" id="save_widgetsets" value="1" checked="checked"> <label for="save_widgetsets"><__trans phrase="Save the Widget Sets in this blog."></label></p>
+        <p><__trans phrase="<strong>Widget Sets</strong> in this theme are different from what is currently used on this blog. If you are applying a new theme to this blog then Widget Sets <em>should not</em> be saved. If you do choose to save Widget Sets, you should probably also save Widgets."></p>
+        <p style="margin-bottom: 30px;"><input type="checkbox" name="save_widgetsets" id="save_widgetsets" value="1"> <label for="save_widgetsets"><__trans phrase="Save the existing Widget Sets in this blog."></label></p>
 </mt:If>
+
 <mt:If name="if_save_widgets">
-        <p><__trans phrase="<strong>Widgets</strong> have been modified from their default on this blog. If you are re-applying this theme to upgrade, you probably <em>should</em> save the Widgets so your blog continues to work as expected. If you are applying a different theme it's possible your Widgets won't work with the new theme, and <em>should not</em> be saved."></p>
-        <p><input type="checkbox" name="save_widgets" id="save_widgets" value="1" checked="checked"> <label for="save_widgets"><__trans phrase="Save the Widgets in this blog."></label></p>
+        <p><__trans phrase="<strong>Widgets</strong> in this theme are different from what is currently used on this blog. If you are applying a new theme to this blog then Widgets <em>should not</em> be saved."></p>
+        <p><input type="checkbox" name="save_widgets" id="save_widgets" value="1"> <label for="save_widgets"><__trans phrase="Save the existing Widgets in this blog."></label></p>
 </mt:If>
 
     <div id="status">

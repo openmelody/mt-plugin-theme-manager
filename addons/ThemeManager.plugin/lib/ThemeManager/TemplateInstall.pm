@@ -65,29 +65,19 @@ sub _refresh_all_templates {
             # that they be saved.
             my $skip = 0;
 
-            # Because Widget Sets reference Widgets, we don't want to backup
-            # widgets, either, because that will change their "type" and
-            # therefore not be widgets anymore--potentially breaking the
-            # Widget Set.
             if (
-                 $q->param('save_widgetsets')
-                 && (    ( $tmpl->type eq 'widgetset' )
-                      || ( $tmpl->type eq 'widget' ) )
-                 && ( ( $tmpl->linked_file && $tmpl->linked_file ne '*' )
-                      || !defined( $tmpl->linked_file ) )
-              )
-            {
-                $skip = 1;
-            }
-            if (
+                ( 
+                    $q->param('save_widgetsets')
+                    && ( $tmpl->type eq 'widgetset' )
+                )
+                || (
                     $q->param('save_widgets')
-                 && ( $tmpl->type eq 'widget' )
-                 && ( ( $tmpl->linked_file && $tmpl->linked_file ne '*' )
-                      || !defined( $tmpl->linked_file ) )
-              )
-            {
+                    && ( $tmpl->type eq 'widget' )
+                )
+            ) {
                 $skip = 1;
             }
+
             if ( $skip == 0 ) {
 
                 # Remove all template maps for this template.
@@ -195,11 +185,18 @@ sub _create_default_templates {
         next if ( 
             $save_widgets 
             && $val->{type} eq 'widget'
-            && MT->model('template')->exist({
-                blog_id => $blog->id,
-                type    => 'widget',
-                name    => $val->{name},
-            })
+            && (
+                MT->model('template')->exist({
+                    blog_id    => $blog->id,
+                    type       => 'widget',
+                    identifier => $val->{identifier},
+                })
+                || MT->model('template')->exist({
+                    blog_id => $blog->id,
+                    type    => 'widget',
+                    name    => $val->{name},
+                })
+            )
         );
 
         # Did the user request we save the widget sets? If so, then we don't
@@ -207,11 +204,18 @@ sub _create_default_templates {
         next if ( 
             $save_widget_sets 
             && $val->{type} eq 'widgetset'
-            && MT->model('template')->exist({
-                blog_id => $blog->id,
-                type    => 'widgetset',
-                name    => $val->{name},
-            })
+            && (
+                MT->model('template')->exist({
+                    blog_id    => $blog->id,
+                    type       => 'widgetset',
+                    identifier => $val->{identifier},
+                })
+                || MT->model('template')->exist({
+                    blog_id => $blog->id,
+                    type    => 'widgetset',
+                    name    => $val->{name},
+                })
+            )
         );
 
         my $tmpl = _create_template($val, $blog, $plugin);

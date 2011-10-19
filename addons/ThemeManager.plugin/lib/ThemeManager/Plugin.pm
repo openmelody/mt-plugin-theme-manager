@@ -415,9 +415,8 @@ sub select_theme {
     );
 } ## end sub select_theme
 
+# The user has selected a theme and wants to apply it to the current blog.
 sub setup_theme {
-
-    # The user has selected a theme and wants to apply it to the current blog.
     my $app = shift;
     my $q   = $app->query;
     my $tm  = MT->component('ThemeManager');
@@ -512,47 +511,76 @@ sub setup_theme {
                 );
                 next;
             }
-            my $cur_ts_widgetsets =
-              $cur_ts_plugin->registry( 'template_sets', $cur_ts_id,
-                                        'templates', 'widgetset' );
 
-            my @widgetsets = MT->model('template')
-              ->load( { type => 'widgetset', blog_id => $blog_id, } );
-            foreach my $widgetset (@widgetsets) {
-
-                # Widget Sets from the currently-used template set need to be built.
-                my $cur_ts_widgetset
-                  = $cur_ts_widgetsets->{ $widgetset->identifier }
-                  ->{'widgets'};
-                my $ws_mtml = '';
-                foreach my $widget (@$cur_ts_widgetset) {
-                    $ws_mtml .= '<mt:include widget="' . $widget . '">';
-                }
-
-                # Now, compare the currently-used template set's Widget Sets
-                # against the current template Widget Sets. If they match,
-                # this means the user hasn't changed anything, and therefore
-                # we don't need to ask if they want to save anything.
-                if ( $widgetset->text ne $ws_mtml ) {
-                    $param->{if_save_widgetsets} = 1;
-                }
+            # Grab the templates for the theme that the user selected, so that
+            # they can be used to inspect the Widget Sets and Widgets.
+            require MT::DefaultTemplates;
+            my $tmpl_list = MT::DefaultTemplates->templates( $ts_id );
+            if ( !$tmpl_list || ( ref($tmpl_list) ne 'ARRAY' ) || ( !@$tmpl_list ) ) {
+                return $blog->error(
+                                 $app->translate("No default templates were found.") );
             }
 
-            # Now we need to check the Widgets. Here we can just look for
-            # unlinked templates. *Any* unlinked template will definitely
-            # be replaced, and the user may want to save them.
-            my @widgets = MT->model('template')
-              ->load( { type => 'widget', blog_id => $blog_id, } );
+            foreach my $new_tmpl (@$tmpl_list) {
+                next unless (
+                    $new_tmpl->{type} eq 'widgetset' 
+                    || $new_tmpl->{type} eq 'widget'
+                );
 
-            # We've got to test the results to determine if it's linked or not.
-            # We're looking for any widgets that aren't linked (not "*") _or_
-            # is NULL. (There's no way to do a null test during the object load.)
-            foreach my $widget (@widgets) {
-                if ( ( $widget->linked_file && $widget->linked_file ne '*' )
-                     || !defined( $widget->linked_file ) )
-                {
+                # Look at the Widget Sets in the selected theme, and compare
+                # them to the Widget Sets in the currently-installed theme.
+                if (
+                    $new_tmpl->{type} eq 'widgetset'
+                    && (
+                        # Any installed Widget Sets with this identifier?
+                        MT->model('template')->exist({
+                            blog_id    => $blog_id,
+                            type       => 'widgetset',
+                            identifier => $new_tmpl->{identifier},
+                        })
+                        # Or, any installed Widget Sets with this name?
+                        || MT->model('template')->exist({
+                            blog_id => $blog_id,
+                            type    => 'widgetset',
+                            name    => $new_tmpl->{name},
+                        })
+                    )
+                ) {
+                    # Yes, there are. Ask the user if they want to keep them.
+                    $param->{if_save_widgetsets} = 1;
+                }
+
+                # Now compare the Widgets in the selected theme, and compare
+                # them to the Widget in the currently-installed theme.
+                if (
+                    $new_tmpl->{type} eq 'widget'
+                    && (
+                        # Any installed Widget Sets with this identifier?
+                        MT->model('template')->exist({
+                            blog_id    => $blog_id,
+                            type       => 'widget',
+                            identifier => $new_tmpl->{identifier},
+                        })
+                        # Or, any installed Widget Sets with this name?
+                        || MT->model('template')->exist({
+                            blog_id => $blog_id,
+                            type    => 'widget',
+                            name    => $new_tmpl->{name},
+                        })
+                    )
+                ) {
+                    # Yes, there are. Ask the user if they want to keep them.
                     $param->{if_save_widgets} = 1;
                 }
+
+                # If widgets are saved at least once and widget sets are saved
+                # at least once, then we can just give up checking. Once is
+                # enough to flag the Widget or Widget Set for the user to make
+                # a choice about how to handle them.
+                last if (
+                    $param->{if_save_widgetsets}
+                    && $param->{if_save_widgets}
+                );
             }
         } ## end foreach my $blog_id (@blog_ids)
 
