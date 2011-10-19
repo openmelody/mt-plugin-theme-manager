@@ -74,6 +74,16 @@ tags:
     function:
         TemplateSetLanguage: $ThemeManager::ThemeManager::Tags::template_set_language
 
+options:
+    theme_mode:
+        label: 'Deployed Theme Mode'
+        hint: 'When applying a theme to a blog, the theme mode (Production or Designer) can be selected. Alternatively, a theme will be applied to a blog in Production mode with no user selection.'
+        type: radio
+        values: 'Selectable per blog, Production'
+        default: 'Selectable per blog'
+        tag: ThemeManagerThemeMode
+        scope: system
+
 widgets: $ThemeManager::ThemeManager::DashboardWidget::widget
 
 skip_static:

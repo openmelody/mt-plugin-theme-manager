@@ -158,23 +158,35 @@ that Theme Manager offers!
 
 ## Production Mode or Designer Mode?
 
-When applying a new theme to a blog one of the options presented is the choice
-of deploying in Production Mode or Designer Mode.
+When applying a new theme to a blog, one of the options presented is the
+choice of deploying in Production Mode or Designer Mode.
 
 Production Mode is aimed at running a live site. It is most analogous to how
-Movable Type runs out-of-the-box.
+Movable Type runs out-of-the-box. Production Mode is ideal for a production
+environment where a theme applied to a blog can be a self-contained "package."
+This is especially useful when a single theme is used for multiple blogs in an
+installation, where a given blog may not be ready for the latest theme
+updates, for example. Use the Theme Upgrade tool to upgrade the applied theme
+on a given blog.
 
 Designer Mode is aimed at speeding development of a theme. Designer Mode has a
 short list of additional capabilities, but their value is high:
 
 * Linking the installed template and the source file, making it easy to use
   your preferred text editor to build a template.
-
-* Automate "theme upgrades" based on the content of `config.yaml`.
+* Automate "theme upgrades" based on the content of `config.yaml`. That is,
+  theme upgrades are automatically applied, there is no interface to click
+  through to complete the upgrade.
 
 Switching from Production Mode to Designer Mode is easy and can be done at any
 time: simply go to the Design > Theme Dashboard menu item, then select the
 Customization tab. There you can see the current Mode and switch.
+
+In a live, production environment you are likely to want to deploy themes only
+in Production Mode. By visiting System > Plugins > Theme Manager > Settings >
+Deployed Theme Mode you can select to apply a theme on a per-blog basis, or to
+apply in Production Mode only -- eliminating that selection step during the
+theme application process.
 
 ## Designers: Specifying Your Theme's Details
 

@@ -472,9 +472,21 @@ sub setup_theme {
             $blog->save or die $blog->errstr;
         }
     }
-    else {
+    
+    # If the System-level Default Mode option was set to Production, then we
+    # should always use Production mode for this install.
+    elsif ( $tm->get_config_value('theme_mode') eq 'Production' ) {
 
-        # The desired theme mode hasn't been selected yet.
+        # Save the theme mode selection
+        foreach my $blog_id (@blog_ids) {
+            my $blog = MT->model('blog')->load($blog_id);
+            $blog->theme_mode('production');
+            $blog->save or die $blog->errstr;
+        }
+    }
+
+    # The desired theme mode hasn't been selected yet.
+    else {
         return $app->load_tmpl( 'theme_mode.mtml', $param );
     }
 
