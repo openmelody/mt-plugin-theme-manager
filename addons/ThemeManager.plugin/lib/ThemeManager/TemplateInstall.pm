@@ -1449,6 +1449,7 @@ sub _upgrade_check_templates {
                 {
                     name       => $db_tmpl->name,
                     identifier => $db_tmpl->identifier,
+                    id         => $db_tmpl->id,
                 };
 
             next;
