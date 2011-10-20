@@ -15,8 +15,6 @@ sub _refresh_all_templates {
     my ( $ts_id, $blog_id, $app ) = @_;
     my $q = $app->query;
 
-    my $t = time;
-
     my @id = ( scalar $blog_id );
 
     require MT::DefaultTemplates;
@@ -50,7 +48,7 @@ sub _refresh_all_templates {
 
         # the user wants to back up all templates and
         # install the new ones
-        my @ts = offset_time_list( $t, $blog_id );
+        my @ts = offset_time_list( time, $blog_id );
         my $ts = sprintf "%04d-%02d-%02d %02d:%02d:%02d", $ts[5] + 1900,
           $ts[4] + 1, @ts[ 3, 2, 1, 0 ];
 
@@ -1575,6 +1573,13 @@ sub _do_theme_upgrade {
                              $app->translate("No default templates were found.") );
         }
 
+        # Any upgraded templates also get a backup of the original created.
+        # Create a timestamp to apply to the backup, which can be applied to
+        # all of the templates backups created.
+        my @ts = offset_time_list( time, $blog->id );
+        my $ts = sprintf "%04d-%02d-%02d %02d:%02d:%02d", $ts[5] + 1900,
+          $ts[4] + 1, @ts[ 3, 2, 1, 0 ];
+
         foreach my $new_tmpl (@$tmpl_list) {
 
             # New templates need to be installed. Look for the current 
@@ -1637,6 +1642,17 @@ sub _do_theme_upgrade {
                 })
                     or die 'Can not find a template with the identifer '
                         . $new_tmpl->{identifier} . ' in blog ' . $blog->name;
+
+                # Create a backup of the existing template.
+                my $tmpl_backup = MT->model('template')->new();
+                $tmpl_backup->name(   $db_tmpl->name
+                             . " (Backup from $ts) "
+                             . $db_tmpl->type );
+                $tmpl_backup->text( $db_tmpl->text );
+                $tmpl_backup->type('backup');
+                $tmpl_backup->blog_id( $blog->id );
+                $tmpl_backup->save
+                    or die 'Error saving template: '.$tmpl_backup->errstr;
 
                 # Translate the template to another language, if translations 
                 # were provided.
