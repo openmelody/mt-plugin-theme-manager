@@ -188,6 +188,48 @@ Deployed Theme Mode you can select to apply a theme on a per-blog basis, or to
 apply in Production Mode only -- eliminating that selection step during the
 theme application process.
 
+## Applying and Upgrading Themes
+
+There are two fundamental ways to work with a theme on a blog: applying a
+theme and upgrading a theme. In general, that's the procedure order, too.
+
+Want to apply a new theme to your blog? Go to Design > Theme Dashbaord >
+Change Theme, select a theme to apply, and follow the pop-up dialog's steps.
+Applying a theme will do many things (but perhaps only some of these,
+depending upon the features and capabilities of the theme you are applying):
+turn all existing templates into backups, install templates, install Custom
+Fields, install Field Day fields, install default content, and set blog &
+plugin preferences.
+
+Was a new version of a theme you're using released? Use the theme upgrade
+capability. Navigate to Design > Theme Dashboard and you'll find a big blue
+"Upgrade theme to version <em>x.x.x</em>" button. The big blue button will
+only appear when a newer version of the theme is available than what is
+installed on the current blog. Click it and you'll be presented with details
+about the proposed upgrade, which may include installing new templates,
+changing existing templates, and installing or changing Custom Fields & Field
+Day fields. Upgrading a theme will not affect template metadata (such as
+caching options or mappings), will not reinstall default content, and will not
+reapply blog & plugin preferences.
+
+If you'd like to "upgrade" even if the big blue button isn't available
+(perhaps because the upgrade didn't complete as expected), you can find an
+Upgrade Theme option at Design > Theme Dashboard > Customization > Advanced.
+
+### Designers: Versioning your Theme
+
+Assigning a version number to your plugin or theme is a great best practice
+because it communicates with your users the state of development and acts as a
+marker to know what is available versus what is installed.
+
+Use the `version` key to assign a version number to your plugin (and theme, if
+you choose). A plugin-level `version` key is required; if not specified
+version `0.0.1` will be noted when applying a theme.
+
+Incrementing the version number (from `1.0.5` to `1.0.6`, for example) is what
+will cause Theme Manager to display the big blue upgrade button on the Theme
+Dashboard.
+
 ## Designers: Specifying Your Theme's Details
 
 First, you'll need to build a theme. A theme is a combination of images,
