@@ -529,8 +529,7 @@ sub setup_theme {
             require MT::DefaultTemplates;
             my $tmpl_list = MT::DefaultTemplates->templates( $ts_id );
             if ( !$tmpl_list || ( ref($tmpl_list) ne 'ARRAY' ) || ( !@$tmpl_list ) ) {
-                return $blog->error(
-                                 $app->translate("No default templates were found.") );
+                return $app->errtrans( "No default templates were found." );
             }
 
             foreach my $new_tmpl (@$tmpl_list) {
