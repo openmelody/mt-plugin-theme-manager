@@ -647,9 +647,9 @@ sub _set_module_caching_prefs {
     my $blog = $param->{blog} or return;
     my $app = MT->instance;
 
-    my $set_name = $blog->template_set or return;
-    my $set = $app->registry( 'template_sets', $set_name ) or return;
-    my $tmpls = $app->registry( 'template_sets', $set_name, 'templates' );
+    my $ts_id = $blog->template_set or return;
+    my $set = $app->registry( 'template_sets', $ts_id ) or return;
+    my $tmpls = $app->registry( 'template_sets', $ts_id, 'templates' );
     foreach my $t (qw( module widget )) {
 
         # Give up if there are no templates that match
@@ -715,10 +715,10 @@ sub _set_archive_map_publish_types {
     my $blog = $param->{blog} or return;
     my $app = MT->instance;
 
-    my $set_name = $blog->template_set or return;
-    my $set = $app->registry( 'template_sets', $set_name ) or return;
-    my $tmpls = $app->registry( 'template_sets', $set_name, 'templates' );
-    my $tm = MT->component('ThemeManager');
+    my $ts_id = $blog->template_set or return;
+    my $set   = $app->registry( 'template_sets', $ts_id ) or return;
+    my $tmpls = $app->registry( 'template_sets', $ts_id, 'templates' );
+    my $tm    = MT->component('ThemeManager');
     foreach my $a (qw( archive individual )) {
 
         # Give up if there are no templates that match
@@ -761,9 +761,9 @@ sub _set_index_publish_type {
     my $blog = $param->{blog} or return;
     my $app = MT->instance;
 
-    my $set_name = $blog->template_set or return;
-    my $set = $app->registry( 'template_sets', $set_name ) or return;
-    my $tmpls = $app->registry( 'template_sets', $set_name, 'templates' );
+    my $ts_id = $blog->template_set or return;
+    my $set   = $app->registry( 'template_sets', $ts_id ) or return;
+    my $tmpls = $app->registry( 'template_sets', $ts_id, 'templates' );
 
     # Give up if there are no templates that match
     return unless eval { %{ $tmpls->{index} } };
@@ -802,10 +802,10 @@ sub _refresh_system_custom_fields {
     my ($blog) = @_;
     return unless MT->component('Commercial');
 
-    my $app      = MT->instance;
-    my $tm       = MT->component('ThemeManager');
-    my $set_name = $blog->template_set or return;
-    my $set      = $app->registry( 'template_sets', $set_name ) or return;
+    my $app   = MT->instance;
+    my $tm    = MT->component('ThemeManager');
+    my $ts_id = $blog->template_set or return;
+    my $set   = $app->registry( 'template_sets', $ts_id ) or return;
 
     # In order to refresh both the blog-level and system-level custom fields,
     # merge each of those hashes. We don't have to worry about those hashes
@@ -927,10 +927,10 @@ sub _refresh_fd_fields {
     my ($blog) = @_;
     return unless MT->component('FieldDay');
 
-    my $app      = MT->instance;
-    my $tm       = MT->component('ThemeManager');
-    my $set_name = $blog->template_set or return;
-    my $set      = $app->registry( 'template_sets', $set_name ) or return;
+    my $app   = MT->instance;
+    my $tm    = MT->component('ThemeManager');
+    my $ts_id = $blog->template_set or return;
+    my $set   = $app->registry( 'template_sets', $ts_id ) or return;
 
     # Field Day fields are all defined under the fd_fields key.
   FIELD:
@@ -1129,9 +1129,9 @@ sub _install_pages_or_entries {
 
 sub _install_default_content {
     my ( $cb, $param ) = @_;
-    my $blog     = $param->{blog}      or return;
-    my $set_name = $blog->template_set or return;
-    my $set = MT->instance->registry( 'template_sets', $set_name ) or return;
+    my $blog    = $param->{blog}      or return;
+    my $ts_id   = $blog->template_set or return;
+    my $set     = MT->instance->registry( 'template_sets', $ts_id ) or return;
     my $content = $set->{content} or return;
 
     # Sorting the keys is an easy way to ensure that Folders are created
