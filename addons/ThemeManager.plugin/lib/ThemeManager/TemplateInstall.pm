@@ -504,7 +504,15 @@ sub _link_template {
     my $plugin  = $arg_ref->{plugin};
     my $blog_id = $arg_ref->{blog_id};
     my $ts_id   = $arg_ref->{ts_id};
-    
+
+    # If no plugin object is supplied then give up because the template set
+    # can't be found later. A missing plugin object is most likely the result
+    # of trying to use the old Classic Blog (`mt_blog`) template set which is
+    # core to MT but incomplete in many ways... plus, we probably don't want
+    # to encourage linking to and modifying these templates because the
+    # ramifications could be quite significant.
+    return if !defined($plugin);
+
     # If translations are offered for this theme, just give up. We don't
     # want to try to link a theme that has translations because the
     # linking process will throw away the "__trans phrase" wrappers.
@@ -514,7 +522,7 @@ sub _link_template {
     return if eval { $plugin->registry('l10n_class') };
 
     my $cur_ts_widgets
-      = $plugin->registry( 'template_sets', $ts_id, 'templates', 'widget' );
+      = eval {$plugin->registry('template_sets', $ts_id, 'templates', 'widget')};
 
     if (
          ( ( $tmpl->type ne 'widgetset' ) && ( $tmpl->type ne 'widget' ) )
