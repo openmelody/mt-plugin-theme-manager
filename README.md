@@ -651,19 +651,29 @@ Field Day field for Entries to the theme we're building.
         my_awesome_theme:
             label: 'My Awesome Theme'
             fd_fields:
-                entry_extra_text_field:
-                    obj_type: entry
-                    type: field
-                    order: 1
-                    data:
-                        label: 'Extra Text Field'
-                        type: TextArea
-                        group: 0
-                        options:
-                            width: 400
-                            label_display: left
+                group:
+                    my_awesome_group:
+                        data:
+                            initial: 1
+                            instances: 1
+                            label: 'My Awesome Group!'
+                        obj_type: entry
+                        order: 1
+                field:
+                    entry_extra_text_field:
+                        obj_type: entry
+                        type: field
+                        order: 1
+                        data:
+                            label: 'Extra Text Field'
+                            type: TextArea
+                            group: my_awesome_group
+                            options:
+                                width: 400
+                                label_display: left
 
-Field Day field definitions appear beneath the `fd_fields` key.
+Field Day field definitions appear beneath the `fd_fields` key within a
+`group` or `field` key, depending upon the type of field it is.
 
 The key `entry_extra_text_field` is the basename of this field. Within the
 Field Day interface, this field is referred to as the "Field."
@@ -682,9 +692,8 @@ types:
 * `template`
 * `user`
 
-The key `type` refers to whether you're creating a `field` or a `group`. The
-key `order` determines the order that fields are displayed in on the editing
-screen.
+The key `order` determines the order that fields are displayed in on the
+editing screen.
 
 Beneath the `data` key you'll find four keys. The `label` key is the
 user-facing name for this field.
@@ -711,8 +720,7 @@ types are:
 * `TextArea`
 
 The `group` key refers to a Group ID to determine what Group a field belongs
-to. `0` means the field does not belong to a Group. Theme Manager currently
-does not support setting the Group through `config.yaml`.
+to. `0` means the field does not belong to a Group. To use the `group` key, specify the name of the group field.
 
 A lot of metadata is defined beneath the `options` key. The contents of this
 key vary *significantly* for each field type. For each field type you're

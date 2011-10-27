@@ -928,109 +928,155 @@ sub _refresh_fd_fields {
     return unless MT->component('FieldDay');
 
     my $app   = MT->instance;
-    my $tm    = MT->component('ThemeManager');
     my $ts_id = $blog->template_set or return;
     my $set   = $app->registry( 'template_sets', $ts_id ) or return;
 
-    # Field Day fields are all defined under the fd_fields key.
-  FIELD:
-    while ( my ( $field_id, $field_data ) = each %{ $set->{fd_fields} } ) {
-        next if UNIVERSAL::isa( $field_data, 'MT::Component' );    # plugin
-        my %field = %$field_data;
-        delete @field{qw( blog_id basename )};
-        my $field_scope = ( $field{scope}
-                        && delete $field{scope} eq 'system' ? 0 : $blog->id );
+    # Field Day fields are all defined under the fd_fields key. Install groups
+    # first (in the group key), then install fields (in the fields key). That
+    # way, if a field is in a group, the group already exists.
+    while ( my ( $field_id, $field_data ) = each %{ $set->{fd_fields}->{group} } ) {
+        _refresh_fd_field({
+            field_id   => $field_id,
+            field_data => $field_data,
+            field_type => 'group',
+            blog       => $blog,
+        });
+    }
 
-        # If the Field Day field definition is missing the required basic 
-        # field definitions then we should report that problem immediately. In
-        # Production Mode, just die immediately; in Designer Mode save the 
-        # error to the Activity Log.
-      REQUIRED: for my $required (qw( obj_type type )) {
-            next REQUIRED if $field{$required};
+    # Groups are created; now create fields.
+    while ( my ( $field_id, $field_data ) = each %{ $set->{fd_fields}->{field} } ) {
+        _refresh_fd_field({
+            field_id   => $field_id,
+            field_data => $field_data,
+            field_type => 'field',
+            blog       => $blog,
+        });
+    }
+} ## end sub _refresh_fd_fields
 
+# Process the individual Field Day group or field, installing or updating as
+# needed.
+sub _refresh_fd_field {
+    my ($arg_ref) = @_;
+    my $field_id   = $arg_ref->{field_id};
+    my $field_data = $arg_ref->{field_data};
+    my $field_type = $arg_ref->{field_type};
+    my $blog       = $arg_ref->{blog};
+    my $tm = MT->component('ThemeManager');
+
+    return if UNIVERSAL::isa( $field_data, 'MT::Component' );    # plugin
+
+    my $field_scope = ( $field_data->{scope}
+                      && delete $field_data->{scope} eq 'system' ? 0 : $blog->id );
+
+    # If the Field Day field definition is missing the required basic 
+    # field definitions then we should report that problem immediately. In
+    # Production Mode, just die immediately; in Designer Mode save the 
+    # error to the Activity Log.
+  REQUIRED: for my $required (qw( obj_type )) {
+        next REQUIRED if $field_data->{$required};
+
+        if ($blog->theme_mode eq 'production') {
+            die "Could not install Field Day field $field_id: field "
+                . "attribute $required is required.";
+        }
+        else {
+            MT->log( {
+                       level   => MT->model('log')->ERROR(),
+                       blog_id => $field_scope,
+                       message => $tm->translate(
+                               'Could not install Field Day field [_1]: '
+                                 . 'field attribute [_2] is required',
+                               $field_id,
+                               $required,
+                           ),
+                     }
+            );
+            return;
+        }
+    }
+
+    # Does the blog have a field with this basename?
+    my $field_obj = MT->model('fdsetting')->load( {
+                           blog_id     => $field_scope,
+                           name        => $field_id,
+                           object_type => $field_data->{obj_type} || q{},
+                         }
+    );
+
+    # This field exists already. Verify the type before proceeding.
+    if ($field_obj) {
+
+        # The field data type can't just be changed willy-nilly. Because
+        # different data types store data in different formats and in 
+        # different fields we can't expect to change to another field type
+        # and just see things continue to work. Again, in Production Mode
+        # the user should be notified immediately, while in Designer Mode
+        # the error is written to the Activity Log.
+        if ( $field_obj->type ne $field_type ) {
             if ($blog->theme_mode eq 'production') {
-                die "Could not install Field Day field $field_id: field "
-                    . "attribute $required is required.";
+                die "Could not install Field Day field $field_id on blog "
+                    . $blog->name . ": the blog already has a field "
+                    . "$field_id with a conflicting type.";
             }
             else {
                 MT->log( {
-                           level   => MT->model('log')->ERROR(),
-                           blog_id => $field_scope,
-                           message => $tm->translate(
-                                   'Could not install Field Day field [_1]: '
-                                     . 'field attribute [_2] is required',
-                                   $field_id,
-                                   $required,
-                               ),
-                         }
+                       level   => MT->model('log')->ERROR(),
+                       blog_id => $field_scope,
+                       message =>
+                         $tm->translate(
+                           'Could not install Field Day field [_1] on '
+                             . 'blog [_2]: the blog already has a field '
+                             . '[_1] with a conflicting type',
+                           $field_id,
+                         ),
+                    }
                 );
-
-                next FIELD;
+                return;
             }
         }
+    }
 
-        # Does the blog have a field with this basename?
-        my $field_obj = MT->model('fdsetting')->load( {
-                               blog_id     => $field_scope,
-                               name        => $field_id,
-                               object_type => $field_data->{obj_type} || q{},
-                             }
-        );
+    # This field doesn't exist yet.
+    else {
+        $field_obj = MT->model('fdsetting')->new;
+    }
 
-        if ($field_obj) {
+    my $data = $field_data->{data};
 
-            # The field data type can't just be changed willy-nilly. Because
-            # different data types store data in different formats and in 
-            # different fields we can't expect to change to another field type
-            # and just see things continue to work. Again, in Production Mode
-            # the user should be notified immediately, while in Designer Mode
-            # the error is written to the Activity Log.
-            if ( $field_obj->type ne $field_data->{type} ) {
-                if ($blog->theme_mode eq 'production') {
-                    die "Could not install Field Day field $field_id on blog "
-                        . $blog->name . ": the blog already has a field "
-                        . "$field_id with a conflicting type.";
-                }
-                else {
-                    MT->log( {
-                           level   => MT->model('log')->ERROR(),
-                           blog_id => $field_scope,
-                           message =>
-                             $tm->translate(
-                               'Could not install Field Day field [_1] on '
-                                 . 'blog [_2]: the blog already has a field '
-                                 . '[_1] with a conflicting type',
-                               $field_id,
-                             ),
-                        }
-                    );
+    # The label field needs to be dereferenced.
+    $data->{label} = &{ $data->{label} };
 
-                    next FIELD;
-                }
-            }
-        }
-        else {
+    # The `group` key references a Field Day group name within the YAML. Field
+    # Day requires that this key reflect the group ID, so we need to switch to
+    # that before installing.
+    if ( $data->{group} ) {
 
-            # This field doesn't exist yet.
-            $field_obj = MT->model('fdsetting')->new;
-        }
+        # Load the group row based on this field's group ID.
+        my $group = MT->model('fdsetting')->load({
+            blog_id => $field_scope,
+            type    => 'group',
+            name    => $data->{group},
+        });
 
-        # The label field needs to be dereferenced.
-        $field_data->{data}->{label} = &{ $field_data->{data}->{label} };
+        # Reset this field's group (currently an ID) to the name of the group
+        # which we can easily use later to correctly build the fields.
+         $data->{group} = $group->id
+             if $group;
+    }
 
-        $field_obj->set_values( {
-                                  blog_id     => $field_scope,
-                                  name        => $field_id,
-                                  object_type => $field_data->{obj_type},
-                                  order       => $field_data->{order},
-                                  type        => $field_data->{type},
-                                  data        => $field_data->{data},
-                                }
-        );
-        $field_obj->save()
-            or die 'Error saving Field Day field: '.$field_obj->errstr;
-    } ## end while ( my ( $field_id, $field_data...))
-} ## end sub _refresh_fd_fields
+    $field_obj->set_values( {
+                              blog_id     => $field_scope,
+                              name        => $field_id,
+                              object_type => $field_data->{obj_type},
+                              order       => $field_data->{order},
+                              type        => $field_type,
+                              data        => $data,
+                            }
+    );
+    $field_obj->save()
+        or die 'Error saving Field Day field: '.$field_obj->errstr;
+}
 
 sub _install_categories {
     return _install_containers( 'category', 'categories', @_ );
