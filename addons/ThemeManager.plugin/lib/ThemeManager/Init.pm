@@ -61,8 +61,8 @@ sub _translate {
     # $c->l10n_class->get_handle() knows the correct place to look for
     # translations.
     my $app = MT->instance;
-    my $q = $app->query;
-    if ( eval {$q} && $q->param('__mode') ) {
+    my $q = eval {$app->query};
+    if ( $q && $q->param('__mode') ) {
         if ( $q->param('__mode') eq 'setup_theme' ) {
 
             # The user is applying a new theme.
