@@ -13,7 +13,7 @@ use MT;
 
 sub update_menus {
     my $app = MT->instance;
-    my $q = $app->query;
+    my $q = $app->can('query') ? $app->query : $app->param;
 
     # Theme Manager is turning the Design menu into a friendlier, more useful
     # area than it used to be, and the first step to that is removing the
