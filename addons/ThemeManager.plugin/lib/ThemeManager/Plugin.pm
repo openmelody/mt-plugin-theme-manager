@@ -53,13 +53,11 @@ sub update_menus {
             order => 2,
             view => 'blog',
             condition => sub {
-                my $blog = $app->blog
-                    or return 0;
-                return 1
-                  if eval {
-                    $app->registry('template_sets', $blog->template_set, 'documentation');
-                  };
-                return 0;
+                my $blog = $app->blog          or return 0;
+                my $bts  = $blog->template_set or return 0;
+                return eval {
+                    $app->registry('template_sets', $bts, 'documentation')
+                }; # Non-null evals to true value
             },
             link       => sub {
                 return
