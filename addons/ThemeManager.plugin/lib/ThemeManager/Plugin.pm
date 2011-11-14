@@ -29,8 +29,11 @@ sub update_menus {
         #           delete $a->{'design:template'};
         #       but don't do that here or else you'll get into a loop
         my $core = MT->component('Core');
-        delete $core->{registry}->{applications}->{cms}->{menus}
-          ->{'design:template'};
+        my $tmpl_menu_item
+            = $core->{registry}{applications}{cms}{menus}{'design:template'};
+        # use Data::Dumper;     warn Dumper([keys %$tmpl_menu_item]);                                                                                                                                                                                         
+        $tmpl_menu_item->{view}      = 'system';
+        $tmpl_menu_item->{condition} = sub { ! eval { MT->instance->query->param('blog_id') } };
     }
 
     # Now just add the Theme Dashboard menu item.
