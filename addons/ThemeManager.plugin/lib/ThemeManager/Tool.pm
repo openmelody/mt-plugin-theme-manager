@@ -44,7 +44,8 @@ sub init_options {
     ###l4p $logger->debug('$opt: ', l4mtdump( $opt ));
 
     if ( my $mode = shift @ARGV ) {
-        $app->mode($mode);
+        ###l4p $logger->debug('Mode set to: ', $mode);
+        $opt->{__mode} = $mode;
         my %args = @ARGV;
         $opt->{$_} = $args{$_} foreach keys %args;
     }
