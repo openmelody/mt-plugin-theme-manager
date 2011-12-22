@@ -69,16 +69,69 @@ sub init {
     $app;
 }
 
-=head2 list [theme NAME]
+=head2 list [ themes | blogs ]
+
+list themes used
+list themes all
+list blogs all
+list blogs with theme TS_ID
+list blogs with theme ''
+list blogs with theme none
 
 =cut
+
+sub all_themes { [ keys %{ MT->instance->registry('template_sets') } ] }
+
+sub used_themes {
+    my $app       = MT->instance;
+    my %tmpl_sets = ();
+    my $iter      = MT::Blog->load_iter();
+    while ( my $blog = $iter->() ) {
+        $tmpl_sets{ $blog->template_set }++ if $blog->template_set;
+    }
+    return \%tmpl_sets;
+}
+
+sub theme_listing {
+    my $used = shift;
+    my $app = MT->instance;
+    my @tmpl_sets;
+    if ( $used ) {
+        my $ts_used = used_themes();
+        @tmpl_sets
+            = map { sprintf("%3d blogs - %s", $ts_used->{$_}, $_) }
+                sort { $ts_used->{$b} <=> $ts_used->{$a} } keys %$ts_used;
+    }
+    else {
+        @tmpl_sets = @{ all_themes() };
+    }
+
+    return join( "\n", @tmpl_sets );
+}
 
 sub mode_list {
     my $app = shift;
     ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
-    my $opt = $app->options();
+    my $opt       = $app->options();
+    my $tmpl_sets = $app->registry('template_sets');
 
-    return Dumper($opt);
+    return theme_listing( $opt->{themes} eq 'used' ? "used" : undef )
+        if $opt->{themes};
+
+    $opt->{theme} = '' if ($opt->{theme}||'') eq 'none';
+
+    my $iter = MT::Blog->load_iter();
+
+    my @out;
+    my @blog_list;
+    while ( my $blog = $iter->() ) {
+        my $blog_ts = $blog->template_set || '';
+        next if $opt->{blogs} eq 'with' and $opt->{theme} ne $blog_ts; 
+        push(@out, sprintf "%-5s %-30s %s", 
+                    map { $blog->$_ } (@{ $opt->{cols} }));
+    }
+
+    return join("\n", @out);
 }
 
 =head2 upgrade (theme NAME || blog ID)
