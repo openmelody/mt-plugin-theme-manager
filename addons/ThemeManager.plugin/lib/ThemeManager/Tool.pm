@@ -5,7 +5,7 @@ use warnings;
 use Data::Dumper;
 use Carp;
 use base qw( MT::App::CLI );
-
+use lib qw( addons/ConfigAssistant.pack/lib );
 use Pod::Usage;
 
 use MT::Log::Log4perl qw(l4mtdump); use Log::Log4perl qw( :resurrect );
