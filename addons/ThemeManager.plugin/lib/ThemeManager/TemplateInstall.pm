@@ -1001,6 +1001,7 @@ sub _refresh_fd_field {
                            blog_id     => $field_scope,
                            name        => $field_id,
                            object_type => $field_data->{obj_type} || q{},
+                           type        => $field_data->{type} || 'field',
                          }
     );
 
