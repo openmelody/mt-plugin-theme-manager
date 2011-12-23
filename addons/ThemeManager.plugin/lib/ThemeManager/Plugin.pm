@@ -1678,6 +1678,10 @@ sub _populate_theme_dashboard {
         # theme_mode meta field to be set, which may be true for those who
         # have upgraded an existing site built without a theme, or when a
         # theme hasn't been re-selected.
+        if ( !$blog->theme_mode ) {
+            $blog->theme_mode('production');
+            $blog->save or die $blog->errstr;
+        }
 
         # If the blog has theme_meta, convert the saved YAML back into a hash.
         $theme_meta
