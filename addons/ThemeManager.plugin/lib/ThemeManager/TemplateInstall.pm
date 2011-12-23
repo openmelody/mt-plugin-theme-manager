@@ -842,11 +842,7 @@ sub _refresh_system_custom_fields {
       REQUIRED: for my $required (qw( obj_type tag )) {
             next REQUIRED if $field{$required};
 
-            if ($blog->theme_mode eq 'production') {
-                die "Could not install custom field $field_id: field attribute "
-                    . "$required is required.";
-            }
-            else {
+            if ($blog->theme_mode eq 'designer') {
                 MT->log( {
                            level   => MT->model('log')->ERROR(),
                            blog_id => $field_scope,
@@ -860,6 +856,10 @@ sub _refresh_system_custom_fields {
                 );
 
                 next FIELD;
+            }
+            else {
+                die "Could not install custom field $field_id: field attribute "
+                    . "$required is required.";
             }
         }
 
@@ -880,12 +880,7 @@ sub _refresh_system_custom_fields {
             # the user should be notified immediately, while in Designer Mode
             # the error is written to the Activity Log.
             if ( $field_obj->type ne $field_data->{type} ) {
-                if ($blog->theme_mode eq 'production') {
-                    die "Could not install custom field $field_id on blog "
-                        . $blog->name . ": the blog already has a field "
-                        . "$field_id with a conflicting type.";
-                }
-                else {
+                if ($blog->theme_mode eq 'designer') {
                     MT->log( {
                            level   => MT->model('log')->ERROR(),
                            blog_id => $field_scope,
@@ -900,6 +895,11 @@ sub _refresh_system_custom_fields {
                     );
 
                     next FIELD;
+                }
+                else {
+                    die "Could not install custom field $field_id on blog "
+                        . $blog->name . ": the blog already has a field "
+                        . "$field_id with a conflicting type.";
                 }
             }
         }
@@ -976,11 +976,7 @@ sub _refresh_fd_field {
   REQUIRED: for my $required (qw( obj_type )) {
         next REQUIRED if $field_data->{$required};
 
-        if ($blog->theme_mode eq 'production') {
-            die "Could not install Field Day field $field_id: field "
-                . "attribute $required is required.";
-        }
-        else {
+        if ($blog->theme_mode eq 'designer') {
             MT->log( {
                        level   => MT->model('log')->ERROR(),
                        blog_id => $field_scope,
@@ -993,6 +989,10 @@ sub _refresh_fd_field {
                      }
             );
             return;
+        }
+        else {
+            die "Could not install Field Day field $field_id: field "
+                . "attribute $required is required.";
         }
     }
 
@@ -1015,12 +1015,7 @@ sub _refresh_fd_field {
         # the user should be notified immediately, while in Designer Mode
         # the error is written to the Activity Log.
         if ( $field_obj->type ne $field_type ) {
-            if ($blog->theme_mode eq 'production') {
-                die "Could not install Field Day field $field_id on blog "
-                    . $blog->name . ": the blog already has a field "
-                    . "$field_id with a conflicting type.";
-            }
-            else {
+            if ($blog->theme_mode eq 'designer') {
                 MT->log( {
                        level   => MT->model('log')->ERROR(),
                        blog_id => $field_scope,
@@ -1034,6 +1029,11 @@ sub _refresh_fd_field {
                     }
                 );
                 return;
+            }
+            else {
+                die "Could not install Field Day field $field_id on blog "
+                    . $blog->name . ": the blog already has a field "
+                    . "$field_id with a conflicting type.";
             }
         }
     }
