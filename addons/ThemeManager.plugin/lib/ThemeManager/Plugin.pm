@@ -1137,15 +1137,7 @@ sub _theme_check {
             # Does this theme already exist? If so just load the record and
             # update it.
             my $theme = MT->model('theme')
-              ->load( { ts_id => $ts_id, plugin_sig => $obj->{id}, } );
-            if ( !$theme ) {
-
-                # Theme hasn't been previously saved, so create it.
-                $theme = MT->model('theme')->new();
-                $theme->plugin_sig($obj->{id});
-                $theme->ts_id($ts_id);
-                $theme->save or die $theme->errstr;
-            }
+              ->get_by_key( { ts_id => $ts_id, plugin_sig => $obj->{id}, } );
 
             # Prepare the theme_meta so that the hash can be written to
             # the database.
@@ -1161,7 +1153,7 @@ sub _theme_check {
             # theme meta label that we already calculated fallbacks for.
             $theme->ts_label( theme_label( $meta->{label}, $plugin ) );
 
-            $theme->save or die $theme->errstr;
+            $theme->save or die 'Error saving theme:' . $theme->errstr;
         } ## end foreach my $ts_id (@ts_ids)
     } ## end for my $sig ( keys %MT::Plugins)
 
