@@ -16,8 +16,6 @@ object_types:
         theme_meta: vblob meta
         theme_mode: string meta
 
-init_app: $ThemeManager::ThemeManager::Init::init_app
-
 tasks:
     site_preview_image:
         label: 'Create a site preview image for the Theme Dashboard'
@@ -25,6 +23,7 @@ tasks:
         code: $ThemeManager::ThemeManager::Plugin::site_preview_image
 
 callbacks:
+    init_app:                  $ThemeManager::ThemeManager::Init::init_app
     template_source:           $ThemeManager::ThemeManager::Plugin::xfrm_add_thumb
     blog_template_set_change:  $ThemeManager::ThemeManager::TemplateInstall::template_set_change
     DefaultTemplateFilter:     $ThemeManager::ThemeManager::TemplateInstall::template_filter
