@@ -1757,6 +1757,10 @@ sub _do_theme_upgrade {
                     . $db_tmpl->type . '::' . $db_tmpl->name;
                 MT->model('session')->remove( { id => $key });
             }
+            else {
+                warn "Default template not found in new or changed templates: "
+                    .$new_tmpl->{identifier};
+            }
         }
     }
 
