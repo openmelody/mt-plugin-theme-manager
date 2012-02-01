@@ -1627,7 +1627,7 @@ sub _do_theme_upgrade {
         push @results, { message => 'Custom Fields have been refreshed.' };
     }
     if ($updated_fd_fields) {
-        _refresh_fd_fields($blog) if $updated_fd_fields;
+        _refresh_fd_fields($blog);
         push @results, { message => 'Field Day fields have been refreshed.' };
     }
 
