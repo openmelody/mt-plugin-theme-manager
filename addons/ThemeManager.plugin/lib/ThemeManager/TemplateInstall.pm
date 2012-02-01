@@ -401,6 +401,17 @@ sub template_filter {
     } ## end while ( $index <= $tmpl_count)
 } ## end sub template_filter
 
+=head2 template_set_change
+
+FIXME: DOCUMENT PRECISELY WHEN THIS IS RUN SO IT'S NOT A MYSTERY
+    * ThemeManager::TemplateInstall:_refresh_all_templates
+        called by ThemeManager::Plugin::setup_theme
+            called by App mode setup_theme which is run.....?
+    * MT::CMS::Blog::post_save (when the blog is being saved for the 1st time)
+    * MT::CMS::Blog::post_save (when the template set has changed)
+    * .....Others???
+
+=cut
 sub template_set_change {
 
     # Set the language of the template set. This is a special case for when
@@ -1700,6 +1711,13 @@ sub _do_theme_upgrade {
                         . $new_tmpl->{identifier} . ' in blog ' . $blog->name;
 
                 # Create a backup of the existing template.
+                # FIXME Really should be using MT::Template::clone() here
+                #  Otherwise, you aren't future-compat and may be missing meta
+                # my $tmpl_backup = $db_tmpl->clone()
+                # $tmpl_backup->name( $tmpl_backup->name
+                #                   . " (Backup from $ts) " . $db_tmpl->type );
+                # $tmpl_backup->type('backup');
+
                 my $tmpl_backup = MT->model('template')->new();
                 $tmpl_backup->name(   $db_tmpl->name
                              . " (Backup from $ts) "

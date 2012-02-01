@@ -191,6 +191,12 @@ sub update_page_actions {
                           }
                     }
                     return 0;
+                    # Which looks to be a long way of saying:
+                    # return eval {
+                    #    $app->registry('template_sets')
+                    #        ->{$blog->template_set}
+                    #        ->{options}
+                    # };
                 },
             },
             edit_widgets => {
