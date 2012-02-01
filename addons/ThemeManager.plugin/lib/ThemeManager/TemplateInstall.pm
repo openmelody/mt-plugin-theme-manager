@@ -1,6 +1,7 @@
 package ThemeManager::TemplateInstall;
 
 use strict;
+use warnings;
 use Digest::MD5 qw(md5_hex);
 
 use ConfigAssistant::Util qw( find_theme_plugin );

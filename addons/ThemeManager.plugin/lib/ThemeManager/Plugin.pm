@@ -1,6 +1,7 @@
 package ThemeManager::Plugin;
 
 use strict;
+use warnings;
 use ConfigAssistant::Util qw( find_theme_plugin );
 use ThemeManager::Util qw( theme_label theme_thumbnail_url theme_preview_url
   theme_description theme_author_name theme_author_link
