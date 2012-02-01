@@ -1,6 +1,7 @@
 package ThemeManager::Plugin;
 
 use strict;
+use warnings;
 use ConfigAssistant::Util qw( find_theme_plugin );
 use ThemeManager::Util qw( theme_label theme_thumbnail_url theme_preview_url
   theme_description theme_author_name theme_author_link
@@ -190,6 +191,12 @@ sub update_page_actions {
                           }
                     }
                     return 0;
+                    # Which looks to be a long way of saying:
+                    # return eval {
+                    #    $app->registry('template_sets')
+                    #        ->{$blog->template_set}
+                    #        ->{options}
+                    # };
                 },
             },
             edit_widgets => {
@@ -1137,15 +1144,7 @@ sub _theme_check {
             # Does this theme already exist? If so just load the record and
             # update it.
             my $theme = MT->model('theme')
-              ->load( { ts_id => $ts_id, plugin_sig => $obj->{id}, } );
-            if ( !$theme ) {
-
-                # Theme hasn't been previously saved, so create it.
-                $theme = MT->model('theme')->new();
-                $theme->plugin_sig($obj->{id});
-                $theme->ts_id($ts_id);
-                $theme->save or die $theme->errstr;
-            }
+              ->get_by_key( { ts_id => $ts_id, plugin_sig => $obj->{id}, } );
 
             # Prepare the theme_meta so that the hash can be written to
             # the database.
@@ -1161,7 +1160,7 @@ sub _theme_check {
             # theme meta label that we already calculated fallbacks for.
             $theme->ts_label( theme_label( $meta->{label}, $plugin ) );
 
-            $theme->save or die $theme->errstr;
+            $theme->save or die 'Error saving theme:' . $theme->errstr;
         } ## end foreach my $ts_id (@ts_ids)
     } ## end for my $sig ( keys %MT::Plugins)
 

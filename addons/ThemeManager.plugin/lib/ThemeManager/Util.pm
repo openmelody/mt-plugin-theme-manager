@@ -1,6 +1,7 @@
 package ThemeManager::Util;
 
 use strict;
+use warnings;
 use MT::Util qw(caturl);
 use ConfigAssistant::Util qw( find_theme_plugin );
 use base 'Exporter';

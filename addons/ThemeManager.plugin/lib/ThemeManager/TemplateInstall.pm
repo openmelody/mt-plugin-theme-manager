@@ -1,12 +1,13 @@
 package ThemeManager::TemplateInstall;
 
 use strict;
+use warnings;
+use Digest::MD5 qw(md5_hex);
+
 use ConfigAssistant::Util qw( find_theme_plugin );
 use ThemeManager::Util qw( theme_label theme_version prepare_theme_meta );
 use MT::Util qw(caturl dirify offset_time_list);
 use MT;
-
-use Digest::MD5 qw(md5_hex);
 
 # This sub is responsible for applying the new theme's templates.
 # This is basically lifted right from MT::CMS::Template (from Movable Type
@@ -400,6 +401,17 @@ sub template_filter {
     } ## end while ( $index <= $tmpl_count)
 } ## end sub template_filter
 
+=head2 template_set_change
+
+FIXME: DOCUMENT PRECISELY WHEN THIS IS RUN SO IT'S NOT A MYSTERY
+    * ThemeManager::TemplateInstall:_refresh_all_templates
+        called by ThemeManager::Plugin::setup_theme
+            called by App mode setup_theme which is run.....?
+    * MT::CMS::Blog::post_save (when the blog is being saved for the 1st time)
+    * MT::CMS::Blog::post_save (when the template set has changed)
+    * .....Others???
+
+=cut
 sub template_set_change {
 
     # Set the language of the template set. This is a special case for when
@@ -1615,7 +1627,7 @@ sub _do_theme_upgrade {
         push @results, { message => 'Custom Fields have been refreshed.' };
     }
     if ($updated_fd_fields) {
-        _refresh_fd_fields($blog) if $updated_fd_fields;
+        _refresh_fd_fields($blog);
         push @results, { message => 'Field Day fields have been refreshed.' };
     }
 
@@ -1624,8 +1636,8 @@ sub _do_theme_upgrade {
         require MT::DefaultTemplates;
         my $tmpl_list = MT::DefaultTemplates->templates( $blog->template_set );
         if ( !$tmpl_list || ( ref($tmpl_list) ne 'ARRAY' ) || ( !@$tmpl_list ) ) {
-            return $blog->error(
-                             $app->translate("No default templates were found.") );
+            push @results, { message => $app->translate("No default templates were found.") };
+            return { messages => \@results};
         }
 
         # Any upgraded templates also get a backup of the original created.
@@ -1640,7 +1652,7 @@ sub _do_theme_upgrade {
             # New templates need to be installed. Look for the current 
             # template identifier in the @new_templates array. If found, add
             # the template.
-            if ( grep $_ eq $new_tmpl->{identifier}, @new_templates ) {
+            if ( grep { $_ eq $new_tmpl->{identifier} } @new_templates ) {
 
                 # This is a new template that needs to be installed. Before
                 # installing, just do a quick check to ensure it doesn't 
@@ -1690,7 +1702,8 @@ sub _do_theme_upgrade {
             # array. If found, we need to upgrade the template. Update the 
             # actual template text only, not any of the template meta because 
             # the user may have purposefully changed that.
-            elsif ( grep $_ eq $new_tmpl->{identifier}, @changed_templates ) {
+            elsif ( grep { $_ eq $new_tmpl->{identifier} } @changed_templates ) {
+
                 my ($db_tmpl) = MT->model('template')->load({
                     blog_id    => $blog->id,
                     identifier => $new_tmpl->{identifier},
@@ -1699,6 +1712,13 @@ sub _do_theme_upgrade {
                         . $new_tmpl->{identifier} . ' in blog ' . $blog->name;
 
                 # Create a backup of the existing template.
+                # FIXME Really should be using MT::Template::clone() here
+                #  Otherwise, you aren't future-compat and may be missing meta
+                # my $tmpl_backup = $db_tmpl->clone()
+                # $tmpl_backup->name( $tmpl_backup->name
+                #                   . " (Backup from $ts) " . $db_tmpl->type );
+                # $tmpl_backup->type('backup');
+
                 my $tmpl_backup = MT->model('template')->new();
                 $tmpl_backup->name(   $db_tmpl->name
                              . " (Backup from $ts) "
@@ -1736,6 +1756,10 @@ sub _do_theme_upgrade {
                 my $key = 'blog::' . $blog->id . '::template_' 
                     . $db_tmpl->type . '::' . $db_tmpl->name;
                 MT->model('session')->remove( { id => $key });
+            }
+            else {
+                warn "Default template not found in new or changed templates: "
+                    .$new_tmpl->{identifier};
             }
         }
     }

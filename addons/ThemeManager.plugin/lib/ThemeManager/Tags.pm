@@ -1,6 +1,7 @@
 package ThemeManager::Tags;
 
 use strict;
+use warnings;
 
 sub template_set_language {
     my ( $ctx, $args ) = @_;
