@@ -1636,8 +1636,8 @@ sub _do_theme_upgrade {
         require MT::DefaultTemplates;
         my $tmpl_list = MT::DefaultTemplates->templates( $blog->template_set );
         if ( !$tmpl_list || ( ref($tmpl_list) ne 'ARRAY' ) || ( !@$tmpl_list ) ) {
-            return $blog->error(
-                             $app->translate("No default templates were found.") );
+            push @results, { message => $app->translate("No default templates were found.") };
+            return { messages => \@results};
         }
 
         # Any upgraded templates also get a backup of the original created.
