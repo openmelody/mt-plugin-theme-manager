@@ -1652,7 +1652,7 @@ sub _do_theme_upgrade {
             # New templates need to be installed. Look for the current 
             # template identifier in the @new_templates array. If found, add
             # the template.
-            if ( grep $_ eq $new_tmpl->{identifier}, @new_templates ) {
+            if ( grep { $_ eq $new_tmpl->{identifier} } @new_templates ) {
 
                 # This is a new template that needs to be installed. Before
                 # installing, just do a quick check to ensure it doesn't 
@@ -1702,7 +1702,8 @@ sub _do_theme_upgrade {
             # array. If found, we need to upgrade the template. Update the 
             # actual template text only, not any of the template meta because 
             # the user may have purposefully changed that.
-            elsif ( grep $_ eq $new_tmpl->{identifier}, @changed_templates ) {
+            elsif ( grep { $_ eq $new_tmpl->{identifier} } @changed_templates ) {
+
                 my ($db_tmpl) = MT->model('template')->load({
                     blog_id    => $blog->id,
                     identifier => $new_tmpl->{identifier},
