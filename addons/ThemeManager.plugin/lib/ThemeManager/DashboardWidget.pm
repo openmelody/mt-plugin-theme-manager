@@ -1,5 +1,7 @@
 package ThemeManager::DashboardWidget;
 
+
+use ConfigAssistant::Util;
 use ThemeManager::Util qw( theme_label theme_description theme_author_name
   theme_author_link theme_version theme_link theme_doc_link theme_documentation
 );
@@ -15,7 +17,6 @@ sub widget {
                 my ( $app, $tmpl, $param ) = @_;
 
                 my $ts_id = $app->blog->template_set;
-                use ConfigAssistant::Util;
                 my $plugin = ConfigAssistant::Util::find_theme_plugin($ts_id);
 
                 # Convert the saved YAML back into a hash.

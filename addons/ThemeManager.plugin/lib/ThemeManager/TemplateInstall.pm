@@ -1,12 +1,12 @@
 package ThemeManager::TemplateInstall;
 
 use strict;
+use Digest::MD5 qw(md5_hex);
+
 use ConfigAssistant::Util qw( find_theme_plugin );
 use ThemeManager::Util qw( theme_label theme_version prepare_theme_meta );
 use MT::Util qw(caturl dirify offset_time_list);
 use MT;
-
-use Digest::MD5 qw(md5_hex);
 
 # This sub is responsible for applying the new theme's templates.
 # This is basically lifted right from MT::CMS::Template (from Movable Type
