@@ -29,7 +29,6 @@ BEGIN {
         Test::MT::Data::Perl
         Test::MT::ThemeManager
         Test::MT::ThemeManager::Base
-        Test::MT::ThemeManager::Database
         Test::MT::ThemeManager::Environment
         Test::MT::ThemeManager::Data::YAML
         CharlieTheme::Plugin
