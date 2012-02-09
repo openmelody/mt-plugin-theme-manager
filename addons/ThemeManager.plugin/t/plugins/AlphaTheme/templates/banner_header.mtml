@@ -1,0 +1,66 @@
+<div id="header">
+    <div id="header-inner">
+<mt:if tag="AdTagLeaderboard" ne="">
+        <div id="header-ad">
+          <$mt:AdTagLeaderboard$>
+        </div>
+</mt:if>
+        <div id="header-content">
+<mt:ignore><!-- Use h1 and h2 html tags on the main index of the blog as the title, use divs on all other pages where there are page titles. --></mt:ignore>
+<MTIf name="main_index">
+            <h1 id="header-name"><a href="<$mt:BlogURL$>" accesskey="1"><$mt:BlogName$></a></h1>
+            <h2 id="header-description"><$MTBlogDescription$></h2>
+<MTElse>
+            <div id="header-name"><a href="<$mt:BlogURL$>" accesskey="1"><$mt:BlogName$></a></div>
+            <div id="header-description"><$MTBlogDescription$></div>
+</MTIf>
+        </div>
+        <div id="greeting"></div>
+     </div>
+</div>
+
+<div id="nav">
+    <div id="nav-inner">
+        <ul>
+    <li class="first<mt:if name="main_index"> on</mt:if>"><a href="<mt:Link template="Main Index">">Home</a></li>
+
+<mt:IfActivityStreamEnabled>
+    <li class="<mt:if name="elsewhere"> on</mt:if>"><a href="<$mt:Link template="elsewhere"$>">Elsewhere</a></li>
+</mt:IfActivityStreamEnabled>
+
+<mt:if tag="PhotoGalleryBlog" ne="">
+<mt:setvarblock name="bid"><$mt:PhotoGalleryBlog$></mt:setvarblock>
+<mt:Multiblog include_blogs="$bid">
+    <li class="<mt:if name="photos"> on</mt:if>"><a href="<$mt:BlogURL$>" rel="bookmark" title="<$mt:BlogName encode_html="1"$>"><$mt:BlogName$></a></li>
+</mt:Multiblog>
+</mt:if>
+
+    <mt:Pages tag="@topnav">
+    <MTSetVarBlock name="this_page_id"><$MTPageID$></MTSetVarBlock>
+    <li class="<mt:if name="__last__"><mt:IfPluginInstalled plugin="ContactForms"><mt:else>last</mt:IfPluginInstalled></mt:if><mt:if name="nav_on" eq="$this_page_id"> on</mt:if>"><a href="<mt:PagePermalink />"><mt:PageTitle /></a></li>
+    </mt:Pages>
+    
+<mt:IfPluginInstalled plugin="ContactForms">
+    <li class="last"><a href="<$mt:Link template="contact_me"$>">Contact</a></li>
+</mt:IfPluginInstalled>
+
+        </ul>
+        <div class="search-wrapper">
+            <form method="get" action="<$mt:CGIPath$><$mt:SearchScript$>" id="search-form">
+                <input type="text" id="search" class="ti" name="search" value="<$mt:SearchString$>" />
+    <mt:If name="search_results">
+                <input type="hidden" name="IncludeBlogs" value="<$mt:SearchIncludeBlogs$>" />
+                <input type="hidden" name="limit" value="<MTSearchMaxResults>" />
+    <mt:else>
+                <input type="hidden" name="IncludeBlogs" value="<$mt:BlogID$>" />
+                <input type="hidden" name="limit" value="<MTSearchMaxResults>" />
+    </mt:if>
+                <input type="submit" accesskey="4" value="Search" />
+            </form>
+        </div>
+        <div class="blog-feed">
+            <a href="<$mt:Link template="feed_recent"$>">Subscribe</a>
+        </div>
+
+   </div>
+</div>

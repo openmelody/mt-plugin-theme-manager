@@ -1,0 +1,41 @@
+//
+// This file defines blog variables and phrases which are used by javascript functions.
+//
+var mt;
+mt = {
+    cookie: {
+        name: "<$mt:UserSessionCookieName$>",
+        domain: "<$mt:UserSessionCookieDomain$>",
+        path: "<$mt:UserSessionCookiePath$>",
+        timeout: <$mt:UserSessionCookieTimeout$>
+    },
+    links: {
+        signUp: '<$mt:CGIPath$><$mt:CommunityScript$>?__mode=register&blog_id=<$mt:BlogID$>&return_to=<$mt:BlogURL$>',
+        signIn: '<$mt:SignInLink$>',
+        signOut: '<$mt:SignOutLink$>',
+        editProfile: '<$mt:CGIPath$><$mt:CommunityScript$>?__mode=edit&blog_id=<$mt:BlogID$>&return_to=' + encodeURIComponent(document.URL)
+    },
+    blog: {
+        id: <$mt:BlogID$>,
+        url: '<$mt:BlogURL encode_url="1"$>',
+        staticWebPath: '<$mt:StaticWebPath$>',
+        adminScript: '<$mt:AdminScript$>',
+        comments: {
+            script: '<$mt:CGIPath$><$mt:CommentScript$>',
+            armor: '<$mt:BlogSitePath encode_sha1="1"$>',
+            accepted: <mt:IfCommentsAccepted>1<mt:Else>0</mt:IfCommentsAccepted>,
+            captchaFields: '<$mt:CaptchaFields$>'
+        },
+        community: {
+            script: '<$mt:CGIPath$><$mt:CommunityScript$>',
+            ifAnonymousRecommendAllowed: <mt:IfAnonymousRecommendAllowed>1<mt:Else>0</mt:IfAnonymousRecommendAllowed>
+        },
+        pings: {
+            accepted: <mt:IfPingsAccepted>1<mt:Else>0</mt:IfPingsAccepted>
+        },
+        registration: {
+            required: <mt:IfRegistrationRequired>1<mt:Else>0</mt:IfRegistrationRequired>,
+            allowed: <mt:IfRegistrationAllowed>1<mt:Else>0</mt:IfRegistrationAllowed>
+        }
+    }
+};

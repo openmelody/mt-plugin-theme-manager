@@ -1,0 +1,71 @@
+<mt:var name="page-id" value="main-index">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" id="sixapart-standard" xmlns:fb="http://www.facebook.com/2008/fbml">
+<head>
+    <title><mt:if tag="HomeTitle" ne=""><$mt:HomeTitle$> : </mt:if><$MTBlogName encode_html="1"$></title>
+    <$mt:include module="HTML Head"$>
+    <link rel="EditURI" type="application/rsd+xml" title="RSD" href="<$MTLink template="rsd"$>" />
+</head>
+<body id="<$mt:BlogTemplateSetID$>" class="mt-main-index <$mt:AlphaThemeLayout$>">
+    <div id="container">
+        <div id="container-inner">
+            <$mt:include module="Banner Header"$>
+            <div id="content">
+                <div id="content-inner">
+                    <div id="alpha">
+                        <div id="alpha-inner">
+<mt:setvarblock name="i"><$mt:FullEntryCount$></mt:setvarblock>
+<MTEntries lastn="$i">
+                            <mt:ignore><!-- Use the Entry Summary module for each entry published on this page --></mt:ignore>
+                            <$mt:include module="Entry Summary"$>
+</MTEntries>
+
+<h1 class="archive-title">Also...</h1>
+                            <div class="entry-listing">
+                            <ul>
+<mt:setvarblock name="j"><$mt:EntryTitleCount$></mt:setvarblock>
+<MTEntries offset="$i" lastn="$j">
+                                <li>
+                                <a href="<$MTEntryPermalink$>"><span class="entry-listing-date"><mt:EntryDate format="%b %e %Y" /></span><span class="entry-listing-title"><mt:EntryTitle /></span><span class="entry-listing-comments"><mt:EntryCommentCount /></span></a>
+                                </li>
+</MTEntries>
+                            </ul>
+                            </div>
+
+                            <div class="content-nav">
+                            <a href="<$mt:Link template="archive_index"$>">Archives</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="beta">
+                      <div id="beta-inner">
+<mt:if tag="AlphaThemeLayout" eq="2 columns">
+                        <$mt:widgetset name="Homepage"$>
+<mt:else>
+                      <$mt:widgetset name="Generic 3 Column (Above)"$>
+                      <div id="beta-columns-left">
+                        <$mt:widgetset name="Generic 3 Column (Left)"$>
+                      </div><!-- end #beta-columns-left -->
+                      <div id="beta-columns-right">
+                        <$mt:widgetset name="Generic 3 Column (Right)"$>
+                      </div><!-- end #beta-columns-right -->
+</mt:if>
+                      </div><!-- end #beta-inner -->
+                    </div><!-- end #beta -->
+                </div>
+            </div>
+
+
+            <$mt:include module="Banner Footer"$>
+
+
+        </div>
+    </div>
+    <div id="overlay"></div>
+    <div id="dialog"><div id="dialog-inner">
+        <div id="dialog-content"></div>
+        <a href="javascript:dialogClose();" id="dialog-close">Close</a>
+    </div></div>
+</body>
+</html>

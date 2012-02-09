@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" id="sixapart-standard" xmlns:fb="http://www.facebook.com/2008/fbml">
+<head>
+    <$mt:include module="HTML Head"$>
+    <title><$MTBlogName encode_html="1"$>: <$MTArchiveTitle$> Archives</title>
+    <meta name="robots" content="noindex" />
+<mt:ignore>
+    <!-- Include Next and Previous links if publishing a date-based archive -->
+</mt:ignore>
+<MTIf name="datebased_archive">
+    <MTArchivePrevious><link rel="prev" href="<$MTArchiveLink$>" title="<$MTArchiveTitle encode_html="1"$>" /></MTArchivePrevious>
+    <MTArchiveNext><link rel="next" href="<$MTArchiveLink$>" title="<$MTArchiveTitle encode_html="1"$>" /></MTArchiveNext>
+</MTIf>
+</head>
+<body id="<$mt:BlogTemplateSetID$>" class="mt-archive-listing mt-<MTVar name="archive_class"> <$mt:AlphaThemeLayout$>">
+    <div id="container">
+        <div id="container-inner">
+
+
+            <$mt:include module="Banner Header"$>
+
+
+            <div id="content">
+                <div id="content-inner">
+
+
+                    <div id="alpha">
+                        <div id="alpha-inner">
+
+
+                            <h1 id="page-title" class="archive-title"><$MTArchiveTitle$> Archives</h1>
+
+
+<mt:ignore><!-- Limit number of entries to the number set in Blog Entry Settings --></mt:ignore>
+<MTUnless name="datebased_archive"><$mt:setvar name="limit" value="auto"$></MTUnless>
+                            <div class="entry-listing">
+                            <ul>
+                            <MTEntries>
+                                <li>
+                                <a href="<$MTEntryPermalink$>"><span class="entry-listing-date"><mt:EntryDate format="%b %e %Y" /></span><span class="entry-listing-title"><mt:EntryTitle /></span><span class="entry-listing-comments"><mt:EntryCommentCount /></span></a>
+                                </li>
+                            </MTEntries>
+                            </ul>
+                            </div>
+
+
+                            <div class="content-nav">
+                                <MTArchivePrevious><a href="<$MTArchiveLink$>">&laquo; <$MTArchiveTitle$></a> |</MTArchivePrevious>
+                                <a href="<$MTLink template="main_index"$>">Main Index</a> |
+                                <a href="<$MTLink template="archive_index"$>">Archives</a>
+                                <MTArchiveNext>| <a href="<$MTArchiveLink$>"><$MTArchiveTitle$> &raquo;</a></MTArchiveNext>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+                    <div id="beta">
+                      <div id="beta-inner">
+<mt:if tag="AlphaThemeLayout" eq="2 columns">
+                        <$mt:widgetset name="Generic Sidebar"$>
+<mt:else>
+                      <$mt:widgetset name="Generic 3 Column (Above)"$>
+                      <div id="beta-columns-left">
+                        <$mt:widgetset name="Generic 3 Column (Left)"$>
+                      </div><!-- end #beta-columns-left -->
+                      <div id="beta-columns-right">
+                        <$mt:widgetset name="Generic 3 Column (Right)"$>
+                      </div><!-- end #beta-columns-right -->
+</mt:if>
+                      </div><!-- end #beta-inner -->
+                    </div><!-- end #beta -->
+
+                </div>
+            </div>
+
+            <$mt:include module="Banner Footer"$>
+
+        </div>
+    </div>
+    <div id="overlay"></div>
+    <div id="dialog"><div id="dialog-inner">
+        <div id="dialog-content"></div>
+        <a href="javascript:dialogClose();" id="dialog-close">Close</a>
+    </div></div>
+</body>
+</html>

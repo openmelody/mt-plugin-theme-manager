@@ -1,0 +1,291 @@
+name:           Charlie Theme plugin
+description:    'A plugin containing the Charlie Theme for testing config prefs, blog options, custom fields, etc'
+version:        2.0.0
+id:             CharlieTheme
+key:            CharlieTheme
+
+blog_preferences:
+  charlietheme_config:
+    label: "Charlie Theme Recommended Config"
+    description: "This is the recommended configuration for the Charlie Theme."
+    order: 100
+    preferences:
+      include_cache: 1
+      include_system: php
+      words_in_excerpt: 40
+      basename_limit: 159
+      allow_pings_default: 0
+      allow_pings: 0
+      moderate_unreg_comments: 3
+      use_comment_confirmation: 1
+      commenter_authenticators: MovableType,Facebook,Twitter
+
+template_sets:
+  charlie_theme:
+    blog_preferences: charlietheme_config
+    base_path: templates
+    label: 'Charlie Theme'
+
+    ############### TEMPLATES ###############
+    templates:
+      index:
+        main_index:
+          label: 'Main Index'
+          outfile: index.php
+          rebuild_me: 1
+      individual:
+        page:
+          label: 'Page'
+          mappings:
+            page:
+              archive_type: 'Page'
+              file_template: '%-c/%-f'
+              preferred: 1
+      system:
+        search_results:
+          label: 'Search Results'
+      module:
+        entry_summary:
+          label: 'Entry Summary'
+
+    ############### OPTIONS ###############
+    options:
+      fieldsets:
+        frontdoor:
+          label: 'Homepage'
+          order: 1
+        design:
+          label: 'Design & Layout'
+          order: 2
+        options:
+          label: 'Options'
+          order: 3.5
+        entries:
+          label: 'Entries'
+          order: 3
+        profiles:
+          label: 'Profiles'
+          order: 4
+
+      page_width:
+        type: text
+        label: 'Page Width'
+        hint: 'The width of the entire page - usually the sum of the left and right column. The string should include the units as well, e.g. px, em, %.'
+        tag: PageWidth
+        fieldset: design
+        default: '940px'
+      left_col_width:
+        type: text
+        label: 'Main Column Width'
+        hint: 'The width of the main (left) column. The string should include the units as well, e.g. px, em, %.'
+        tag: MainColumnWidth
+        fieldset: design
+        default: '600px'
+      right_col_width:
+        type: text
+        label: 'Sidebar Width'
+        hint: 'The width of the sidebar (right) column. The string should include the units as well, e.g. px, em, %.'
+        tag: SidebarWidth
+        fieldset: design
+        default: '340px'
+      layout:
+        type: select
+        values: 2-columns,3-columns
+        label: 'Page Layout'
+        hint: 'Select the layout you want for this web site.'
+        tag: 'CharlieThemeLayout'
+        fieldset: design
+        default: '2 column'
+      entry_summary_layout:
+        type: select
+        values: Full Summary,Excerpt w/Image 
+        label: 'Entry Layout'
+        hint: 'Select the layout you want for entry summaries on this web site.'
+        tag: 'CharlieThemeEntryLayout'
+        fieldset: design
+        default: 'Full Summary'
+      about_me:
+        type: textarea
+        label: 'About Me'
+        hint: "Enter in any HTML you want to appear in the 'About Me' section of the site's footer."
+        tag: 'AboutMeText'
+        fieldset: options
+        default: 'Welcome to this web site powered by CharlieTheme 2.0, a theme developed exclusively for Movable Type and Melody.'
+      # contact_me:
+      #   type: textarea
+      #   label: 'Contact Information'
+      #   hint: 'Enter in your contact information. This will appear on your "Contact Me" page irrespective of whether you have a contact form selected.'
+      #   tag: 'ContactInfo'
+      #   fieldset: contact
+      #   rows: 7
+      #   default: 'You have not yet provided the system with your contact info. Edit your Theme Options to tell people how to contact you now.'
+      # google_var:
+      #   type: text
+      #   label: 'Google Verification Code'
+      #   hint: 'Enter in the verification code given to you by Google Web Master Tools. For example, for the tag &lt;META name="verify-v1" content="YOUR_CODE"&gt; you would enter in "YOUR_CODE" here.'
+      #   tag: 'GoogleWebVerify'
+      #   fieldset: seo
+      # analytics_code:
+      #   type: textarea
+      #   rows: 4
+      #   label: 'Analytics Javascript'
+      #   hint: 'Enter in the javascript that will be placed at the bottom of every page.'
+      #   tag: 'AnalyticsJavascript'
+      #   fieldset: seo
+      # home_title:
+      #   type: text
+      #   label: 'Home Title'
+      #   hint: 'The &lt;html&gt; title tag to use on the front door. Use keywords you want your site to score high in.'
+      #   tag: 'HomeTitle'
+      #   fieldset: seo
+      # ad_medium_rectangle:
+      #   type: textarea
+      #   rows: 5
+      #   label: 'Medium Rectangle'
+      #   hint: 'Enter the ad tag for the 300x250 medium rectangle'
+      #   tag: 'AdTagMediumRectangle'
+      #   fieldset: ads
+      # ad_leaderboard:
+      #   type: textarea
+      #   rows: 5
+      #   label: 'Leaderboard'
+      #   hint: 'Enter the ad tag for the 728x90 leaderboard for the top of the page'
+      #   tag: 'AdTagLeaderboard'
+      #   fieldset: ads
+      # action_count:
+      #   type: select
+      #   values: 5,10,15,20,25,30
+      #   label: 'Action Count'
+      #   hint: 'The number of actions to show on user profiles'
+      #   tag: 'ProfileActionCount'
+      #   fieldset: profiles
+      #   default: 10
+      full_entry_count:
+        type: select
+        values: 0,1,2,3,4,5,6,7,8,9,10
+        label: 'Full Entry Count'
+        hint: 'The number of entries to show (with excerpt) on the front door'
+        tag: 'FullEntryCount'
+        fieldset: frontdoor
+        default: 2
+      excerpt_count:
+        type: select
+        values: 0,1,2,3,4,5,6,7,8,9,10
+        label: 'Title Count'
+        hint: 'The number of entries to roll up as titles only (in main column)'
+        tag: 'EntryTitleCount'
+        fieldset: frontdoor
+        default: 10
+      activity_streams_enabled:
+        type: checkbox
+        label: 'Enable Activity Streams'
+        hint: 'Enabling activity streams will turn on the widget in your sidebar and turn on the link in the nav bar'
+        tag: 'IfActivityStreamEnabled?'
+        fieldset: options
+        condition: >
+          sub { return (MT->component('ActionStreams') ? 1 : 0); }
+      show_follow_links:
+        type: checkbox
+        label: 'Show Follow Links'
+        hint: 'Display "follow" links on entry pages. This can have a performance impact on large scale sites.'
+        tag: 'ShowFollowLinks?'
+        fieldset: entries
+        default: 1
+      photo_gallery:
+#        type: blogs
+        type: photogallery
+        label: 'Photo Gallery?'
+        hint: 'Select the photo gallery blog to link to in your navigation'
+        tag: 'PhotoGalleryBlog'
+        fieldset: options
+        condition: >
+          sub { return (MT->component('PhotoGallery') ? 1 : 0); }
+      slideshow_type:
+        type: select
+        label: 'Slideshow Type'
+        hint: 'What would you like to appear in your slide show?'
+        tag: 'SlideshowType'
+        fieldset: options
+        values: "Reading and Watching,Featured Entries,Recent Images"
+        default: "Recent Images"
+      slideshow_count:
+        type: select
+        label: 'Slideshow Slide Count'
+        hint: 'How many items will appear in your slideshow?'
+        tag: 'SlideshowCount'
+        fieldset: options
+        values: "1,2,3,4,5,6,7,8,9,10,15,20"
+        default: 5
+      # contact_form:
+      #   type: contact_form
+      #   label: 'Contact Form?'
+      #   hint: 'Select the contact form to display on your contact me page'
+      #   tag: 'CharlieThemeContactForm'
+      #   fieldset: contact
+      #   condition: >
+      #     sub { return (MT->component('ContactForms') ? 1 : 0); }
+      enable_digg:
+        type: checkbox
+        label: 'Enable Digg Buttons?'
+        hint: 'Would you like to have a "Digg This" button placed at the bottom of each entry?'
+        tag: 'IfDiggEnabled?'
+        default: 1
+        fieldset: entries
+      enable_threaded:
+        type: checkbox
+        label: 'Enable Threaded Comments?'
+        hint: 'Would you like to use threaded/nested comments?'
+        tag: 'IfThreadedComments?'
+        default: 1
+        fieldset: entries
+      enable_twitter_auth:
+        type: checkbox
+        label: 'Enable Twitter Auth?'
+        hint: 'Would you like to surface a button so people can login using Twitter?'
+        tag: 'IfTwitterAuth?'
+        default: 1
+        fieldset: entries
+        condition: $CharlieTheme::CharlieTheme::Plugin::if_twitter
+      enable_facebook_auth:
+        type: checkbox
+        label: 'Enable Facebook Auth?'
+        hint: 'Would you like to surface a button so people can login using Facebook?'
+        tag: 'IfFacebookAuth?'
+        default: 1
+        fieldset: entries
+        condition: $CharlieTheme::CharlieTheme::Plugin::if_facebook
+      # enable_mobile:
+      #   type: checkbox
+      #   label: 'Enable Mobile?'
+      #   hint: 'By enabling the mobile version of your site, Movable Type will begin publishing mobile versions of your content. EXPERIMENTAL'
+      #   tag: 'MobileEnabled?'
+      #   default: 0
+      #   fieldset: mobile
+
+    ############### FIELDS ###############
+    fields:
+      featured_image_asset:
+        name: "Featured Image"
+        description: "Specifies an image that will override the asset automatically selected by Movable Type when creating thumbmails for excerpts or features."
+        type: asset.image
+        obj_type: entry
+        tag: EntryFeaturedImage
+      html_title_tag:
+        name: "HTML Title Tag"
+        description: "An optional title for your blog post that will only appear in the HTML title tag (this helps improve SEO)."
+        type: text
+        obj_type: entry
+        tag: EntryHTMLTitle
+      gallery:
+        name: "Gallery"
+        description: "A slideshow to embed in a post."
+        type: asset_gallery
+        obj_type: entry
+        tag: EntryGallery
+      google_news_cat:
+        name: "Google News Category"
+        description: "Choosing a Google News Category can greatly increase your post's chances of appearing on the Google News front page."
+        type: select
+        options: American Football,Arts,Athletics,Automotive,Badminton,Baseball,Basketball,Books,Boxing,Business,Celebrities,College Baseball,College Basketball,College Football,College Sports,Companies,Computing,Cricket,Culture,Cycling,Economy,Education,Entertainment,Environment,Field Hockey,Food and Beverage,Geography,Golf,Handball,Headlines,Health,High School Sports,Home and Garden,Humor,Ice Hockey,Industry,Internet,Legal,Lifestyle,Local,Markets,Movies,Music,Nation,Olympics,Op/Ed,Personal Technology,Politics,Racing,Religion,Rugby,Satire,Science,Soccer,Space,Sports,Table Tennis,Technology,Tennis,Theater,Travel,TV,Video Games,Weird News,World
+        obj_type: entry
+        tag: EntryGoogleNewsCategory

@@ -1,0 +1,19 @@
+<mt:If name="request.ajax">
+  <mt:If name="comment_pending">
+    <mt:Ignore><!-- Pending message when comment is being held for review --></mt:Ignore>
+    <$mt:Var name="message" value="<p>Your comment has been received and held for approval by the blog owner.</p>"$>
+  <mt:Else name="comment_error">
+    <mt:Ignore><!-- Error message when comment submission fails --></mt:Ignore>
+    <mt:SetVarBlock name="message"><p>Your comment submission failed for the following reasons: <$mt:ErrorMessage$></p></mt:SetVarBlock>
+  <mt:Else>
+    <mt:Include module="Individual Comment">
+  </mt:If>
+  <mt:If name="message"><div id="comment-error" class="message"><mt:Var name="message" /></div></mt:If> 
+
+<mt:Else>
+<html>
+  <head>
+    <meta http-equiv="refresh" content="0;URL=<mt:EntryPermalink escape="html">?r=<mt:Date format="%S%H%M">">
+  </head>
+</html>
+</mt:If>

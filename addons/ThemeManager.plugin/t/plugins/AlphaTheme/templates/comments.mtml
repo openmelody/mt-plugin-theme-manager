@@ -1,0 +1,163 @@
+<mt:IfCommentsActive>
+<div id="comments" class="comments">
+<script type="text/javascript">
+var returnto = '<$mt:EntryPermalink encode_js="1"$>#comments';
+</script>
+    <div id="comments-list">
+      <h2 class="comments-header"><$MTEntryCommentCount singular="1 Comment" plural="# Comments" none="No Comments"$></h2>
+      <div class="comments-content">
+<mt:IfThreadedComments>
+  <mt:Comments>
+    <mt:IfCommentParent>
+    <mt:Else>
+      <$mt:Include module="Individual Comment"$>
+      <mt:CommentReplies>
+        <mt:CommentsHeader><div style="margin-left: 20px;" class="comment-replies"></mt:CommentsHeader>
+        <$mt:Include module="Individual Comment"$>
+        <$mt:CommentRepliesRecurse$>
+        <mt:CommentsFooter></div><!-- /comment-replies --></mt:CommentsFooter>
+      </mt:CommentReplies>
+    </mt:IfCommentParent>
+  </mt:Comments>
+<mt:Else>
+    <mt:Comments>
+        <mt:Include module="Individual Comment">
+    </mt:Comments>
+</mt:IfThreadedComments>
+      </div>
+    </div><!-- //end #comments-list -->
+
+    <mt:ignore>
+    <!-- Display commenting form if entry/page is accepting comments -->
+    </mt:ignore>
+    <mt:IfCommentsAccepted>
+    <div class="comments-open" id="comments-open">
+        <h2 class="comments-open-header">Leave a comment</h2>
+        <div class="comments-open-content">
+
+        <mt:ignore>
+        <!-- Display greeting for users if blog allows users to register locally -->
+        </mt:ignore>
+            <div id="auth-options" class="pkg">
+              <mt:var name="otherauth" value="">
+              <mt:IfTwitterAuth>
+                <mt:var name="otherauth" value="yes" append="1">
+                <form method="post" action="<$mt:AdminCGIPath$><$mt:CommentScript$>">
+                  <input type="hidden" name="__mode" value="login_external" />
+                  <input type="hidden" name="blog_id" value="<$mt:BlogID$>" />
+                  <input type="hidden" name="entry_id" value="<$mt:EntryID$>" />
+                  <input type="hidden" name="static" value="<$mt:StaticWebPath$>" />
+                  <input type="hidden" name="oauth" value="1" />
+                  <input type="hidden" name="key" value="Twitter" />
+                  <input src="<$mt:StaticWebPath$>plugins/TwitterCommenters/images/signin_with_twitter.png" type="image" name="submit" value="Sign In" />
+		</form>
+              </mt:IfTwitterAuth>
+
+              <mt:IfFacebookAuth>
+                <mt:var name="otherauth" value="yes" append="1">
+                <div class="auth-button">
+                  <fb:login-button length="long" onlogin="signface_login();"></fb:login-button>
+                </div>
+                <form id="facebook-signin-form" method="post" action="<$mt:AdminCGIPath$><$mt:CommentScript$>">
+                  <input type="hidden" name="__mode"   value="login_external" />
+                  <input type="hidden" name="blog_id"  value="<$mt:BlogID$>" />
+                  <input type="hidden" name="entry_id" value="<$mt:EntryID$>" />
+                  <input type="hidden" name="static"   value="1" />
+                  <input type="hidden" name="key"      value="Facebook" />
+                  <input type="hidden" name="facebook_id"   id="facebook-signin-id-input" />
+                  <input type="hidden" name="facebook_nick" id="facebook-signin-nick-input" />
+                  <input type="hidden" name="facebook_url"  id="facebook-signin-url-input" />
+                </form>
+                <!-- put the script tags in the <body> element, after all XFBML -->
+                <script src="http://static.ak.connect.facebook.com/js/api_lib/v0.4/FeatureLoader.js.php" type="text/javascript"></script>  
+                <script type="text/javascript" src="<$mt:StaticWebPath$>plugins/FacebookCommenters/fbconnect.js"></script>                 
+                <script type="text/javascript">                                                                                            
+                  FB.init('<$mt:FacebookApplicationID$>','<mt:StaticWebPath>plugins/FacebookCommenters/xd_receiver.html');
+                </script>                                                                                                                  
+              </mt:IfFacebookAuth>
+              <mt:if name="otherauth" ne="">
+                <div class="auth-button">
+                  <a href="<$mt:SignInLink$>"><img src="<$mt:PluginStaticWebPath component="AlphaTheme"$>signin_with_mt.png" /></a>
+                </div>
+              </mt:if>
+            </div>
+
+            <div id="comment-greeting"></div>
+
+            <div class="comment" id="comment-preview-comment">
+                <div class="inner">
+                    <div class="comment-content">
+                        <div class="comment-content-inner">
+                        <em>what will you say?</em>
+                        </div>
+                    </div>
+                    <div class="comment-header">
+                        <div class="asset-meta">
+                            <span class="byline">
+                                <span class="vcard author"><a href="#" title="link to commenter url here"></a></span> <span class="reply-comment-link">in reply to <a href="#" title="link to original comment here">comment from <span>Bob</span></a></span>
+                                | <a href="#"><abbr title="iso 8601 date will be here" class="published">date</abbr></a>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <form method="post" action="<$MTCGIPath$><$MTCommentScript$>" name="comments_form" id="comments-form" class="comments-form">
+                <div id="comments-form-inner">
+                <input type="hidden" class="comment-static" name="static" value="1" />
+                <input type="hidden" class="entry_id" name="entry_id" value="<$MTEntryID$>" />
+                <input type="hidden" class="lang" name="__lang" value="<$MTBlogLanguage$>" />
+                <input type="hidden" class="parent_id" name="parent_id" value="<$MTCommentParentID$>" />
+                <input type="hidden" class="armor" name="armor" value="1" />
+                <input type="hidden" class="preview" name="preview" value="" />
+                <input type="hidden" class="sid" name="sid" value="" />
+                <input type="hidden" class="ajax" name="ajax" value="" />
+                <div id="comments-open-data">
+                    <div id="comment-form-name">
+                        <label for="comment-author">Name</label>
+                        <input class="comment-author" name="author" size="30" value="" onfocus="mtCommentFormOnFocus()" />
+                    </div>
+                    <div id="comment-form-email">
+                        <label for="comment-email">Email Address</label>
+                        <input class="comment-email" name="email" size="30" value="" onfocus="mtCommentFormOnFocus()" />
+                    </div>
+                    <div id="comment-form-url">
+                        <label for="comment-url">URL</label>
+                        <input class="comment-url" name="url" size="30" value="" onfocus="mtCommentFormOnFocus()" />
+                    </div>
+                    <div id="comment-form-remember-me">
+                        <input type="checkbox" class="comment-bake-cookie" name="bakecookie" onclick="mtRememberMeOnClick(this)" value="1" accesskey="r" />
+                        <label for="comment-bake-cookie">Remember personal info?</label>
+                    </div>
+                </div>
+                <div id="comment-form-subscribe">
+                    <input type="checkbox" class="comment-subscribe" name="subscribe" value="1" accesskey="s" />
+                    <label for="comment-bake-cookie">Subscribe to follow up comments?</label>
+                </div>
+<mt:ignore>
+                <div id="comment-form-reply" style="display:none">
+                    <input type="checkbox" class="comment-reply" name="comment_reply" value="" onclick="mtSetCommentParentID()" />
+                    <label for="comment-reply" id="comment-reply-label"></label>
+                </div>
+</mt:ignore>
+                <div id="comments-open-text">
+                    <label for="comment-text">Comments
+                    <mt:IfAllowCommentHTML>(You may use HTML tags for style)</mt:IfAllowCommentHTML></label>
+                    <textarea class="comment-text" name="text" rows="15" cols="50" onfocus="mtCommentFormOnFocus()"></textarea>
+                </div>
+                <div id="comments-open-captcha"></div>
+                <div id="comments-open-footer">
+                    <input type="submit" accesskey="v" name="preview_button" class="comment-preview" value="Preview" onclick="this.form.preview.value='1';" />
+                    <input type="submit" accesskey="s" name="post" class="comment-submit" value="Submit" />
+                </div>
+            </div>
+            </form>
+
+
+        </div>
+    </div>
+    </mt:IfCommentsAccepted>
+
+
+</div>
+</mt:IfCommentsActive>

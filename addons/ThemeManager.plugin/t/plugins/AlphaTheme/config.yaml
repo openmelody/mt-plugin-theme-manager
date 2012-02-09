@@ -1,0 +1,130 @@
+name:           Alpha Theme plugin
+description:    A plugin containing the Alpha Theme
+version:        1.1.1
+author_name:    Endevver
+author_link:    http://endevver.com/
+id:             AlphaTheme
+key:            AlphaTheme
+
+template_sets:
+  alpha_theme:
+    base_path: templates
+    label: 'Alpha Theme'
+    version: 1.0.1
+    author_name: Endevver
+    author_link: http://endevver.com/
+    description: A very simple theme for basic testing of template types
+
+    templates:
+      ########## ARCHIVES ##########
+      archive:
+        category_entry_listing:
+          label: 'Category'
+          mappings:
+            category-monthly:
+              archive_type: Category-Monthly
+              file_template: '%-c/%y/%m/%i'
+              preferred: 1
+        monthly_entry_listing:
+          label: 'Monthly'
+          mappings:
+            monthly:
+              archive_type: Monthly
+              file_template: '%y/%m/%i'
+              preferred: 1
+
+      ########## INDEXES ##########
+      index:
+        feed_recent:
+          label: 'Feed (Recent Entries)'
+          outfile: atom.xml
+          rebuild_me: 1
+        main_index:
+          label: 'Main Index'
+          outfile: index.php
+          rebuild_me: 1
+        styles:
+          label: 'Stylesheet'
+          outfile: styles.css
+          rebuild_me: 0
+          custom_css: 1
+        javascript:
+          label: 'JavaScript (Functions)'
+          outfile: javascript.js
+          rebuild_me: 0
+        javascript_mt:
+          label: 'JavaScript (MT Config)'
+          outfile: javascript_mt.js
+          rebuild_me: 0
+
+      ########## ARCHIVES ##########
+      individual:
+        entry:
+          label: 'Entry'
+          mappings:
+            individual:
+              archive_type: 'Individual'
+              file_template: '%y/%m/%-f'
+              preferred: 1
+        page:
+          label: 'Page'
+          mappings:
+            page:
+              archive_type: 'Page'
+              file_template: '%-c/%-f'
+              preferred: 1
+
+      ########## SYSTEM ##########
+      system:
+        comment_response:
+          label: 'Comment Response'
+        dynamic_error:
+          label: 'Dynamic Error'
+        popup_image:
+          label: 'Popup Image'
+        search_results:
+          label: 'Search Results'
+
+      ########## MODULES ##########
+      module:
+        banner_footer:
+          label: 'Banner Footer'
+        banner_header:
+          label: 'Banner Header'
+        comments:
+          label: 'Comments'
+        entry_summary:
+          label: 'Entry Summary'
+        html_head:
+          label: 'HTML Head'
+        individual_comment:
+          label: 'Individual Comment'
+        sidebar:
+          label: 'Sidebar'
+        sitemap_module:
+          label: 'Sitemap Module'
+        trackbacks:
+          label: 'Trackbacks'
+        userpic:
+          label: 'Userpic'
+
+      ########## WIDGETS ##########
+      widget:
+        w_following:
+          label: 'Following'
+        w_followed:
+          label: 'Followed By'
+        w_elsewhere:
+          label: 'Profiles Elsewhere'
+        w_ad_med_rectangle:
+          label: 'Ad (Med Rectangle)'
+
+      ########## WIDGETSETS ##########
+      widgetset:
+        profile:
+          label: 'Profile'
+          widgets:
+             - 'Following'
+             - 'Followed By'
+             - 'Profiles Elsewhere'
+             - 'Ad (Med Rectangle)'

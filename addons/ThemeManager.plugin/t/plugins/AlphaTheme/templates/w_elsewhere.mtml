@@ -1,0 +1,165 @@
+<mt:If name="profile_self">
+
+<script type="text/javascript">
+/* <![CDATA[ */
+var last_network;
+var networks = {
+    <mt:ProfileServices eligible_to_add="1">
+    '<mt:var name="type" escape="js">': {
+        <mt:if name="ident_example">
+            example: '<mt:var name="ident_example" escape="js">',
+        </mt:if>
+        <mt:if name="ident_prefix">
+            prefix: '<mt:var name="ident_prefix" escape="js">',
+        </mt:if>
+        <mt:if name="ident_suffix">
+            suffix: '<mt:var name="ident_suffix" escape="js">',
+        </mt:if>
+        <mt:if name="ident_hint">
+            hint: '<mt:var name="ident_hint" escape="js">',
+        </mt:if>
+        label: '<mt:var name="ident_label" escape="js">'
+    }<mt:unless var="__last__">,</mt:unless>
+    </mt:ProfileServices>
+};
+
+function add_other_profile() {
+    // validation?
+    var f = document.forms['add_service'];
+    if ( ! add_profile_validate(f) ) return false;
+    f.submit();
+}
+
+function confirm_delete_profile(label, param) {
+    if (confirm("Are you sure you want to remove the __SERVICE__ from your profile?".replace(/__SERVICE__/, label))) {
+        location.href = '<mt:CGIPath><mt:CommunityScript>?__mode=profile_delete_external_profile&id=' + param + '&blog_id=<mt:var name="blog_id" escape="url">&magic_token=<mt:var name="magic_token" escape="url">';
+    }
+    return false;
+}
+
+function add_profile_dialog() {
+    jQuery("#add-profile-dialog").dialog({
+        modal: true,
+        resizable: false,
+        draggable: false,
+        overlay: { 
+            opacity: 0.5, 
+            background: "black" 
+        },
+        buttons: {
+            "Add": add_other_profile,
+            "Cancel": function() { $(this).dialog("close") }
+        }
+    });
+    return false;
+}
+
+function update_ident_field() {
+    var $ = jQuery;
+    var v = $('#service-selector').get(0);
+
+    var data = new Object();
+    data.label = 'Username';
+    data.example = "melody";
+    data.prefix = "";
+    data.suffix = "";
+
+    var fields = ['label', 'example', 'prefix', 'suffix'];
+    for(var i = 0; i < 4; i++) {
+        var l = fields[i];
+        var datum = data[l];
+        if (networks[v.value] && networks[v.value][l])
+            datum = networks[v.value][l];
+        $('#service-username-' + l).html(datum);
+    }
+    if (networks[v.value] && networks[v.value]['hint']) {
+        $('#service-username-hint-inner').html(networks[v.value]['hint']);
+        $('#service-username-hint').show();
+    } else {
+        $('#service-username-hint').hide();
+    }
+
+    if (last_network)
+        $("#help-" + last_network).hide();
+    $('#help-' + v.value).show();
+
+    var icon = $("#profile-id-service-icon");
+    if (last_network)
+        icon.removeClass('service-' + last_network);
+    icon.addClass('service-' + v.value);
+    $("#service-username-fieldset").show();
+    $("#service-username").focus();
+
+    last_network = v.value;
+    return true;
+}
+
+function add_profile_validate(f) {
+    if (!f.profile_id.value) {
+        alert('Your user name or ID is required.');
+        return false;
+    }
+    return true;
+}
+/* ]]> */
+</script>
+
+<div id="elsewhere-dialogs" style="display: none">
+    <div id="add-profile-dialog" title="Add a Service">
+        <form name="add_service" method="POST" action="<mt:CGIPath><mt:CommunityScript>">
+            <input type="hidden" name="__mode" value="profile_add_external_profile" />
+            <input type="hidden" name="blog_id" value="<mt:var name="blog_id" escape="html">" />
+            <input type="hidden" name="magic_token" value="<mt:var name="magic_token" escape="html">" />
+
+        <mt:ProfileServices eligible_to_add="1">
+            <mt:if name="__first__">
+            <fieldset>
+                <label for="service-selector">Service</label>:
+                <select id="service-selector" name="profile_type" size="1" onchange="return update_ident_field()">
+                <option value="">Select a service...</option>
+            </mt:if>
+                <option value="<mt:var name="type" escape="html">"><mt:var name="label" escape="html"></option>
+            <mt:if name="__last__">
+                </select>
+            </fieldset>
+            </mt:if>
+        
+        </mt:ProfileServices>
+
+            <fieldset style="display:none" id="service-username-fieldset">
+                <label for="service-username" id="service-username-label">Username</label>:
+                <span id="service-username-prefix"></span>
+                <input type="text" id="service-username" name="profile_id" size="30" value="" />
+                <span id="service-username-suffix"></span>
+            </fieldset>
+
+            <div id="service-username-hint" style="display:none">
+                <div id="service-username-hint-inner" class="hint"></div>
+            </div>
+        </form>
+    </div>
+</div>
+</mt:If>
+
+<div id="widget-elsewhere" class="widget pkg">
+    <h3 class="widget-header">
+<mt:If name="profile_self">
+        Your Other Profiles
+<mt:Else>
+        Find <$mt:AuthorDisplayName escape="html"$> Elsewhere
+</mt:If>
+    </h3>
+    <ul class="action-stream-list pkg">
+<mt:otherprofiles>
+      <li class="service-icon service-<mt:otherprofilevar name="type">">
+        <a class="link" href="<mt:otherprofilevar name="uri" escape="html">" rel="me"><mt:otherprofilevar name="label" escape="html"></a>
+    <mt:If name="profile_self">
+        <a class="button" href="javascript:void(0)" onclick="return confirm_delete_profile('<mt:otherprofilevar name="label" escape="js">', '<mt:otherprofilevar name="type" escape="js">:<mt:otherprofilevar name="ident" escape="url">')" title="Remove service">x</a>
+    </mt:If>
+      </li>
+</mt:otherprofiles>
+    </ul>
+<mt:If name="profile_self">
+    <p><a href="javascript:void(0)" onclick="return add_profile_dialog()" id="add_profile_link">Link to another Profile</a></p>
+</mt:If>
+</div>

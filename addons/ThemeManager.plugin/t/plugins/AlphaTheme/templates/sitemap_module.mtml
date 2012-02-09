@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MTIgnore>
+Canonical sitemap.xml template v0.7
+### START SETUP
+Possible values for the frequency variables are:
+
+always
+hourly
+daily
+weekly
+monthly
+yearly
+never
+
+"always" should be used to describe documents that change each time they are accessed.
+"never" should be used to describe archived URLs.
+</MTIgnore>
+<$MTSetVar name="home-frequency" value="daily"$>
+<$MTSetVar name="category-frequency" value="weekly"$>
+<$MTSetVar name="current-monthly-frequency" value="daily"$>
+<$MTSetVar name="past-monthly-frequency" value="never"$>
+<$MTSetVar name="current-weekly-frequency" value="daily"$>
+<$MTSetVar name="past-weekly-frequency" value="never"$>
+<$MTSetVar name="current-daily-frequency" value="hourly"$>
+<$MTSetVar name="past-daily-frequency" value="never"$>
+<$MTSetVar name="recent-entry-frequency" value="hourly"$>
+<$MTSetVar name="past-entry-frequency" value="monthly"$>
+<MTIgnore>
+Values for priority range from 0.0 to 1.0 and reflect the relative importance of pages within your site.
+Do not set these all to a high value, as that's no different from setting them all to 0.0. 
+This does not affect how your pages are compared to other sites'.
+</MTIgnore>
+<$MTSetVar name="home-priority" value="1.0"$>
+<$MTSetVar name="category-priority" value="0.8"$>
+<$MTSetVar name="monthly-priority" value="0.6"$>
+<$MTSetVar name="weekly-priority" value="0.4"$>
+<$MTSetVar name="daily-priority" value="0.2"$>
+<$MTSetVar name="entry-priority" value="1.0"$>
+<MTIgnore>### END SETUP</MTIgnore>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url><MTIgnore>### This is your blog's homepage</MTIgnore>
+        <loc><$MTBlogURL encode_xml="1"$></loc>
+        <changefreq><$MTGetVar name="home-frequency"$></changefreq>
+        <priority><$MTGetVar name="home-priority"$></priority>
+    </url>
+
+    <MTIgnore>### START CATEGORY ARCHIVES</MTIgnore>
+    <MTIfArchiveTypeEnabled archive_type="Category">
+    <MTCategories>
+    <url><MTIgnore> ### The current month is still being updated.</MTIgnore>
+    <loc><$MTArchiveLink encode_xml="1"$></loc>
+        <lastmod><MTEntries lastn="1"><$MTEntryModifiedDate format="%Y-%m-%dT%H:%M:%S"$><$MTBlogTimezone$></MTEntries></lastmod>
+        <changefreq><$MTGetVar name="category-frequency"$></changefreq>
+        <priority><$MTGetVar name="category-priority"$></priority>
+    </url>
+    </MTCategories>
+    </MTIfArchiveTypeEnabled>
+    <MTIgnore>### END CATEGORY ARCHIVES</MTIgnore>
+    
+    <MTIgnore>### START MONTHLY ARCHIVES</MTIgnore>
+    <MTIfArchiveTypeEnabled archive_type="Monthly">
+    <MTArchiveList archive_type="Monthly" lastn="1">
+    <url><MTIgnore> ### The current month is still being updated.</MTIgnore>
+        <loc><$MTArchiveLink encode_xml="1"$></loc>
+        <lastmod><MTEntries lastn="1"><$MTEntryModifiedDate format="%Y-%m-%dT%H:%M:%S"$><$MTBlogTimezone$></MTEntries></lastmod>
+        <changefreq><$MTGetVar name="current-monthly-frequency"$></changefreq>
+        <priority><$MTGetVar name="monthly-priority"$></priority>
+    </url>
+    </MTArchiveList>
+    <MTArchiveList archive_type="Monthly" lastn="9999" offset="1">
+    <url><MTIgnore> ### Past months are just archived.</MTIgnore>
+        <loc><$MTArchiveLink encode_xml="1"$></loc>
+        <lastmod><MTEntries lastn="1"><$MTEntryModifiedDate format="%Y-%m-%dT%H:%M:%S"$><$MTBlogTimezone$></MTEntries></lastmod>
+        <changefreq><$MTGetVar name="past-monthly-frequency"$></changefreq>
+        <priority><$MTGetVar name="monthly-priority"$></priority>
+    </url>
+    </MTArchiveList>
+    </MTIfArchiveTypeEnabled>
+    <MTIgnore>### END MONTHLY ARCHIVES</MTIgnore>
+
+    <MTIgnore>### START WEEKLY ARCHIVES</MTIgnore>
+    <MTIfArchiveTypeEnabled archive_type="Weekly">
+    <MTArchiveList archive_type="Weekly" lastn="1">
+    <url><MTIgnore> ### The current week is still being updated.</MTIgnore>
+        <loc><$MTArchiveLink encode_xml="1"$></loc>
+        <lastmod><MTEntries lastn="1"><$MTEntryModifiedDate format="%Y-%m-%dT%H:%M:%S"$><$MTBlogTimezone$></MTEntries></lastmod>
+        <changefreq><$MTGetVar name="current-weekly-frequency"$></changefreq>
+        <priority><$MTGetVar name="weekly-priority"$></priority>
+    </url>
+    </MTArchiveList>
+    <MTArchiveList archive_type="Weekly" lastn="9999" offset="1">
+    <url><MTIgnore> ### Past weeks are just archived.</MTIgnore>
+        <loc><$MTArchiveLink encode_xml="1"$></loc>
+        <lastmod><MTEntries lastn="1"><$MTEntryModifiedDate format="%Y-%m-%dT%H:%M:%S"$><$MTBlogTimezone$></MTEntries></lastmod>
+        <changefreq><$MTGetVar name="past-weekly-frequency"$></changefreq>
+        <priority><$MTGetVar name="weekly-priority"$></priority>
+    </url>
+    </MTArchiveList>
+    </MTIfArchiveTypeEnabled>
+    <MTIgnore>### END WEEKLY ARCHIVES</MTIgnore>
+    
+    <MTIgnore>### START DAILY ARCHIVES</MTIgnore>
+    <MTIfArchiveTypeEnabled archive_type="Daily">
+    <MTArchiveList archive_type="Daily" lastn="1">
+    <url><MTIgnore> ### The current day is still being updated.</MTIgnore>
+        <loc><$MTArchiveLink encode_xml="1"$></loc>
+        <lastmod><MTEntries lastn="1"><$MTEntryModifiedDate format="%Y-%m-%dT%H:%M:%S"$><$MTBlogTimezone$></MTEntries></lastmod>
+        <changefreq><$MTGetVar name="current-daily-frequency"$></changefreq>
+        <priority><$MTGetVar name="daily-priority"$></priority>
+    </url>
+    </MTArchiveList>
+    <MTArchiveList archive_type="Daily" lastn="9999" offset="1">
+    <url><MTIgnore> ### Past days are just archived.</MTIgnore>
+        <loc><$MTArchiveLink encode_xml="1"$></loc>
+        <lastmod><MTEntries lastn="1"><$MTEntryModifiedDate format="%Y-%m-%dT%H:%M:%S"$><$MTBlogTimezone$></MTEntries></lastmod>
+        <changefreq><$MTGetVar name="past-daily-frequency"$></changefreq>
+        <priority><$MTGetVar name="daily-priority"$></priority>
+    </url>
+    </MTArchiveList>
+    </MTIfArchiveTypeEnabled>
+    <MTIgnore>### END DAILY ARCHIVES</MTIgnore>
+
+    <MTIgnore>### START INDIVIDUAL ARCHIVES</MTIgnore>
+    <MTIfArchiveTypeEnabled archive_type="Individual">
+    <MTEntries lastn="10">
+    <url><MTIgnore> ### The recent items you post are more likely to be active(comments, etc) than older ones.</MTIgnore>
+        <loc><$MTEntryPermalink encode_xml="1"$></loc>
+        <lastmod><$MTEntryModifiedDate format="%Y-%m-%dT%H:%M:%S"$><$MTBlogTimezone$></lastmod>
+        <changefreq><$MTGetVar name="recent-entry-frequency"$></changefreq>
+        <priority><$MTGetVar name="entry-priority"$></priority>
+    </url>
+    </MTEntries>
+    <MTEntries lastn="999999" offset="10">
+    <url><MTIgnore> ### And the rest of them.</MTIgnore>
+        <loc><$MTEntryPermalink encode_xml="1"$></loc>
+        <lastmod><$MTEntryModifiedDate format="%Y-%m-%dT%H:%M:%S"$><$MTBlogTimezone$></lastmod>
+        <changefreq><$MTGetVar name="past-entry-frequency"$></changefreq>
+        <priority><$MTGetVar name="entry-priority"$></priority>
+    </url>
+    </MTEntries>
+    </MTIfArchiveTypeEnabled>
+    <MTIgnore>### END INDIVIDUAL ARCHIVES</MTIgnore>
+</urlset>

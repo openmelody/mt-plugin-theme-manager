@@ -1,0 +1,68 @@
+name:           Beta Theme plugin
+description:    A very simple theme for testing fallback values
+version:        1.10.0
+author_name:    Endevver
+author_link:    http://endevver.com/
+id:             BetaTheme
+key:            BetaTheme
+
+template_sets:
+  beta_theme:
+    base_path: templates
+    label: 'Beta Theme'
+
+    templates:
+      ########## ARCHIVES ##########
+      archive:
+        category_entry_listing:
+          label: 'Category'
+          mappings:
+            category-monthly:
+              archive_type: Category-Monthly
+              file_template: '%-c/%y/%m/%i'
+              preferred: 1
+        monthly_entry_listing:
+          label: 'Monthly'
+          mappings:
+            monthly:
+              archive_type: Monthly
+              file_template: '%y/%m/%i'
+              preferred: 1
+
+      ########## INDEXES ##########
+      index:
+        main_index:
+          label: 'Main Index'
+          outfile: index.php
+          rebuild_me: 1
+
+      ########## ARCHIVES ##########
+      individual:
+        entry:
+          label: 'Entry'
+          mappings:
+            individual:
+              archive_type: 'Individual'
+              file_template: '%y/%m/%-f'
+              preferred: 1
+        page:
+          label: 'Page'
+          mappings:
+            page:
+              archive_type: 'Page'
+              file_template: '%-c/%-f'
+              preferred: 1
+
+      ########## SYSTEM ##########
+      system:
+        search_results:
+          label: 'Search Results'
+
+      ########## MODULES ##########
+      module:
+        banner_footer:
+          label: 'Banner Footer'
+        banner_header:
+          label: 'Banner Header'
+        html_head:
+          label: 'HTML Head'

@@ -1,0 +1,64 @@
+<$mt:var name="thumbnail" value=""$>
+<$mt:EntryTrackbackData$>
+<div id="entry-<$mt:EntryID$>" class="entry-asset asset hentry">
+    <mt:setvarblock name="thisdate"><$mt:EntryDate format="%e"$></mt:setvarblock>
+    <mt:if name="thisdate" eq="$currentdate">
+      <$mt:var name="dateclass" value="hidden"$>
+    <mt:else>
+      <$mt:var name="dateclass" value=""$>
+    </mt:if>
+    <mt:setvarblock name="currentdate"><$mt:var name="thisdate"$></mt:setvarblock>
+    <div class="asset-header">
+        <h2 class="asset-name entry-title"><a href="<$mt:EntryPermalink$>" rel="bookmark"><$mt:EntryTitle$></a></h2>
+        <div class="asset-meta <$mt:var name="dateclass"$>">
+            <div class="entry-meta-date"><abbr class="published" title="<$mt:EntryDate format_name="iso8601"$>"><$mt:EntryDate format="<span class='day'>%e</span> %b %Y"$></abbr></div>
+        </div>
+    </div>
+    <div class="asset-content entry-content pkg">
+<mt:IfNonEmpty tag="EntryBody">
+<mt:if tag="AlphaThemeEntryLayout" eq="Full Summary">
+        <div class="asset-body pkg">
+            <$mt:EntryBody$>
+        </div>
+<mt:IfNonEmpty tag="EntryMore" convert_breaks="0">
+        <div class="asset-more-link">
+            <a href="<$mt:EntryPermalink$>#more" rel="bookmark nofollow">Continue reading</a>
+        </div>
+</mt:IfNonEmpty>
+<mt:else tag="AlphaThemeEntryLayout" eq="Excerpt w/Image">
+        <div class="asset-body pkg">
+          <mt:ifnonempty tag="EntryFeaturedImage">
+            <mt:setvarblock name="aid"><mt:EntryFeaturedImage></mt:setvarblock>
+            <mt:setvarblock name="thumbnail"><mt:EntryFeaturedImageAsset id="$aid"><img src="<mt:CroppedAsset label="Entry Summary"><$mt:AssetURL$><mt:else><$mt:AssetThumbnailURL width="100"$></mt:CroppedAsset>" alt="<$mt:AssetLabel encode_html="1"$>" class="center" /></mt:EntryFeaturedImageAsset></mt:setvarblock>
+          <mt:else>
+            <mt:EntryAssets lastn="1" trim="1">
+            <mt:CroppedAsset label="Entry Summary">
+              <mt:setvarblock name="thumbnail"><img class="featured-thumbnail custom-crop" src="<$mt:AssetURL$>" width="100" height="100" alt="<$mt:AssetLabel$>" /></mt:setvarblock>
+            <mt:else>
+              <mt:setvarblock name="thumbnail"><img class="featured-thumbnail" src="<$mt:AssetThumbnailURL width="100" square="1"$>" width="100" height="100" alt="<$mt:AssetLabel$>" /></mt:setvarblock>
+            </mt:CroppedAsset>
+            </mt:EntryAssets>
+          </mt:ifnonempty>
+          <mt:if name="thumbnail" ne=""><a rel="bookmark" href="<$mt:EntryPermalink$>" title="<$mt:EntryTitle encode_html="1"$>"><$mt:var name="thumbnail"$></a></mt:if>
+          <$mt:EntryExcerpt$>
+        </div>
+        <div class="asset-more-link">
+            <a href="<$mt:EntryPermalink$>#more" rel="bookmark nofollow">Continue reading</a>
+        </div>
+<mt:else>
+If you are seeing this, something is wrong.
+</mt:if>
+</mt:IfNonEmpty>
+    </div>
+    <div class="asset-footer"><div class="asset-footer-inner">
+        <mt:IfCommentsActive><div class="entry-commentcount"><a href="<$mt:EntryPermalink$>#comments"><$mt:EntryCommentCount$> <span>Comments</span></a></div></mt:IfCommentsActive>
+        <div class="asset-footer-meta">
+        <p>Posted by <a href="<$mt:CGIPath$><$mt:CommunityScript$>?__mode=view&amp;id=<$mt:EntryAuthorID$>&amp;blog_id=<$mt:BlogID$>" class="fn url"><$mt:EntryAuthorDisplayName show_hcard="1"$></a> on <$mt:EntryDate format="%A, %x at %X"$><mt:IfPingsActive><span class="entry-meta-trackbackcount"> | <a href="<$mt:EntryPermalink$>#trackback" class="trackback-count"><$mt:EntryTrackbackCount$> <span>TrackBacks</span></a></span></mt:IfPingsActive></p>
+        <p><mt:IfNonEmpty tag="EntryCategory">Filed in <mt:EntryCategories glue=', '><a href="<$mt:CategoryArchiveLink$>" rel="tag"><$mt:CategoryLabel$></a></mt:EntryCategories></mt:IfNonEmpty>
+        <mt:EntryIfTagged><mt:IfNonEmpty tag="EntryCategory">and tagged <mt:Else>Tagged </mt:IfNonEmpty>
+                <mt:EntryTags glue=', '><a href="<$mt:TagSearchLink$>" rel="tag"><$mt:TagName$></a></mt:EntryTags>
+        </mt:EntryIfTagged>
+        </p>
+        </div>
+    </div></div>
+</div>

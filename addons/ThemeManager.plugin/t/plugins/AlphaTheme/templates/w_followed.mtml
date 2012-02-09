@@ -1,0 +1,14 @@
+<mt:If name="profile_view">
+<div id="widget-followers" class="widget pkg followers">
+    <h3 class="widget-header">Followers</h3>
+    <div class="widget-content">
+    <mt:AuthorFollowers>
+      <mt:If name="__first__"><ul></mt:If>
+        <li><$mt:Include module="<__trans phrase="Userpic">" userpic_size="24" userpic_type="author" userlisting_type="follower" hide_user_info="1"$></li>
+      <mt:If name="__last__"></ul></mt:If>
+    <mt:Else>
+      <p class="note"><__trans phrase="Not following anyone"></p>
+    </mt:AuthorFollowers>
+    </div>
+</div>
+</mt:If>

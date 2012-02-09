@@ -1,0 +1,65 @@
+<mt:SetVarBlock name="profile_view_url"><$mt:CGIPath$><$mt:CommunityScript$>?__mode=view&blog_id=<$mt:BlogID$>&id=</mt:SetVarBlock>
+<mt:SetVarBlock name="current_comment"><mt:CommentID></mt:SetVarBlock>
+<div id="comment-<$mt:CommentID$>" class="comment<mt:If name="comment_new" eq="$current_comment"> comment-highlight</mt:If><mt:IfCommentParent> comment-reply</mt:IfCommentParent><mt:IfCommenterIsEntryAuthor> comment-by-author</mt:IfCommenterIsEntryAuthor>">
+    <div class="inner">
+        <div class="comment-content">
+            <div class="comment-content-inner">
+            <$mt:CommentBody$>
+            </div>
+        </div>
+        <div class="comment-header pkg">
+            <div class="asset-userpic">
+              <$mt:include module="Userpic" userpic_size="32" userpic_type="commenter" hide_icon="1" hide_user_info="1"$>
+            </div>
+            <div class="asset-meta">
+                <span class="byline">
+                    <$mt:CommentAuthorIdentity$>
+<mt:IfThreadedComments>
+                    <span class="vcard author"><a href="<$mt:var name="profile_view_url"$><$mt:CommenterID$>"><$mt:CommentAuthor$></a></span>
+<mt:Else>
+  <mt:IfCommentParent>
+                    <span class="vcard author"><a href="<$mt:var name="profile_view_url"$><$mt:CommenterID$>"><$mt:CommentAuthor$></a></span> replied to <a href="<mt:CommentParent><$mt:CommentLink$></mt:CommentParent>">comment from <mt:CommentParent><$mt:CommentAuthor$></mt:CommentParent></a>
+  <mt:Else>
+                    <span class="vcard author"><a href="<$mt:var name="profile_view_url"$><$mt:CommenterID$>"><$mt:CommentAuthor$></a></span>
+  </mt:IfCommentParent>
+</mt:IfThreadedComments>
+                    | <a href="<$mt:CommentLink$>"><abbr class="published" title="<$mt:CommentDate format_name="iso8601"$>"><$mt:CommentDate$></abbr></a>
+                </span>
+                <span class="actions">
+                    <a title="View Profile" href="<$mt:var name="profile_view_url"$><$mt:CommenterID$>" class="view-profile">View Profile</a>
+
+
+<mt:ShowFollowLinks>
+                    |
+                    <span class="following-status-<$mt:CommenterID$>"></span>
+                    <span class="following_<$mt:CommenterID$> following" style="display:none">
+                    <a id="unfollow-link" href="javascript:void(0)" onclick="script_leave('<$mt:CommenterID$>');">Unfollow</a>
+                    </span>
+                    <span class="following_<$mt:CommenterID$>_else following_else" style="display:inline">
+                    <a id="follow-link" href="javascript:void(0)" onclick="script_follow('<$mt:CommenterID$>');">Follow</a>
+                    </span>
+<mt:setvarblock name="js">follow_js_<$mt:CommenterID$></mt:setvarblock>
+<mt:unless name="$js">
+<mt:SetVarBlock name="html_body_footer" append="1">
+<script type="text/javascript">
+function relations_<$mt:CommenterID$>(following, followed, u) {
+  conditional_block(following, '.following_<$mt:CommenterID$>');
+}
+</script>
+<script type="text/javascript" src="<$mt:CGIPath$><$mt:CommunityScript$>?__mode=relations_js&author_id=<$mt:CommenterID$><mt:If name="blog_id">&blog_id=<$mt:Var name="blog_id"$></mt:If>&jsonp=relations_<$mt:CommenterID$>"></script>
+<$mt:var name="$js" value="1"$>
+</mt:SetVarBlock>
+</mt:unless>
+</mt:ShowFollowLinks>
+
+
+<mt:IfCommentsAccepted>
+<mt:IfThreadedComments>
+                    | <a title="Reply" href="javascript:void(0);" class="reply">Reply</a>
+</mt:IfThreadedComments>
+</mt:IfCommentsAccepted>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
