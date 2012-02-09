@@ -7,3 +7,7 @@ MANIFEST
 MANIFEST.bak
 *~
 theme_thumbs
+
+addons/ThemeManager.plugin/t/db/
+addons/ThemeManager.plugin/t/ref/
+addons/ThemeManager.plugin/t/site/
