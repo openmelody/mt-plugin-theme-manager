@@ -24,14 +24,14 @@ BEGIN {
         Test::MT
         Test::MT::Base
         Test::MT::Environment
-        Test::MT::Environment::Data
-        Test::MT::Environment::Data::YAML
-        Test::MT::Environment::Data::Perl
+        Test::MT::Data
+        Test::MT::Data::YAML
+        Test::MT::Data::Perl
         Test::MT::ThemeManager
         Test::MT::ThemeManager::Base
         Test::MT::ThemeManager::Database
         Test::MT::ThemeManager::Environment
-        Test::MT::ThemeManager::Environment::Data::YAML
+        Test::MT::ThemeManager::Data::YAML
         CharlieTheme::Plugin
     );
 }

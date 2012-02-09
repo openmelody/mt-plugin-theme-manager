@@ -1,9 +1,9 @@
-package Test::MT::ThemeManager::Environment::Data::YAML;
+package Test::MT::ThemeManager::Data::YAML;
 
 use strict;
 use warnings;
 
-use base qw( Test::MT::Environment::Data::YAML );
+use base qw( Test::MT::Data::YAML );
 
 sub init {
     my $self = shift;
