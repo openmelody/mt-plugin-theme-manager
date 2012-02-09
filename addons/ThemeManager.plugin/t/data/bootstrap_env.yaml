@@ -1,0 +1,157 @@
+name: Bootstrap Test Data
+version: 0.1
+objects:
+    blogs:
+        blog_narnia:
+            values:
+                name: 'Narnia Blog'
+                site_url: 'http://narnia.na/nana/'
+                archive_url: 'http://narnia.na/nana/archives/'
+                site_path: 't/site/'
+                archive_path: 't/site/archives/'
+                archive_type: 'Individual,Monthly,Weekly,Daily,Category,Page'
+                archive_type_preferred: 'Individual'
+                description: "Narnia None Test Blog"
+                custom_dynamic_templates: 'custom'
+                convert_paras: 1
+                allow_reg_comments: 1
+                allow_unreg_comments: 0
+                allow_pings: 1
+                sort_order_posts: 'descend'
+                sort_order_comments: 'ascend'
+                remote_auth_token: 'token'
+                convert_paras_comments: 1
+                google_api_key: 'r9Vj5K8PsjEu+OMsNZ/EEKjWmbCeQAv1'
+                cc_license: 'by-nc-sa http://creativecommons.org/licenses/by-nc-sa/2.0/ http://creativecommons.org/images/public/somerights20.gif'
+                server_offset: '-3.5'
+                children_modified_on: '20000101000000'
+                language: 'en_us'
+                file_extension: 'html'
+                template_set: mt_blog
+    users:
+        user_chuckd:
+            type: author
+            values:
+                id: 2
+                name: 'Chuck D'
+                nickname: 'Chucky Dee'
+                email: 'chuckd@example.com'
+                url: 'http://chuckd.com/'
+                api_password: 'seecret'
+                auth_type: 'MT'
+                created_on: '197801310745000'
+                password: 'bass'
+            roles:
+                blog_narnia:
+                    - 'Blog Administrator'
+        user_bobd:
+            type: author
+            values:
+                id: 3
+                name: 'Bob D'
+                nickname: 'Dylan'
+                email: 'bobd@example.com'
+                auth_type: 'MT'
+                created_on: '19780131075000'
+                password: 'flute'
+            roles:
+                blog_narnia:
+                    - 'Author'
+        user_johnd:
+            type: commenter
+            values:
+                id: 4
+                name: 'John Doe'
+                nickname: 'John Doe'
+                email: 'jdoe@doe.com'
+                auth_type: 'TypeKey'
+                created_on: '19780131080000'
+                password: '(none)'
+        user_hiro:
+            type: author
+            values:
+                id: 5
+                name: 'Hiro Nakamura'
+                nickname: 'Hiro'
+                email: 'hiro@heroes.com'
+                auth_type: 'MT'
+                created_on: '19780131081000'
+                password: 'time'
+                status: 2
+            roles:
+                blog_narnia:
+                    - 'Blog Administrator'
+    categories:
+        cat_foo:
+            values:
+                id: 1
+                label: 'foo'
+                description: 'bar'
+                author: user_chuckd
+                blog: blog_narnia
+        cat_bar:
+            values:
+                id: 2
+                label: 'bar'
+                description: 'foo'
+                author: user_chuckd
+                blog: blog_narnia
+    entries:
+        a_rainy_day:
+            values:
+                id:             1
+                blog:           blog_narnia
+                title:          A Rainy Day
+                text:           On a drizzly day last weekend
+                text_more:      I took my grandpa for a walk.
+                excerpt:        A story of a stroll.
+                keywords:       keywords
+                created_on:     19780131074500
+                authored_on:    19780131074500
+                modified_on:    19780131074600
+                authored_on:    19780131074500
+                author:         user_chuckd
+                pinged_urls:    http://technorati.com/
+                allow_comments: 1
+                allow_pings:    1
+                status:         2
+                tags:
+                    - rain
+                    - grandpa
+                    - strolling
+
+        a_preponderance_of_evidence:
+            values:
+                id:             2
+                blog:           blog_narnia
+                title:          A preponderance of evidence
+                text:           It is sufficient to say...
+                text_more:      I suck at making up test data.
+                created_on:     19790131074500
+                authored_on:    19790131074500
+                modified_on:    19790131074600
+                authored_on:    19780131074500
+                author:         user_bobd
+                allow_comments: 1
+                status:         3
+
+        spurious_anemones:
+            values:
+                id:             3
+                blog:           blog_narnia
+                title:          Spurious anemones
+                text:           ...are better than the non-spurious
+                text_more:      variety.
+                created_on:     19770131074500
+                authored_on:    19790131074500
+                modified_on:    19770131074600
+                authored_on:    19780131074500
+                author:         user_chuckd
+                allow_comments: 1
+                allow_pings:    0
+                status:         1
+                tags:
+                    - anemones
+
+    trackbacks:
+    pings:
