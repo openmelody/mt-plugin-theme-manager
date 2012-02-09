@@ -21,7 +21,7 @@ use warnings;
 use base qw( Test::MT::Environment );
 
 __PACKAGE__->mk_classdata(
-    DataClass => join('::', __PACKAGE__, 'Data::YAML'));
+    DataClass => 'Test::MT::ThemeManager::Data::YAML');
 
 sub init_db {
     my $self = shift;
