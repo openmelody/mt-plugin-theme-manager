@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 use strict;
+use warnings;
 use FindBin qw($Bin);
 use lib ( "$Bin/../lib", "$Bin/../extlib" );
 BEGIN {
@@ -36,14 +37,16 @@ Example:
   cd /path/to/mt_dir
   export MT_HOME="$(pwd)"
   ./addons/ThemeManager.plugin/tools/tmctl list
-  ./addons/ThemeManager.plugin/tools/tmctl list theme my_custom_theme
-  ./addons/ThemeManager.plugin/tools/tmctl info theme my_custom_theme
-  ./addons/ThemeManager.plugin/tools/tmctl upgrade theme my_custom_theme
-  ./addons/ThemeManager.plugin/tools/tmctl republish theme my_custom_theme
-  ./addons/ThemeManager.plugin/tools/tmctl info blog 22
-  ./addons/ThemeManager.plugin/tools/tmctl check blog 22
   ./addons/ThemeManager.plugin/tools/tmctl upgrade blog 22
-  ./addons/ThemeManager.plugin/tools/tmctl republish blog 22
+  ./addons/ThemeManager.plugin/tools/tmctl upgrade theme my_custom_theme
+  ########### NOT YET IMPLEMENTED ############
+  # ./addons/ThemeManager.plugin/tools/tmctl list theme my_custom_theme
+  # ./addons/ThemeManager.plugin/tools/tmctl info theme my_custom_theme
+  # ./addons/ThemeManager.plugin/tools/tmctl republish theme my_custom_theme
+  # ./addons/ThemeManager.plugin/tools/tmctl info blog 22
+  # ./addons/ThemeManager.plugin/tools/tmctl check blog 22
+  # ./addons/ThemeManager.plugin/tools/tmctl republish blog 22
+  ############################################
 
 =head1 DESCRIPTION
 
