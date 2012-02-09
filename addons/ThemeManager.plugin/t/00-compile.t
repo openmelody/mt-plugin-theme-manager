@@ -23,7 +23,6 @@ BEGIN {
         MT::App::Test
         Test::MT
         Test::MT::Base
-        Test::MT::Database
         Test::MT::Environment
         Test::MT::Environment::Data
         Test::MT::Environment::Data::YAML
