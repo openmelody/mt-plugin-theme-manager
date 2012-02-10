@@ -11,6 +11,7 @@ use lib ( "$Bin/lib" );
 use base qw( Test::MT::ThemeManager::Base );
 
 use Test::MT;
+
 our $test = new_ok(__PACKAGE__);
 ok( $test->init(), 'Test initialization' );
 # ok( $test->init_db(), 'Initializing DB' );
@@ -21,7 +22,7 @@ subtest "Environment initialization" => sub {
     plan tests => 3;
     use_ok('Test::MT::ThemeManager::Environment');
     $env = new_ok( 'Test::MT::ThemeManager::Environment' );
-    is( $env->init(), 1, 'Environment init succeeded' );
+    is( $env->init(), $env, 'Environment init succeeded' );
 };
 
 
@@ -58,7 +59,7 @@ subtest "Database initialization" => sub {
     my $data = new_ok( $data_class );
     is( defined( $data_key = $data->Key ), 1, 'Dataclass has Key: '.$data_key);
 
-    is( $env->init_db( $data_class ), 1, 'New database initialized' );
+    is( $env->init_db( $data_class ), $env, 'New database initialized' );
 };
 
 subtest "Database connection and default content" => sub {
