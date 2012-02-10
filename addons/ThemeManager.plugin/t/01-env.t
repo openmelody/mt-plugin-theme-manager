@@ -3,13 +3,14 @@ package Test::MT::ThemeManager::Setup;
 use strict;
 use warnings;
 use Carp;
-use Test::Most;
 use Try::Tiny;
 use Data::Dumper::Names;
 use FindBin qw($Bin);
 use lib ( "$Bin/lib" );
+
 use base qw( Test::MT::ThemeManager::Base );
 
+use Test::MT;
 our $test = new_ok(__PACKAGE__);
 ok( $test->init(), 'Test initialization' );
 # ok( $test->init_db(), 'Initializing DB' );

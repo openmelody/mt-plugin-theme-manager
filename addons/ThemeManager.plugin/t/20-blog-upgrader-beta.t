@@ -3,7 +3,6 @@ package Test::MT::ThemeManager::Setup;
 use strict;
 use warnings;
 use Carp;
-use Test::Most;
 use Try::Tiny;
 use Data::Dumper::Names;
 use FindBin qw($Bin);
@@ -11,6 +10,7 @@ use lib ( "$Bin/lib" );
 
 use base qw( Test::MT::ThemeManager::Base );
 
+use Test::MT;
 use Test::MT::ThemeManager::Environment;
 
 our $test = __PACKAGE__->new();
