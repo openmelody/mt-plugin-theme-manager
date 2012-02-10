@@ -25,10 +25,10 @@ __PACKAGE__->mk_classdata(
 
 sub init_db {
     my $self = shift;
-    $self->SUPER::init_db();
+    $self->SUPER::init_db() or return;
     require ThemeManager::Plugin;
     ThemeManager::Plugin->_theme_check();
-    1;
+    $self;
 }
 1;
 
