@@ -1,4 +1,4 @@
-package Test::MT::ThemeManager::Setup;
+package Test::MT::ThemeManager::BlogUpgrader::Charlie;
 
 use strict;
 use warnings;
