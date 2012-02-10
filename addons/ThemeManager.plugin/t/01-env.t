@@ -88,7 +88,7 @@ subtest "Data initialization" => sub {
 my ( $app, $blog );
 
 subtest "Test app and blog setup" => sub {
-    plan tests => 8;
+    plan tests => 9;
     my $env_data  = $env->data->env_data;
     my $blog_id   = $env_data->{blogs}{blog_narnia}{values}{id};
     my $blog_name = $env_data->{blogs}{blog_narnia}{values}{name};
@@ -104,6 +104,9 @@ subtest "Test app and blog setup" => sub {
     $app = MT::App::Test->construct( Config => $ENV{MT_CONFIG} );
     isa_ok( $app, 'MT::App::Test' );
         explain [keys %{ $app->registry( 'template_sets' ) }];
+
+    my $app2 = $test->init_app();
+    is_deeply( $app, $app2, 'Init app via test base class');
 
     $blog->template_set( 'alpha_theme' );
     require ThemeManager::Util;
