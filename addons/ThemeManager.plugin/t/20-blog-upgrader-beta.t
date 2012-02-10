@@ -13,27 +13,16 @@ use base qw( Test::MT::ThemeManager::Base );
 use Test::MT;
 use Test::MT::ThemeManager::Environment;
 
-our $test = __PACKAGE__->new();
-$test->init();
-# ok( $test->init_db(), 'Initializing DB' );
-
-my $env = Test::MT::ThemeManager::Environment->new();
-$env->init();
-
-my $data_class = $env->DataClass;
-eval "require $data_class;";
-# my $data = $data_class->new();
-$env->init_db( $data_class );
-
-my $data = $env->init_data( file => './data/bootstrap_env.yaml' );
+our $test    = __PACKAGE__->new()->init();
+my $env      = Test::MT::ThemeManager::Environment->new();
+my $data     = $env->init()
+                   ->init_db()
+                   ->init_data( file => './data/bootstrap_env.yaml' );
 my $env_data = $data->install();
-my $blog_id   = $env_data->{blogs}{blog_narnia}{values}{id};
+my $app      = $test->init_app();
 
-my $blog = MT->model('blog')->load( $blog_id );
-
-require MT::App::Test;
-require ThemeManager::Util;
-my $app = MT::App::Test->construct( Config => $ENV{MT_CONFIG} );
+my $blog_id  = $env_data->{blogs}{blog_narnia}{values}{id};
+my $blog     = MT->model('blog')->load( $blog_id );
 $blog->template_set( 'beta_theme' );
 $blog->save();
 
