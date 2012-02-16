@@ -172,9 +172,9 @@ sub upgrade {
 
     # Actually do the upgrade, based on all of the above submitted info.
     return $self->_refresh_system_custom_fields()
-       and $self->_refresh_fd_fields()
-       and $self->_refresh_templates()
-       and $self->_save_theme_meta( undef, {blog => $blog} );
+        && $self->_refresh_fd_fields()
+        && $self->_refresh_templates()
+        && $self->_save_theme_meta();
 }
 
 
