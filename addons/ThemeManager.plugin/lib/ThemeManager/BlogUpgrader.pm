@@ -185,6 +185,7 @@ sub upgrade {
 sub _refresh_system_custom_fields {
     my $self     = shift;
     my ( $blog ) = $self->blog;
+    ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
     return 1 unless MT->component('Commercial');
 
     my $app   = MT->instance;
@@ -320,6 +321,7 @@ sub _refresh_system_custom_fields {
 =cut
 sub _refresh_fd_fields {
     my $self     = shift;
+    ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
     my ( $blog ) = $self->blog;
     return 1 unless MT->component('FieldDay');
 
@@ -353,6 +355,7 @@ sub _refresh_fd_fields {
 sub _refresh_fd_field {
     my $self       = shift;
     my ($arg_ref)  = @_;
+    ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
     my $blog       = $self->blog;
     my $field_id   = $arg_ref->{field_id};
     my $field_data = $arg_ref->{field_data};
@@ -495,6 +498,7 @@ sub _refresh_fd_field {
 =cut
 sub _refresh_templates {
     my $self  = shift;
+    ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
     my $blog  = $self->blog;
     my $theme = $blog->theme;
 
@@ -515,6 +519,7 @@ sub _refresh_templates {
 =cut
 sub _save_theme_meta {
     my $self       = shift;
+    ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
     my $blog       = $self->blog;
     my $theme      = $self->theme;
     my $ts_id      = $theme->ts_id;
@@ -548,6 +553,7 @@ sub _save_theme_meta {
 sub update_template {
     my $self                 = shift;
     my ( $tmpl, $tmpl_data ) = @_;
+    ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
     my $blog                 = $self->blog;
 
     my $tmpl_backup = $tmpl->backup();
