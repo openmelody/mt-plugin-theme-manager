@@ -153,9 +153,11 @@ to the method used by the C<progress> method to output progress messages.
 =cut
 sub upgrade {
     my $self  = shift;
+    ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
     my $Blog  = MT->model('blog');
     my $blog  = $self->blog()
-        or croak 'Upgrade requires either blog or blog_id property to be set';
+        or return $self->errtrans( 'Upgrade requires either blog or '.
+                                   'blog_id property to be set' );
 
     my $theme = $self->theme
         or return $self->errtrans( 'Blog ID [_1] has no theme', $blog->id );
