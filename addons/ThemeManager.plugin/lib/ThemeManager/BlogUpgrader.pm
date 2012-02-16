@@ -199,6 +199,7 @@ sub _refresh_system_custom_fields {
     # not having unique keys, because the keys are the custom field basenames
     # and custom field basenames must be unique regardless of whether they
     # are for the blog or system.
+    my $Field  = MT->model('field');
     my $fields = {};
 
     # Any fields under the "sys_fields" key should be created/updated
@@ -362,7 +363,7 @@ sub _refresh_fd_field {
     my $field_type = $arg_ref->{field_type};
     my $tm         = MT->component('ThemeManager');
 
-    return if blessed $field_data and $field_data->isa('MT::Component');
+    return 1 if blessed $field_data and $field_data->isa('MT::Component');
 
     my $field_scope = ( $field_data->{scope}
                       && delete $field_data->{scope} eq 'system' ? 0 : $blog->id );
@@ -502,12 +503,12 @@ sub _refresh_templates {
     my $blog  = $self->blog;
     my $theme = $blog->theme;
 
-    return unless @{ $theme->updated_templates() }
-               || @{ $theme->new_templates()     };
+    return 1 unless @{ $theme->updated_templates() }
+                 || @{ $theme->new_templates()     };
 
     my $defaults = $theme->default_templates( $blog->language );
     foreach my $def_tmpl ( @$defaults ) {
-        my $tmpl = $self->install_template( $def_tmpl ) or return;
+        my $tmpl = $self->install_template( $def_tmpl ) or return 1;
     }
     1;
 }
