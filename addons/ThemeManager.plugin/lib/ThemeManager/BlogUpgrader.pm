@@ -579,8 +579,9 @@ sub update_template {
     my $text_old = $tmpl->text;
     my $digest = sub {
         my $x = shift;
-        return defined $x and $x ne '' ? Digest::MD5::md5_hex($x) : '';
+        return ( defined($x) and $x ne '' ? Digest::MD5::md5_hex($x) : '' );
     };
+
     if ( $digest->($text_new) eq $digest->($text_old) ){
         $self->progress(
             sprintf('Template already up-to-date: %s', $tmpl->name) );
