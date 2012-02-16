@@ -496,7 +496,7 @@ sub version {
         # Convert the saved YAML back into a hash.
         $theme_meta = try {
             require ThemeManager::Theme::Util;
-            ThemeManager::Theme::Util::inflate_yaml( $blog->theme_meta );
+            ThemeManager::Theme::Util::inflate_yaml( $blog->meta('theme_meta') );
         }
         catch {
             warn sprintf "Could not deserialize theme meta for blog ID %d: %s",
