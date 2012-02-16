@@ -250,7 +250,11 @@ sub upgrade_theme {
         next unless $theme and $theme->ts_id eq $ts_id;
         ###l4p $logger->info('Upgrading theme '.$ts_id.' for blog ID '.$blog->id);
 
-        $app->upgrade_blog( $blog->id ) or return;
+        local $app->{_errstr} = undef;
+
+        $app->upgrade_blog( $blog->id )
+            or warn sprintf( "Failed to upgrade blog ID %d: %s\n",
+                            $blog->id, ( $app->errstr || 'UNDEFINED ERROR' ));
 
         ###l4p $logger->info('Finished upgrading theme '.$ts_id.' for blog ID '.$blog->id);
     }
