@@ -188,7 +188,6 @@ sub _refresh_system_custom_fields {
     return 1 unless MT->component('Commercial');
 
     my $app   = MT->instance;
-    my $tm    = MT->component('ThemeManager');
     my $theme = $self->theme;
     my $set   = $app->registry( 'template_sets', $theme->ts_id )
         or return $self->errtrans(
@@ -230,6 +229,7 @@ sub _refresh_system_custom_fields {
             next REQUIRED if $field{$required};
 
             if ($blog->theme_mode eq 'designer') {
+                my $tm    = MT->component('ThemeManager');
                 MT->log( {
                            level   => MT->model('log')->ERROR(),
                            blog_id => $field_scope,
@@ -268,6 +268,7 @@ sub _refresh_system_custom_fields {
             # the error is written to the Activity Log.
             if ( $field_obj->type ne $field_data->{type} ) {
                 if ($blog->theme_mode eq 'designer') {
+                    my $tm    = MT->component('ThemeManager');
                     MT->log( {
                            level   => MT->model('log')->ERROR(),
                            blog_id => $field_scope,
