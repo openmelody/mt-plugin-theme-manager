@@ -830,8 +830,9 @@ Internal method for creating timestamps for backup template names
 =cut
 sub backup_ts {
     my $self    = shift;
-    my $blog_id = blessed $self ? $self->blog_id : undef;
-    my @ts      = offset_time_list( time, $blog_id );
+    require MT::Util;
+    my $blog_id = blessed( $self ) ? $self->blog_id : undef;
+    my @ts      = MT::Util::offset_time_list( time, $blog_id );
     sprintf "%04d-%02d-%02d %02d:%02d:%02d",
         $ts[5] + 1900, $ts[4] + 1, @ts[ 3, 2, 1, 0 ];
 }
