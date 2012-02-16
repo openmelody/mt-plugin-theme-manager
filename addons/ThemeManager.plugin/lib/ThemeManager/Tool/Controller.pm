@@ -243,6 +243,7 @@ sub upgrade_theme {
 
     ###l4p $logger->info('Upgrading all blogs using theme: ', $ts_id);
 
+    require ThemeManager::Theme;
     my $iter = MT->model('blog')->load_iter();
     while ( my $blog = $iter->() ) {
         my $theme  = $blog->theme;
