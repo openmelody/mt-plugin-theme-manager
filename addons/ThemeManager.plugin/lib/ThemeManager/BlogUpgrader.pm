@@ -829,8 +829,8 @@ to use when converting a template to or creating a backup template
 sub backup_values {
     return {
         type          => 'backup',
-        identifier    => undef,
-        linked_file   => undef,
+        identifier    => '',
+        linked_file   => '',
         outfile       => '',
         rebuild_me    => 0,
         build_dynamic => 0,
