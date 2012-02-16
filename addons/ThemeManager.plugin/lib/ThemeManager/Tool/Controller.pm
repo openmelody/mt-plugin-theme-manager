@@ -197,15 +197,14 @@ sub mode_upgrade {
     my $q   = $app->query;
     ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
     my $opt = $app->options();
-    my $id  = $q->param('blog_id') || $q->param('ts_id');
+    my $id  = $opt->{blog} || $opt->{blog_id} || $opt->{ts_id};
     return $app->error( "You did not specify a blog_id or ts_id" )
         unless $id;
 
     local $| = 1;
 
-    return $q->param('blog_id') ? $app->upgrade_blog( $id )
-         : $q->param('ts_id')   ? $app->upgrade_theme( $id )
-                                : undef;
+    return $opt->{ts_id} ? $app->upgrade_theme( $id )
+                         : $app->upgrade_blog( $id );
 }
 
 =head2 mode_info
