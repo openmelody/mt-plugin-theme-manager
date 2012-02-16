@@ -189,9 +189,10 @@ sub _refresh_system_custom_fields {
 
     my $app   = MT->instance;
     my $tm    = MT->component('ThemeManager');
-    my $ts_id = $blog->template_set or return;
-    my $set   = $app->registry( 'template_sets', $ts_id ) or return;
-    my $Field = MT->model('field');
+    my $theme = $self->theme;
+    my $set   = $app->registry( 'template_sets', $theme->ts_id )
+        or return $self->errtrans(
+            'Could not load theme info from registry for '.$theme->ts_id );
 
     # In order to refresh both the blog-level and system-level custom fields,
     # merge each of those hashes. We don't have to worry about those hashes
@@ -322,8 +323,9 @@ sub _refresh_fd_fields {
     return 1 unless MT->component('FieldDay');
 
     my $app   = MT->instance;
-    my $ts_id = $blog->template_set or return;
-    my $set   = $app->registry( 'template_sets', $ts_id ) or return;
+    my $theme = $self->theme;
+    my $set   = $app->registry( 'template_sets', $theme->ts_id );
+    return 1 unless $ts_id and $set;
 
     # Field Day fields are all defined under the fd_fields key. Install groups
     # first (in the group key), then install fields (in the fields key). That
