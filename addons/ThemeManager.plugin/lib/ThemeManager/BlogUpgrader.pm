@@ -166,6 +166,10 @@ sub upgrade {
         or return $self->errtrans( "Could not load theme definition from "
                                  . "plugin for theme '[_1]'", $theme->ts_id );
 
+    $self->progress(
+        sprintf 'STARTING UPGRADE of theme %s for blog "%s" (ID:%d)',
+                $theme->ts_id, $blog->name, $blog->id );
+
     # Actually do the upgrade, based on all of the above submitted info.
     return $self->_refresh_system_custom_fields()
        and $self->_refresh_fd_fields()
