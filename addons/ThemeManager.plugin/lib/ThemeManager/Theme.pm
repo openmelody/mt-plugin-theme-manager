@@ -406,7 +406,11 @@ sub outdated_templates {
 
     # Load the blog's current templates as well as the theme's "default"
     # template set for comparison.
-    my %blog_tmpls = map { $_->identfier => $_ }
+    my $identifier = sub {
+        my $tmpl = shift;
+        $tmpl->identifier || "tmpl_name_".MT::Util::dirify( $tmpl->name );
+    };
+    my %blog_tmpls = map { $identifier->($_) => $_ }
                         MT->model('template')->load({ blog_id => $blog->id });
 
     my @default_tmpls = map { $self->vivify_tmpl( $_ ) }
