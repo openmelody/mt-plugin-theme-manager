@@ -378,12 +378,12 @@ sub is_outdated {
         # This template was not found in the DB.
             # Tell the user about the new templates being installed
 
-            # Look at this template to determine if any existing templates need 
-            # to be updated. Compare the actual template (text) to determine if 
-            # anything changed. Don't compare the template meta (build type or 
-            # caching, for example) because that's something that may have been 
+            # Look at this template to determine if any existing templates need
+            # to be updated. Compare the actual template (text) to determine if
+            # anything changed. Don't compare the template meta (build type or
+            # caching, for example) because that's something that may have been
             # purposefully customized, and we don't want to overwrite that.
-            # The source template should be translated before trying to compare it 
+            # The source template should be translated before trying to compare it
             # to the already-translated template in the DB.
 
             # Compare an MD5 hash of the templates to tell if they changed. Skip
@@ -584,7 +584,7 @@ sub theme_value {
                     . 'support/plugins/'
                     . $tm->id
                     . '/images/default_theme_thumb-large.png';
-                
+
             },
             '*' => sub {
                 my $v = shift;
@@ -615,6 +615,8 @@ sub theme_value {
             }
         },
     };
+
+### FIXME See below...
 
 print STDERR "*** VALUE: $value\n";
     $value = try { $dispatch->{fallback}{$key}->() }
@@ -660,7 +662,7 @@ sub thumb_url {
     my $plugin = $self->plugin;
     my $app = MT->instance;
     my $tm = $app->component('ThemeManager');
-    
+
     # Create the file path to the already-created theme_thumbs file.
     my $file_path
       = File::Spec->catfile( $self->thumb_path(), $blog->id . '.jpg' );
