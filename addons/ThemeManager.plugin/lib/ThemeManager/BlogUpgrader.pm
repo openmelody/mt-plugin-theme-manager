@@ -556,11 +556,24 @@ sub update_template {
     ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
     my $blog                 = $self->blog;
 
+    require Digest::MD5;
+    my $text_new = $self->translate_text( $tmpl_data );
+    my $text_old = $tmpl->text;
+    my $digest = sub {
+        my $x = shift;
+        return defined $x and $x ne '' ? Digest::MD5::md5_hex($x) : '';
+    };
+    if ( $digest->($text_new) eq $digest->($text_old) ){
+        $self->progress(
+            sprintf('Template already up-to-date: %s', $tmpl->name) );
+        return $tmpl;
+    }
+
     my $tmpl_backup = $tmpl->backup();
     # die 'Error saving backup template: '.$tmpl_backup->errstr
     #     unless $tmpl_backup and $tmpl_backup->id;
 
-    $tmpl->text( $self->translate_text( $tmpl_data ) );
+    $tmpl->text( $text_new );
     $tmpl->save
         or die 'Error saving template: '.$tmpl->errstr;
 
@@ -757,6 +770,8 @@ sub find_theme_template {
 }
 
 package MT::Template;
+
+use Scalar::Util qw( blessed );
 
 =head2 backup
 
