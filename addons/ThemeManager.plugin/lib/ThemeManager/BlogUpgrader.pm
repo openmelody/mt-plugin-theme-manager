@@ -554,7 +554,7 @@ sub update_template {
     $self->purge_template_cache( $tmpl );
 
     my $message
-        = sprintf('The template "%s" has been upgraded.', $tmpl->name);
+        = sprintf('Upgraded template: %s', $tmpl->name);
     MT->log({
         level   => MT->model('log')->INFO(),
         blog_id => $blog->id,
@@ -575,7 +575,7 @@ sub purge_template_cache {
     my $key = 'blog::' . $tmpl->blog_id . '::template_'
         . $tmpl->type . '::' . $tmpl->name;
     MT->model('session')->remove( { id => $key });
-    $self->progress("Removed template caching session: ".$key);
+    # $self->progress("Removed template caching session: ".$key);
     1;
 }
 
@@ -672,7 +672,7 @@ sub create_template {
     }
 
     my $message = sprintf(
-        'A new template, "%s", has been installed.', $tmpl->name );
+        'Installed new template: "%s"', $tmpl->name );
     MT->log({
         level   => MT->model('log')->INFO(),
         blog_id => $blog->id,
