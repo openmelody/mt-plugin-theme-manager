@@ -170,11 +170,28 @@ sub upgrade {
         sprintf 'STARTING UPGRADE of theme %s for blog "%s" (ID:%d)',
                 $theme->ts_id, $blog->name, $blog->id );
 
-    # Actually do the upgrade, based on all of the above submitted info.
-    return $self->_refresh_system_custom_fields()
-        && $self->_refresh_fd_fields()
-        && $self->_refresh_templates()
-        && $self->_save_theme_meta();
+    # Perform the upgrade, based on all of the above submitted info.
+    my $result = $self->_refresh_system_custom_fields()
+               && $self->_refresh_fd_fields()
+               && $self->_refresh_templates()
+               && $self->_save_theme_meta();
+    
+    if ( $result ) {
+        $self->progress(
+            sprintf 'Theme successfully upgraded for "%s" (ID:%d): %s v%s',
+                $blog->name, $blog->id, $theme->ts_id, $theme->version
+        );
+    }
+    else {
+        my $warning
+            = sprintf 'Upgrade of %s theme failed for "%s" (ID:%d): %s',
+                        $theme->ts_id, $blog->name, $blog->id,
+                        ( $self->errstr || 'UNDEFINED ERROR' );
+        $self->progress( $warning );
+        warn "$warning\n";
+    }
+
+    return $result;
 }
 
 
@@ -329,7 +346,7 @@ sub _refresh_fd_fields {
     my $app   = MT->instance;
     my $theme = $self->theme;
     my $set   = $app->registry( 'template_sets', $theme->ts_id );
-    return 1 unless $ts_id and $set;
+    return 1 unless $theme && $set;
 
     # Field Day fields are all defined under the fd_fields key. Install groups
     # first (in the group key), then install fields (in the fields key). That

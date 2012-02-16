@@ -251,10 +251,7 @@ sub upgrade_theme {
         ###l4p $logger->info('Upgrading theme '.$ts_id.' for blog ID '.$blog->id);
 
         local $app->{_errstr} = undef;
-
-        $app->upgrade_blog( $blog->id )
-            or warn sprintf( "Failed to upgrade blog ID %d: %s\n",
-                            $blog->id, ( $app->errstr || 'UNDEFINED ERROR' ));
+        $app->upgrade_blog( $blog->id );
 
         ###l4p $logger->info('Finished upgrading theme '.$ts_id.' for blog ID '.$blog->id);
     }
@@ -273,11 +270,10 @@ sub upgrade_blog {
     my $app     = shift;
     my $blog_id = shift;
     ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
-
     require ThemeManager::BlogUpgrader;
-    my $upgrader = ThemeManager::BlogUpgrader->new( blog_id => $blog_id );
-
-    return $upgrader->upgrade() || $app->error( $upgrader->errstr );
+    my $upgrader = ThemeManager::BlogUpgrader->new({ blog_id => $blog_id });
+    $upgrader->upgrade()
+        or return $app->error( $upgrader->errstr );
 }
 
 1;
