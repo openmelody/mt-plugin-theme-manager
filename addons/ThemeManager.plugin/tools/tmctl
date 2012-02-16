@@ -6,6 +6,7 @@ use lib ( "$Bin/../lib", "$Bin/../extlib" );
 BEGIN {
     my $mtdir = $ENV{MT_HOME} ? "$ENV{MT_HOME}/" : '';
     unshift @INC, "$mtdir$_" foreach qw( lib extlib );
+    warn "MT_HOME environment variable not set" unless $ENV{MT_HOME};
 }
 use MT::Bootstrap::CLI App => 'ThemeManager::Tool::Controller';
 
@@ -39,14 +40,6 @@ Example:
   ./addons/ThemeManager.plugin/tools/tmctl list
   ./addons/ThemeManager.plugin/tools/tmctl upgrade blog 22
   ./addons/ThemeManager.plugin/tools/tmctl upgrade theme my_custom_theme
-  ########### NOT YET IMPLEMENTED ############
-  # ./addons/ThemeManager.plugin/tools/tmctl list theme my_custom_theme
-  # ./addons/ThemeManager.plugin/tools/tmctl info theme my_custom_theme
-  # ./addons/ThemeManager.plugin/tools/tmctl republish theme my_custom_theme
-  # ./addons/ThemeManager.plugin/tools/tmctl info blog 22
-  # ./addons/ThemeManager.plugin/tools/tmctl check blog 22
-  # ./addons/ThemeManager.plugin/tools/tmctl republish blog 22
-  ############################################
 
 =head1 DESCRIPTION
 
@@ -80,13 +73,6 @@ The following command-line options are supported by the utility.
 Carries out the actions specified by the flags and arguments provided on
 the command line but makes no modifications to the database.
 
-=item --force
-
-Normally, the utility will output exactly what it's about to do and then
-prompt you for confirmation that you want to continue.  The C<--force>
-flag skips this confirmation and simply performs the action specified
-by the provided flags and arguments.
-
 =item --verbose
 
 Output more progress information
@@ -107,11 +93,19 @@ Outputs a short description of the utility's usage
 
 =item * list
 
-=item * info
-
-=item * check
+Displays a listing of information about blogs and their themes
 
 =item * upgrade
+
+Upgrades the themes of the specified blog(s). A single blog can be specified
+using first form shown in the L<Examples> section:
+
+    tmctl upgrade blog BLOG_ID
+
+All blogs using a particular theme may also be upgraded all at once and in one
+step using the second form in the L<Examples> section:
+
+    tmctl upgrade theme TEMPLATE_SET_ID
 
 =back
 
@@ -145,6 +139,21 @@ If you are having problems installing or using the plugin, please check out
 our general knowledge base and help ticket system:
 
   http://help.endevver.com
+
+=head1 FUTURE FEATURES
+
+The following modes are possible candidates for inclusion in a future version
+of this utility.
+
+    tmctl upgrade blog 23,25,32
+    tmctl upgrade blog "23 25 32"
+    tmctl upgrade blog 1-20
+    tmctl list theme my_custom_theme
+    tmctl info theme my_custom_theme
+    tmctl republish theme my_custom_theme
+    tmctl info blog 22
+    tmctl check blog 22
+    tmctl republish blog 22
 
 =head1 COPYRIGHT
 
