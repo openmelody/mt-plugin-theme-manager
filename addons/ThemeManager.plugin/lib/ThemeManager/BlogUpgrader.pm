@@ -126,7 +126,11 @@ C<progress_handler>.
 sub progress {
     my $self = shift;
     my $handler = $self->progress_handler()
-               || sub { print '* '.join("\n* ", @_)."\n" };
+               || sub { 
+                        my $msg = @_ > 1 ? sprintf( +shift, @_ )
+                                         : shift();
+                        print "* $msg\n";
+                  };
     $handler->( @_ );
 }
 
