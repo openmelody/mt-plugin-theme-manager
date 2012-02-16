@@ -212,12 +212,7 @@ sub mode_upgrade {
 Not yet implemented
 
 =cut
-sub mode_info {
-    my $app = shift;
-    ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
-    my $opt = $app->options();
-    return Dumper({mysub => 'mode_info', %$opt});
-}
+sub mode_info { shift->error('Not yet implemented') }
 
 =head2 mode_republish
 
