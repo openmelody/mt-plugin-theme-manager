@@ -99,10 +99,7 @@ sub init_options {
     $app->SUPER::init_options(@_) or return;
 
     my $opt = $app->options || {};
-    $opt->{ts_id} ||= delete $opt->{theme} if $opt->{theme};
-    $opt->{cols} = ref $opt->{cols} eq 'ARRAY'
-                 ? $opt->{cols}
-                 : [ split( /\s*,\s*/, ($opt->{cols} || 'id,name,site_url') )];
+    $opt->{ts_id}   ||= delete $opt->{theme} if $opt->{theme};
     ###l4p $logger->debug('$opt: ', l4mtdump( $opt ));
 
     1;
