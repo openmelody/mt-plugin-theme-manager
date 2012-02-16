@@ -419,12 +419,14 @@ sub outdated_templates {
     return $self->error( "No default templates were found." )
         unless @default_tmpls;
 
+    require Digest::MD5;
+
     foreach my $canon ( @default_tmpls ) {
 
         if ( my $tmpl = $blog_tmpls{ $canon->identifier } ) {
 
             next if $canon->type          eq 'widgetset'
-                 or md5_hex($canon->text) eq md5_hex($tmpl->text);
+                 or Digest::MD5::md5_hex($canon->text) eq Digest::MD5::md5_hex($tmpl->text);
 
             push( @{$outdated->{updated}}, _tmpl_summary($tmpl) );
         }
