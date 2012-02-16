@@ -7,7 +7,8 @@ for the tmctl utility
 
 =head1 SYNOPSIS
 
-The following code comes from the tmctl utility:
+The following code can be used to bootstrap this class as can be seen in the
+tmctl utility:
 
     #!/usr/bin/perl
     use strict;
@@ -63,7 +64,8 @@ our %classes_seen;
 
 =head2 usage
 
-DOCUMENTATION NEEDED
+This method overrides the inherited method to provide usage text for the
+--help flag and any errors.
 
 =cut
 sub usage {
@@ -78,18 +80,16 @@ EOD
 
 =head2 help
 
-DOCUMENTATION NEEDED
+This method overrides the inherited method to provide help text for the
+--help flag.
 
 =cut
 sub help { q{ CHANGE ME SOON! } }
 
-# sub option_spec {
-#     return ( 'cols:s', $_[0]->SUPER::option_spec() );
-# }
-
 =head2 init_options
 
-DOCUMENTATION NEEDED
+This method overides the inherited method in order to shift any C<theme>
+parameter value to the aliased C<ts_id> parameter.
 
 =cut
 sub init_options {
@@ -110,7 +110,8 @@ sub init_options {
 
 =head2 init
 
-DOCUMENTATION NEEDED
+This method overrides the inherited method to define modes and mode handles
+specific to this application.
 
 =cut
 sub init {
@@ -130,14 +131,24 @@ sub init {
 
 =head2 mode_list
 
-DOCUMENTATION NEEDED
+This method is the mode handler for the B<list> command. It outputs the
+following information about all blogs in the installation:
 
-list themes used
-list themes all
-list blogs all
-list blogs with theme TS_ID
-list blogs with theme ''
-list blogs with theme none
+=over 4
+
+=item * Blog ID
+
+=item * Blog name
+
+=item * Blog URL
+
+=item * Blog template set ID (if one is applied)
+
+=item * The blog's theme version
+
+=item * The theme version
+
+=back
 
 =cut
 sub mode_list {
@@ -181,7 +192,7 @@ sub mode_list {
 
 =head2 mode_upgrade
 
-DOCUMENTATION NEEDED
+The method is the B<upgrade> mode handler.
 
 =cut
 sub mode_upgrade {
@@ -202,7 +213,7 @@ sub mode_upgrade {
 
 =head2 mode_info
 
-DOCUMENTATION NEEDED
+Not yet implemented
 
 =cut
 sub mode_info {
@@ -214,21 +225,24 @@ sub mode_info {
 
 =head2 mode_republish
 
-DOCUMENTATION NEEDED
+Not yet implemented
 
 =cut
 sub mode_republish { shift->error('Not yet implemented') }
 
 =head2 mode_check
 
-DOCUMENTATION NEEDED
+Not yet implemented
 
 =cut
 sub mode_check { shift->error('Not yet implemented') }
 
 =head2 upgrade_theme
 
-DOCUMENTATION NEEDED
+This method iterates over all blogs in the installation looking for those
+using the theme whose template set ID (C<TS_ID>) matches the provided
+argument. All blogs using the theme are then upgraded via the C<upgrade_blog>
+method.
 
 =cut
 sub upgrade_theme {
@@ -255,7 +269,8 @@ sub upgrade_theme {
 
 =head2 upgrade_blog
 
-DOCUMENTATION NEEDED
+This method takes a C<blog_id> parameter and bootstraps the BlogUpgrader to
+execute a theme upgrade for the specified blog.
 
 =cut
 sub upgrade_blog {
@@ -272,12 +287,6 @@ sub upgrade_blog {
 1;
 
 __END__
-
-=head1 DIAGNOSTICS
-
-A list of every error and warning message that the module can generate (even
-the ones that will "never happen"), with a full explanation of each problem,
-one or more likely causes, and any suggested remedies.
 
 =head1 BUGS AND LIMITATIONS
 
