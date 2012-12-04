@@ -328,7 +328,7 @@ sub template_filter {
 
     # TODO Determine whether this SHOULD actually be running for non MT::Apps
     return unless $app->isa('MT::App');
-    my $q = $app->query;
+    my $q = $app->can('query') ? $app->query : $app->param;
 
     # If a new blog is being created/saved, we don't want to run this callback.
     return
