@@ -1492,8 +1492,18 @@ sub _upgrade_check_templates {
         # Compare an MD5 hash of the templates to tell if they changed. Skip
         # over any 'widgetset' template type because these have likely changed
         # and we don't want to check them.
-        if ( $disk_tmpl->{type} ne 'widgetset' 
-            && md5_hex($disk_tmpl_trans) ne md5_hex($db_tmpl->text) 
+
+	my ($disk_tmpl_md5, $db_tmpl_md5);
+	{
+	    # Fixes 'wide character in print' error thrown by md5_hex when its
+            # argument contains a wide character (e.g. Unicode).
+            # See http://onkeypress.blogspot.com/2011/07/perl-wide-character-in-subroutine-entry.html
+	    use bytes;
+	    $disk_tmpl_md5 = md5_hex( $disk_tmpl_trans ."" );
+	    $db_tmpl_md5   = md5_hex( $db_tmpl->text   ."" );
+	}
+        if (     $disk_tmpl->{type} ne 'widgetset'
+             and $disk_tmpl_md5 ne $db_tmpl_md5
         ) {
 
             # This template is going to be updated. We want to warn the user
